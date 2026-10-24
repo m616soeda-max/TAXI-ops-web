@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102415">
+<meta name="taxiops-build" content="2026102416">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -771,7 +771,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261024-app15</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261024-app16</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1397,9 +1397,8 @@ function trimCanvasVertical(canvas, pad){
     return out;
   }catch(e){ return canvas; }   // 読み取れない場合は切り落とさずそのまま
 }
-async function captureAndShareMulti(elementIds, filename){
-  toast('画像を作成しています…');
-  // ①画像: 撮影の間だけ「スマホ縦1画面いっぱい・大きな文字」のレイアウトにする(終わったら必ず元に戻す)
+// ①画像(ヘッダー+情報ブロック)を、スマホ縦1画面いっぱいのレイアウトで1枚のcanvasにする。撮影の間だけ .cap-tall を付け、終わったら必ず元に戻す。
+async function buildTallInfoCanvas(elementIds){
   const els = elementIds.map(id=>document.getElementById(id)).filter(Boolean);
   els.forEach(el=>el.classList.add('cap-tall'));
   let merged=null;
@@ -1416,8 +1415,13 @@ async function captureAndShareMulti(elementIds, filename){
   }finally{
     els.forEach(el=>{ el.classList.remove('cap-tall'); el.style.minHeight=''; });
   }
-  if(!merged) return;
-  shareCanvasAsPng(trimCanvasVertical(merged, 8), filename);
+  return merged ? trimCanvasVertical(merged, 8) : null;   // 画面倍率が高いので、上下は少しだけ余白を残す
+}
+async function captureAndShareMulti(elementIds, filename){
+  toast('画像を作成しています…');
+  const canvas = await buildTallInfoCanvas(elementIds);
+  if(!canvas) return;
+  shareCanvasAsPng(canvas, filename);
 }
 /* ---------- ファイルの保存(アプリ版) ----------
    Androidアプリの画面部品(WebView)は、ブラウザのような「ダウンロード」ができない。
@@ -1661,7 +1665,7 @@ async function captureAndShareAllSplits(parts, filenames){
   for(let i=0;i<parts.length;i++){
     toast(`画像を作成しています…(${i+1}/${parts.length})`);
     const part = parts[i];
-    const canvas = Array.isArray(part) ? await buildMergedCanvas(part) : await buildCanvasForElement(part);
+    const canvas = Array.isArray(part) ? await buildTallInfoCanvas(part) : await buildCanvasForElement(part);
     if(!canvas) return; // 個別のエラー内容は上記ビルド関数がtoast済み
     canvases.push(canvas);
   }
@@ -1669,8 +1673,8 @@ async function captureAndShareAllSplits(parts, filenames){
     const files=[];
     for(let i=0;i<canvases.length;i++){ const b=await canvasToBlobP(canvases[i]); if(b) files.push({name:filenames[i], blob:b}); }
     const r=files.length ? await nativeShareFiles(files) : false;
-    if(r===true){ toast('保存先を選んでください(画像'+files.length+'枚)'); return; }
-    if(r==='cancel'){ toast('保存をキャンセルしました'); return; }
+    if(r===true){ toast('共有先で「X」などを選んでください(画像'+files.length+'枚)'); return; }
+    if(r==='cancel'){ toast('共有をキャンセルしました'); return; }
     toast('画像を保存できませんでした: '+(window.__lastSaveError||'不明')); return;   // アプリ版のWebViewでは、従来のダウンロードは動かないので、偽の成功表示をしない
   }
   // Web Share(共有シート経由)は、渡した枚数を保存先アプリが正しく受け取らないことがある(4枚渡しても1枚しか保存されない事例あり)ため、
@@ -2680,6 +2684,9 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyBulkActualBtn">🚕 実車距離を一括貼り付け</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
+      <button class="btn-ghost" id="historyShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
+    </div>
+    <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyShotInfoBtn">📸 ①ミドル・ロングまで(タイトル込)を保存/共有</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
@@ -2748,6 +2755,10 @@ function renderHistoryDetail(date){
   }
   const editMonthTargetBtnH = document.getElementById('editMonthTargetBtnH');
   if(editMonthTargetBtnH) editMonthTargetBtnH.onclick = ()=>openEditMonthTargetModal(monthKeyOf(st.shiftDate));
+  document.getElementById('historyShotAllBtn').onclick = ()=>{
+    captureAndShareAllSplits([['histHeaderCaptureRoot','histInfoCaptureRoot'],'histTimeCaptureRoot','histDistCaptureRoot','histAnalysisCaptureRoot'],
+      [`taxi-ops-1-info-${date}.png`,`taxi-ops-2-section-${date}.png`,`taxi-ops-3-dist-${date}.png`,`taxi-ops-4-analysis-${date}.png`]);
+  };
   document.getElementById('historyShotInfoBtn').onclick = ()=>{
     captureAndShareMulti(['histHeaderCaptureRoot','histInfoCaptureRoot'], `taxi-ops-summary-info-${date}.png`);
   };
@@ -4462,6 +4473,9 @@ function renderSummary(){
           <button class="btn-ghost" id="summaryBulkActualBtn">🚕 実車距離を一括貼り付け</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
+          <button class="btn-ghost" id="summaryShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
+        </div>
+        <div class="summary-actions" style="margin-top:6px;">
           <button class="btn-ghost" id="summaryShotInfoBtn">📸 ①ミドル・ロングまで(タイトル込)を保存/共有</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
@@ -4500,6 +4514,11 @@ function renderSummary(){
       await saveState();
       render();
     });
+  };
+  document.getElementById('summaryShotAllBtn').onclick = ()=>{
+    const d = state.shiftDate||'今日';
+    captureAndShareAllSplits([['sumHeaderCaptureRoot','sumInfoCaptureRoot'],'sumTimeCaptureRoot','sumDistCaptureRoot','sumAnalysisCaptureRoot'],
+      [`taxi-ops-1-info-${d}.png`,`taxi-ops-2-section-${d}.png`,`taxi-ops-3-dist-${d}.png`,`taxi-ops-4-analysis-${d}.png`]);
   };
   document.getElementById('summaryShotInfoBtn').onclick = ()=>{
     captureAndShareMulti(['sumHeaderCaptureRoot','sumInfoCaptureRoot'], `taxi-ops-summary-info-${state.shiftDate||'今日'}.png`);
