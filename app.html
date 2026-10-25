@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102416">
+<meta name="taxiops-build" content="2026102517">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -771,7 +771,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261024-app16</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261025-app17</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2346,6 +2346,15 @@ function openHistoryEntryModal(st, date, entryId){
         <input type="text" id="hemActualDist" placeholder="例: 7.1" inputmode="decimal" value="${entry.actualDist!=null?entry.actualDist:''}">
       </div>
       <div class="field" style="margin-bottom:14px;text-align:left;">
+        <label style="font-size:10.5px;color:var(--muted);display:block;margin-bottom:4px;">迎車・乗車の時刻(軌跡の色分けと場所・住所用)</label>
+        <div style="display:flex;gap:8px;margin-bottom:6px;">
+          <input type="text" id="hemPuT" placeholder="迎車 例1203" inputmode="none" value="${entry.pu&&entry.pu.t!=null?fmtTime(entry.pu.t):''}">
+          <input type="text" id="hemBdT" placeholder="乗車 例1208" inputmode="none" value="${entry.bd&&entry.bd.t!=null?fmtTime(entry.bd.t):''}">
+        </div>
+        <div id="hemPlaces" style="font-size:11px;line-height:1.7;color:var(--text);">${evPlaceLines({pu:entry.pu,bd:entry.bd,dr:entry.dr})}</div>
+        <button class="btn-ghost" id="hemPlaceBtn" style="width:100%;margin-top:6px;">📍 軌跡から場所・住所を取得</button>
+      </div>
+      <div class="field" style="margin-bottom:14px;text-align:left;">
         <div class="chip ${entry.thanks?'active':''}" id="hemThanks">🎫 サンキュー消費</div>
       </div>
       <div class="confirm-actions" style="margin-bottom:8px;">
@@ -2360,6 +2369,17 @@ function openHistoryEntryModal(st, date, entryId){
   if(hemTimeEl){
     hemTimeEl.addEventListener('click', ()=>openTimeKeypad('hemTime','hemFare'));
   }
+  overlay.querySelector('#hemPuT').addEventListener('click', ()=>openTimeKeypad('hemPuT','hemBdT'));
+  overlay.querySelector('#hemBdT').addEventListener('click', ()=>openTimeKeypad('hemBdT',null));
+  let hemPl={pu:entry.pu,bd:entry.bd,dr:entry.dr};
+  async function hemResolve(){
+    const g=id=>{ const v=overlay.querySelector('#'+id).value.trim(); return v?parseTime(v):null; };
+    const puH=g('hemPuT'), bdH=g('hemBdT'), dH=parseTime(overlay.querySelector('#hemTime').value);
+    hemPl={ pu:await evMk(date,puH,hemPl.pu,true), bd:await evMk(date,bdH,hemPl.bd,true), dr:await evMk(date,dH,hemPl.dr,false) };
+    overlay.querySelector('#hemPlaces').innerHTML=evPlaceLines(hemPl);
+    return hemPl;
+  }
+  overlay.querySelector('#hemPlaceBtn').onclick=async ()=>{ const b=overlay.querySelector('#hemPlaceBtn'); b.textContent='取得中…'; await hemResolve(); b.textContent='📍 軌跡から場所・住所を取得'; };
   const hemTollEl = overlay.querySelector('#hemToll');
   if(hemTollEl){
     hemTollEl.addEventListener('click', ()=>openTollKeypad('hemToll', null));
@@ -2424,6 +2444,13 @@ function openHistoryEntryModal(st, date, entryId){
     const fare = parseFloat(overlay.querySelector('#hemFare').value);
     if(t===null){ toast('時刻の形式が正しくありません(例: 1231)'); return; }
     if(isNaN(fare) || fare<0){ toast('代金を入力してください'); return; }
+    const puS=overlay.querySelector('#hemPuT').value.trim(), bdS=overlay.querySelector('#hemBdT').value.trim();
+    const puH=puS?parseTime(puS):null, bdH=bdS?parseTime(bdS):null;
+    if((puS&&puH===null)||(bdS&&bdH===null)){ toast('迎車・乗車の時刻の形式が正しくありません(例: 1231)'); return; }
+    if(bdH!==null && bdH>t){ toast('乗車時刻が降車時刻より後になっています'); return; }
+    if(puH!==null && bdH!==null && puH>bdH){ toast('迎車時刻が乗車時刻より後になっています'); return; }
+    const pl=await hemResolve();
+    ['pu','bd','dr'].forEach(k=>{ if(pl[k]) entry[k]=pl[k]; else delete entry[k]; });
     entry.time = t;
     entry.fare = fare;
     entry.dist = parseFloat(overlay.querySelector('#hemDist').value) || 0;
@@ -5308,6 +5335,69 @@ async function trackImportFiles(files){
   toast(r.added?('GPSログから'+r.added+'点を追加しました'):'追加できる点はありませんでした(取込済み)');
 }
 
+/* ---------- 乗降地(迎車・乗車・降車の時刻と場所)と、軌跡の状態別の色分け ---------- */
+const ST_COL={red:'#e5262b', yel:'#f0b400', blue:'#1f78ff', unk:'#8a93a3'}; // 実車=赤 / 迎車=黄 / 空車=青 / 未入力=灰
+const MUNI_TXT='13101千代田区,13102中央区,13103港区,13104新宿区,13105文京区,13106台東区,13107墨田区,13108江東区,13109品川区,13110目黒区,13111大田区,13112世田谷区,13113渋谷区,13114中野区,13115杉並区,13116豊島区,13117北区,13118荒川区,13119板橋区,13120練馬区,13121足立区,13122葛飾区,13123江戸川区,13203武蔵野市,13204三鷹市,13208調布市,13219狛江市,13229西東京市,14131川崎市川崎区,14132川崎市幸区,14133川崎市中原区,14134川崎市高津区,14135川崎市多摩区,14136川崎市宮前区,14137川崎市麻生区,14101横浜市鶴見区,14102横浜市神奈川区,14103横浜市西区,14104横浜市中区,14105横浜市南区,14109横浜市港北区,12203市川市,12204船橋市,12227浦安市';
+const MUNI={}; MUNI_TXT.split(',').forEach(x=>{ MUNI[x.slice(0,5)]=x.slice(5); });
+function evDayStart(date){ return new Date(date+'T00:00:00').getTime()/1000; }
+function evPosAt(date,h){            // 軌跡から、その時刻に最も近い位置(前後10分以内)
+  const pts=(date===trackDate)?trackPts:trackLoad(date); if(!pts.length) return null;
+  const t=evDayStart(date)+h*3600; let lo=0, hi=pts.length-1;
+  while(lo<hi){ const m=(lo+hi)>>1; if(pts[m].t<t) lo=m+1; else hi=m; }
+  const a=pts[Math.max(0,lo-1)], b=pts[lo], q=(Math.abs(a.t-t)<=Math.abs(b.t-t))?a:b;
+  return Math.abs(q.t-t)>600 ? null : {la:q.la, lo:q.lo};
+}
+async function evGeocode(la,lo){     // 国土地理院の逆ジオコーダー(町丁目まで)。取れなければnull
+  try{
+    const ac=new AbortController(), tid=setTimeout(()=>ac.abort(),4000);
+    const r=await fetch('https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat='+la+'&lon='+lo,{signal:ac.signal});
+    clearTimeout(tid);
+    const x=(await r.json()).results; if(!x||!x.lv01Nm) return null;
+    return (MUNI[String(x.muniCd||'')]||'')+x.lv01Nm;
+  }catch(e){ return null; }
+}
+async function evMk(date,h,old,withT){
+  if(h===null||h===undefined) return null;
+  const o={}; if(withT) o.t=h;
+  const p=evPosAt(date,h);
+  if(p){ o.la=p.la; o.lo=p.lo; o.ad=(old&&old.ad&&old.la===p.la&&old.lo===p.lo)?old.ad:await evGeocode(p.la,p.lo); }
+  return o;
+}
+function evPlaceLines(pl){
+  return [['pu','迎車'],['bd','乗車'],['dr','降車']].map(([k,n])=>{
+    const o=pl[k]; if(!o) return '';
+    const t=(o.t!=null)?' '+fmtTime(o.t):'';
+    const a=o.ad||(o.la!=null?'住所未取得('+o.la.toFixed(4)+', '+o.lo.toFixed(4)+')':'この時刻の軌跡がありません');
+    return '<div><b>'+n+'</b>'+t+' '+a+'</div>';
+  }).join('');
+}
+function evIntervals(date){          // 出番の記録から、状態の区間 [開始秒,終了秒,色] を作る
+  const st=(state&&state.shiftDate===date&&state.depTime!==null)?state:loadShiftByDate(date);
+  if(!st||!st.entries) return null;
+  const by=new Map();
+  for(const e of st.entries){ if(e.pay==='障割') continue; const o=by.get(e.time); if(!o||(!(o.bd||o.pu)&&(e.bd||e.pu))) by.set(e.time,e); }
+  const base=evDayStart(date), S=h=>base+h*3600, iv=[];
+  let prev=(st.depTime!=null)?st.depTime:null;
+  for(const e of [...by.values()].sort((a,b)=>a.time-b.time)){
+    const pu=(e.pu&&e.pu.t!=null)?e.pu.t:null, bd=(e.bd&&e.bd.t!=null)?e.bd.t:null;
+    const cancel=(e.pay==='キャンセル'||e.pay==='B空転');
+    if(!cancel && bd!==null){
+      const p0=(prev!==null)?prev:bd;
+      if(pu!==null && pu>=p0 && pu<=bd){ iv.push([S(p0),S(pu),'blue'],[S(pu),S(bd),'yel']); } else iv.push([S(p0),S(bd),'blue']);
+      iv.push([S(bd),S(e.time),'red']);
+    } else if(cancel && pu!==null && pu<=e.time){
+      iv.push([S(prev!==null?Math.min(prev,pu):pu),S(pu),'blue'],[S(pu),S(e.time),'yel']);
+    } else if(prev!==null) iv.push([S(prev),S(e.time),'unk']);
+    prev=e.time;
+  }
+  return {iv:iv.filter(x=>x[1]>x[0]), after:(prev!==null)?S(prev):null};
+}
+function evColorAt(m,t){             // 時刻tの状態の色キー。記録が無い日は従来どおり赤
+  if(!m) return 'red';
+  for(const x of m.iv){ if(t>=x[0] && t<x[1]) return x[2]; }
+  return (m.after!==null && t>=m.after) ? 'blue' : 'unk';
+}
+
 function tmProj(la,lo,z){
   const w=256*Math.pow(2,z), s=Math.sin(la*Math.PI/180);
   return [(lo+180)/360*w, (0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*w];
@@ -5444,20 +5534,27 @@ function tmDraw(){
   const xy=(p)=>{ const w=tmProj(p.la,p.lo,z); return [w[0]-ox, w[1]-oy]; };
   ctx.lineJoin='round'; ctx.lineCap='round';
   if(pts.length>1){
-    // 実線(連続測位)と破線(測位が途切れた区間)を分けて描く
-    ctx.strokeStyle='#e5262b'; ctx.lineWidth=3; ctx.beginPath();
-    let prev=null, gaps=[];
+    // 実線(連続測位)は状態の色で、破線(測位が途切れた区間)は同じ色の破線で描く
+    const col=(a,b)=>evColorAt(tm.iv,(a.t+b.t)/2);
+    ctx.lineWidth=3.5; let runC=null, prev=null, ps=null, gaps=[];
+    const flush=()=>{ if(runC){ ctx.strokeStyle=ST_COL[runC]; ctx.stroke(); } };
+    ctx.beginPath();
     for(const p of pts){
-      const s=xy(p);
-      if(prev && p.t-prev.t<=TRACK_GAP_SEC) ctx.lineTo(s[0],s[1]);
-      else { if(prev) gaps.push([xy(prev),s]); ctx.moveTo(s[0],s[1]); }
-      prev=p;
+      const sp=xy(p);
+      if(prev){
+        if(p.t-prev.t<=TRACK_GAP_SEC){
+          const c=col(prev,p);
+          if(c!==runC){ flush(); ctx.beginPath(); ctx.moveTo(ps[0],ps[1]); runC=c; }
+          ctx.lineTo(sp[0],sp[1]);
+        } else { gaps.push([prev,p,ps,sp]); flush(); runC=null; ctx.beginPath(); }
+      }
+      prev=p; ps=sp;
     }
-    ctx.stroke();
+    flush();
     if(gaps.length){
-      ctx.strokeStyle='#e0a526'; ctx.lineWidth=2; ctx.setLineDash([6,6]); ctx.beginPath();
-      for(const g of gaps){ ctx.moveTo(g[0][0],g[0][1]); ctx.lineTo(g[1][0],g[1][1]); }
-      ctx.stroke(); ctx.setLineDash([]);
+      ctx.lineWidth=2.5; ctx.setLineDash([6,6]);
+      for(const g of gaps){ ctx.strokeStyle=ST_COL[evColorAt(tm.iv,(g[0].t+g[1].t)/2)]; ctx.beginPath(); ctx.moveTo(g[2][0],g[2][1]); ctx.lineTo(g[3][0],g[3][1]); ctx.stroke(); }
+      ctx.setLineDash([]);
     }
   }
   if(pts.length){
@@ -5507,6 +5604,7 @@ function tmSetDate(date){
   tm.date=date; tm.userMoved=false;
   tm.live = (date===trackDate && trackWatchId!==null);
   tm.pts = (date===trackDate) ? trackPts : trackLoad(date);
+  try{ tm.iv = date ? evIntervals(date) : null; }catch(e){ tm.iv=null; }
   tmFit(); tmRefreshInfo(); tmRequest();
 }
 function tmResize(){
@@ -5588,7 +5686,7 @@ function openTrackViewer(date){
         <button id="tmRecBtn" class="tm-btn"></button>
         <button id="tmDelBtn" class="tm-btn" style="color:var(--red);">🗑</button>
       </div>
-      <div class="tm-legend"><span style="color:#e5262b;">━</span> 走行 <span style="color:#e0a526;">┅</span> 測位なし区間 ・ 画面ロック/アプリ切替中も記録されます(アプリ版)。ブラウザ版では記録されません ・ <span style="color:#2f6fd6;">●</span> 現在地</div>
+      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ <span style="color:#2f6fd6;">●</span> 現在地<br>色分けは、履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
     </div>`;
   document.body.appendChild(ov);
   tm={ov, userMoved:false, date:null, pts:[], z:11, cx:0, cy:0, W:300, H:300, dpr:1, tiles:true, tileCache:new Map(), raf:0, live:false,
