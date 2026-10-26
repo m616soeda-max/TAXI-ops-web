@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102628">
+<meta name="taxiops-build" content="2026102629">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -736,8 +736,8 @@
   .cap-tall .meter-row3 > .meter-col:last-child{text-align:center !important;}
   .cap-tall .meter-label{font-size:12.5px !important;letter-spacing:.04em;}
   .cap-tall .meter-digit{font-size:33px !important;letter-spacing:-1.5px !important;}
-  .cap-tall .meter-row3 > .meter-col:first-child .meter-digit{font-size:38px !important;}
-  .cap-tall .meter-row3 > .meter-col:first-child .meter-digit .unit{font-size:15px !important;}
+  .cap-tall .meter-row3 > .meter-col:first-child .meter-digit{font-size:34px !important;}
+  .cap-tall .meter-row3 > .meter-col:first-child .meter-digit .unit{font-size:14px !important;}
   .cap-tall .meter-digit .unit{font-size:18px !important;}
   .cap-tall .meter-target-caption{font-size:11.5px !important;white-space:normal !important;line-height:1.2 !important;}
   .cap-tall .summary-sub{gap:6px 10px !important;margin:0 !important;}
@@ -745,9 +745,11 @@
   .cap-tall .summary-sub b{font-size:27px !important;letter-spacing:-1px !important;}
   .cap-tall .summary-sub span[style]{font-size:14px !important;}
   /* ①画像のGO順位・了解率・連配開始・天気の行は、他の文字に合わせて大きく(app26) */
-  #historyView .cap-tall .go-info-line, #summaryView .cap-tall .go-info-line, .cap-tall .go-info-line{font-size:13.5px !important;line-height:1.45 !important;}
-  .cap-tall .go-info-line br, .cap-tall .go-info-line .gis{display:none !important;}
+  #historyView .cap-tall .go-info-line, #summaryView .cap-tall .go-info-line, .cap-tall .go-info-line{font-size:13px !important;line-height:1.55 !important;}
+  .cap-tall .go-info-line br, .cap-tall .go-info-line .gis, .cap-tall .go-info-line .gsl{display:none !important;}
   .cap-tall .go-info-line .gi{display:inline-block;white-space:nowrap;margin:0 7px;}
+  /* GO順位〜了解率の数字は、上の「無線関連」の数字(20px)と同じ大きさ。連配開始・天気の行はそのまま */
+  #historyView .cap-tall .go-info-line .gi:not(.gi3) .nb, #summaryView .cap-tall .go-info-line .gi:not(.gi3) .nb, .cap-tall .go-info-line .gi:not(.gi3) .nb{font-family:'PT Mono',monospace;font-size:20px !important;letter-spacing:-.5px;font-weight:700;color:var(--text);}
   .cap-tall .summary-sub + .summary-sub{display:grid !important;grid-template-columns:repeat(3,1fr);justify-items:center;margin-top:0 !important;}
   .cap-tall .summary-sub + .summary-sub div{font-size:12px !important;}
   .cap-tall .summary-sub + .summary-sub b{font-size:19px !important;letter-spacing:-.5px !important;white-space:nowrap;}
@@ -776,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261026-app28</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261026-app29</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3347,7 +3349,8 @@ function goInfoLine(st, showRenpai){
   if(st.goRank && st.goRank.rank!=null){
     const totalPart = st.goRank.total!=null ? `<span class="nb">${fmtNum(st.goRank.total)}</span>人中` : '(総人数未反映)';
     const pctPart = (st.goRank.total!=null && st.goRank.total>0) ? `(上位<span class="nb">${(st.goRank.rank/st.goRank.total*100).toFixed(1)}%</span>)` : '';
-    line1.push(`GO順位 <span class="nb">${fmtNum(st.goRank.rank)}</span>位/${totalPart}${pctPart}`);
+    line1.push(`GO順位 <span class="nb">${fmtNum(st.goRank.rank)}</span>位`);
+    line1.push('\u0001'+`${totalPart}${pctPart}`);   // 先頭の\u0001は「直前とつなげる(/で区切る)」の印
     const prev = findPreviousRank(st.shiftDate||todayLocalStr());
     if(prev){
       const diff = prev.rank - st.goRank.rank; // 正なら順位が上がった(改善)
@@ -3366,10 +3369,10 @@ function goInfoLine(st, showRenpai){
   }
   if(!line1.length && !line2.length && !line3.length) return '';
   const rows = [];
-  const gi = (arr)=>arr.map(x=>'<span class="gi">'+x+'</span>').join('<span class="gis"> ・ </span>');
+  const gi = (arr,cls)=>arr.map((x,i)=>{ const glue = x.charAt(0)==='\u0001'; const t = glue ? x.slice(1) : x; return (i ? (glue ? '<span class="gsl">/</span>' : '<span class="gis"> ・ </span>') : '') + '<span class="gi'+(cls?' '+cls:'')+'">'+t+'</span>'; }).join('');
   if(line1.length) rows.push(gi(line1));
   if(line2.length) rows.push(gi(line2));
-  if(line3.length) rows.push(gi(line3));
+  if(line3.length) rows.push(gi(line3,'gi3'));
   return `<div class="go-info-line" style="text-align:center;font-size:10.5px;color:var(--muted);margin:-2px 0 8px;">${rows.join('<br>')}</div>`;
 }
 
