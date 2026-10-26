@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102620">
+<meta name="taxiops-build" content="2026102621">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -771,7 +771,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261026-app20</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261026-app21</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5444,6 +5444,12 @@ async function evBtn(k,kind){
   }
 }
 
+function evKmByState(pts,m){          // 状態別の走行距離(km)。GPS走行の合計と同じく、測位なし区間は含めない
+  const r={red:0,yel:0,blue:0,unk:0};
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC) continue; r[evColorAt(m,(a.t+b.t)/2)]+=trackDistM(a,b)/1000; }
+  return r;
+}
+
 function tmProj(la,lo,z){
   const w=256*Math.pow(2,z), s=Math.sin(la*Math.PI/180);
   return [(lo+180)/360*w, (0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*w];
@@ -5666,8 +5672,8 @@ function tmExport(){
   if(!tm) return;
   const build=()=>{
     tmDraw();
-    const src=tm.cv, band=Math.round(44*tm.dpr);
-    const c=document.createElement('canvas'); c.width=src.width; c.height=src.height+band;
+    const src=tm.cv, band=Math.round(44*tm.dpr), lb=Math.round(66*tm.dpr);
+    const c=document.createElement('canvas'); c.width=src.width; c.height=src.height+band+lb;
     const x=c.getContext('2d'), s=tm.dpr;
     x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
     x.fillStyle='#111'; x.textBaseline='middle'; x.textAlign='left';
@@ -5679,7 +5685,19 @@ function tmExport(){
     x.fillText(tmInfoText(),8*s,band*0.74);
     x.drawImage(src,0,band);
     x.font=(9*s)+'px sans-serif'; x.fillStyle='rgba(0,0,0,.6)';
-    if(tm.tiles) x.fillText('地理院タイル(淡色地図)',6*s,c.height-8*s);
+    if(tm.tiles) x.fillText('地理院タイル(淡色地図)',6*s,band+src.height-8*s);
+    // 凡例(線の意味)と、状態別の走行距離
+    const km=evKmByState(tm.pts,tm.iv), tot=km.red+km.yel+km.blue+km.unk, y0=band+src.height;
+    x.strokeStyle='#ccc'; x.lineWidth=1*s; x.beginPath(); x.moveTo(0,y0); x.lineTo(c.width,y0); x.stroke();
+    x.textBaseline='middle'; x.textAlign='left'; x.font='bold '+(12*s)+'px sans-serif';
+    [['red','実車'],['yel','迎車'],['blue','空車'],['unk','乗車時刻未入力']].forEach((it,i)=>{
+      const cx=(i%2)*(c.width/2)+8*s, cy=y0+(i<2?15:35)*s;
+      x.strokeStyle=ST_COL[it[0]]; x.lineWidth=4*s; x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+22*s,cy); x.stroke();
+      x.fillStyle='#111';
+      x.fillText(it[1]+' '+km[it[0]].toFixed(1)+'km'+(tot>0?'('+Math.round(km[it[0]]/tot*100)+'%)':''),cx+28*s,cy);
+    });
+    x.font=(10*s)+'px sans-serif'; x.fillStyle='#555';
+    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)',8*s,y0+55*s);
     return c;
   };
   const fname='軌跡_'+String(tm.date||'').replace(/-/g,'')+'.png';
