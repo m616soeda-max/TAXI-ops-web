@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102629">
+<meta name="taxiops-build" content="2026102730">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261026-app29</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app30</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -4031,7 +4031,14 @@ function openTimeKeypad(inputId, nextFocusId, nextOpener){
         val = val.slice(0,-1);
       } else if(k==='now'){
         const n = new Date();
-        val = String(n.getHours()).padStart(2,'0') + String(n.getMinutes()).padStart(2,'0');
+        let hh = n.getHours(), mm = n.getMinutes();
+        try{   // 出番日の0時を過ぎたら24時超表記(0時15分→2415)にする
+          if(state && state.shiftDate && state.depTime!==null && state.depTime!==undefined){
+            const tot = Math.round((Date.now()/1000 - evDayStart(state.shiftDate))/60);
+            if(tot>=24*60 && tot<48*60){ hh = Math.floor(tot/60); mm = tot%60; }
+          }
+        }catch(e){}
+        val = String(hh).padStart(2,'0') + String(mm).padStart(2,'0');
       } else {
         if(val.length>=4) return;
         val += k;
