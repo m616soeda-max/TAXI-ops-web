@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102730">
+<meta name="taxiops-build" content="2026102731">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app30</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app31</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -4973,7 +4973,9 @@ async function handleExport(){
   const returnPart = (state.returnTime!==null&&state.returnTime!==undefined) ? ` 帰庫${fmtTime(state.returnTime)}` : '';
   const hasLoc = sorted.some(e=>e.pu||e.bd||e.dr);   // 迎車・乗車・降車ボタン/後入力の地点が1件でもあれば、3列を足す
   const locAd = o => !o ? '' : (o.ad || (o.la!=null ? '座標'+o.la.toFixed(4)+','+o.lo.toFixed(4) : ''));
-  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n時刻\t種別\t運賃\t高速代\t手数料\t距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地':'');
+  const hasTimes = sorted.some(e=>(e.pu&&e.pu.t!=null)||(e.bd&&e.bd.t!=null));   // 迎車・乗車の時刻が1件でもあれば、降車時刻の左に2列を足す
+  const ptm = o => (o && o.t!=null) ? fmtTime(o.t) : '';
+  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n`+(hasTimes?'迎車時刻\t乗車時刻\t降車時刻':'時刻')+`\t種別\t運賃\t高速代\t手数料\t距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地':'');
 
   const EXPORT_SKIP = ['キャンセル','定額負け','B空転']; // リストに載せない(運賃として集計しないもの)
   const listEntries = sorted.filter(e=>!EXPORT_SKIP.includes(e.pay));
@@ -4994,14 +4996,14 @@ async function handleExport(){
   const displayFare = e => netFare(e) + (mergedExtra.get(e)||0);
 
   const rows = finalEntries.map(e =>
-    [fmtTime(e.time), e.type||'', displayFare(e), e.toll||0, e.fee||0, e.dist||0, e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')].concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr)]:[]).join('\t')
+    (hasTimes?[ptm(e.pu), ptm(e.bd)]:[]).concat([fmtTime(e.time), e.type||'', displayFare(e), e.toll||0, e.fee||0, e.dist||0, e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')]).concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr)]:[]).join('\t')
   );
   const countForFooter = dedupeByTime(finalEntries.filter(e=>e.pay!=='障割')).length; // 障割は運賃に合算するが組数には数えない(合算できず単独で残った場合のみここで除外)。チケット/現金分割等、同時刻の複数記録も同一案件として1件で数える
   const total = finalEntries.reduce((s,e)=>s+displayFare(e),0);
   const toll = finalEntries.reduce((s,e)=>s+(e.toll||0),0);
   const fee = finalEntries.reduce((s,e)=>s+(e.fee||0),0);
   const dist = totalLegDist(sorted); // 走行距離合計は実際の走行分(全記録の連鎖から算出)
-  const footer = `\n合計\t${countForFooter}件\t¥${total}\t¥${toll}\t¥${fee}\t${dist.toFixed(1)}km`;
+  const footer = `\n${hasTimes?'\t\t':''}合計\t${countForFooter}件\t¥${total}\t¥${toll}\t¥${fee}\t${dist.toFixed(1)}km`;
   const text = [header, ...rows, footer].join('\n');
   try{
     await navigator.clipboard.writeText(text);
