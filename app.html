@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102731">
+<meta name="taxiops-build" content="2026102732">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app31</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app32</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -4972,10 +4972,11 @@ async function handleExport(){
   const sorted = [...entries].sort((a,b)=>a.time-b.time);
   const returnPart = (state.returnTime!==null&&state.returnTime!==undefined) ? ` 帰庫${fmtTime(state.returnTime)}` : '';
   const hasLoc = sorted.some(e=>e.pu||e.bd||e.dr);   // 迎車・乗車・降車ボタン/後入力の地点が1件でもあれば、3列を足す
+  const locLink = o => (o && o.la!=null) ? 'https://maps.google.com/?q='+o.la.toFixed(5)+','+o.lo.toFixed(5) : '';
   const locAd = o => !o ? '' : (o.ad || (o.la!=null ? '座標'+o.la.toFixed(4)+','+o.lo.toFixed(4) : ''));
   const hasTimes = sorted.some(e=>(e.pu&&e.pu.t!=null)||(e.bd&&e.bd.t!=null));   // 迎車・乗車の時刻が1件でもあれば、降車時刻の左に2列を足す
   const ptm = o => (o && o.t!=null) ? fmtTime(o.t) : '';
-  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n`+(hasTimes?'迎車時刻\t乗車時刻\t降車時刻':'時刻')+`\t種別\t運賃\t高速代\t手数料\t距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地':'');
+  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n`+(hasTimes?'迎車時刻\t乗車時刻\t降車時刻':'時刻')+`\t種別\t運賃\t高速代\t手数料\t距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地\t迎車ボタン地リンク\t迎車地リンク\t降車地リンク':'');
 
   const EXPORT_SKIP = ['キャンセル','定額負け','B空転']; // リストに載せない(運賃として集計しないもの)
   const listEntries = sorted.filter(e=>!EXPORT_SKIP.includes(e.pay));
@@ -4996,7 +4997,7 @@ async function handleExport(){
   const displayFare = e => netFare(e) + (mergedExtra.get(e)||0);
 
   const rows = finalEntries.map(e =>
-    (hasTimes?[ptm(e.pu), ptm(e.bd)]:[]).concat([fmtTime(e.time), e.type||'', displayFare(e), e.toll||0, e.fee||0, e.dist||0, e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')]).concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr)]:[]).join('\t')
+    (hasTimes?[ptm(e.pu), ptm(e.bd)]:[]).concat([fmtTime(e.time), e.type||'', displayFare(e), e.toll||0, e.fee||0, e.dist||0, e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')]).concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr), locLink(e.pu), locLink(e.bd), locLink(e.dr)]:[]).join('\t')
   );
   const countForFooter = dedupeByTime(finalEntries.filter(e=>e.pay!=='障割')).length; // 障割は運賃に合算するが組数には数えない(合算できず単独で残った場合のみここで除外)。チケット/現金分割等、同時刻の複数記録も同一案件として1件で数える
   const total = finalEntries.reduce((s,e)=>s+displayFare(e),0);
@@ -5493,6 +5494,16 @@ function evKmByState(pts,m){          // 状態別の走行距離(km)。GPS走�
   return r;
 }
 
+function evPinsFor(date){             // 地図に出す地点(迎車ボタン・乗車・降車)。まだ記録していない押下分も含む
+  const st=(state&&state.shiftDate===date&&state.depTime!==null)?state:loadShiftByDate(date);
+  if(!st) return [];
+  const out=[];
+  const add=(k,o,t,pending)=>{ if(o&&o.la!=null) out.push({k,la:o.la,lo:o.lo,t:(o.t!=null?o.t:t),ad:o.ad||'',kind:o.k||'',pending:!!pending}); };
+  for(const e of (st.entries||[])){ if(e.pay==='障割') continue; add('dr',e.dr,e.time); add('bd',e.bd); add('pu',e.pu); }
+  add('dr',st.evDr,null,true); add('bd',st.evBd,null,true); add('pu',st.evPu,null,true);
+  return out;
+}
+
 function tmProj(la,lo,z){
   const w=256*Math.pow(2,z), s=Math.sin(la*Math.PI/180);
   return [(lo+180)/360*w, (0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*w];
@@ -5652,6 +5663,17 @@ function tmDraw(){
       ctx.setLineDash([]);
     }
   }
+  if(tm.pins && tm.pins.length){      // 迎車ボタン(黄)・乗車(赤)・降車(青)の地点。点線の枠は、まだ記録していない押下分
+    const PC={pu:['#f0b400','迎','#222'],bd:['#e5262b','乗','#fff'],dr:['#1f78ff','降','#fff']};
+    ctx.font='bold 10px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(const k of ['dr','bd','pu']) for(const p of tm.pins){
+      if(p.k!==k) continue;
+      const q=xy(p), c=PC[k];
+      ctx.beginPath(); ctx.arc(q[0],q[1],9,0,Math.PI*2); ctx.fillStyle=c[0]; ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle='#fff'; if(p.pending) ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=c[2]; ctx.fillText(c[1],q[0],q[1]+0.5);
+    }
+  }
   if(pts.length){
     const mark=(p,fill,label)=>{
       const s=xy(p); ctx.beginPath(); ctx.arc(s[0],s[1],10,0,Math.PI*2);
@@ -5675,6 +5697,17 @@ function tmDraw(){
     ctx.beginPath(); ctx.arc(s[0],s[1],7,0,Math.PI*2); ctx.fillStyle='#2f6fd6'; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle='#fff'; ctx.stroke();
   }
   if(pl) tmDrawHud(ctx,W,H,pl);
+}
+function tmPinTap(x,y){
+  const W=tm.W, H=tm.H, z=tm.z, ox=tm.cx-W/2, oy=tm.cy-H/2;
+  let best=null, bd=18;
+  for(const p of (tm.pins||[])){ const w=tmProj(p.la,p.lo,z), d=Math.hypot(w[0]-ox-x,w[1]-oy-y); if(d<=bd){ bd=d; best=p; } }
+  const el=document.getElementById('tmPinInfo'); if(!el) return;
+  if(!best){ el.style.display='none'; return; }
+  const nm={pu:'迎車ボタン',bd:'乗車',dr:'降車'}[best.k]+(best.kind?'('+best.kind+')':'');
+  const ad=best.ad||('住所未取得 ('+best.la.toFixed(4)+', '+best.lo.toFixed(4)+')');
+  el.innerHTML='<b>'+nm+'</b> '+(best.t!=null?fmtTime(best.t):'')+(best.pending?' (まだ記録していません)':'')+'<br>'+ad;
+  el.style.display='block';
 }
 function tmInfoText(){
   const s=trackStats(tm.pts);
@@ -5700,6 +5733,7 @@ function tmSetDate(date){
   tm.live = (date===trackDate && trackWatchId!==null);
   tm.pts = (date===trackDate) ? trackPts : trackLoad(date);
   try{ tm.iv = date ? evIntervals(date) : null; }catch(e){ tm.iv=null; }
+  try{ tm.pins = date ? evPinsFor(date) : []; }catch(e){ tm.pins=[]; }
   tmFit(); tmRefreshInfo(); tmRequest();
 }
 function tmResize(){
@@ -5740,7 +5774,7 @@ function tmExport(){
       x.fillText(it[1]+' '+km[it[0]].toFixed(1)+'km'+(tot>0?'('+Math.round(km[it[0]]/tot*100)+'%)':''),cx+28*s,cy);
     });
     x.font=(10*s)+'px sans-serif'; x.fillStyle='#555';
-    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)',8*s,y0+55*s);
+    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)・丸=迎/乗/降の地点',8*s,y0+55*s);
     return c;
   };
   const fname='軌跡_'+String(tm.date||'').replace(/-/g,'')+'.png';
@@ -5782,6 +5816,7 @@ function openTrackViewer(date){
       <canvas id="tmCanvas" style="touch-action:none;display:block;"></canvas>
       <div class="tm-zoom"><button id="tmZoomIn" class="tm-btn">＋</button><button id="tmZoomOut" class="tm-btn">－</button></div>
       <div class="tm-attr">地理院タイル(淡色地図)</div>
+      <div id="tmPinInfo" style="display:none;position:absolute;left:8px;right:8px;bottom:26px;background:rgba(20,22,28,.92);color:#fff;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5;pointer-events:none;"></div>
     </div>
     <div class="tm-bottom">
       <div id="tmInfo" class="tm-info"></div>
@@ -5793,7 +5828,7 @@ function openTrackViewer(date){
         <button id="tmRecBtn" class="tm-btn"></button>
         <button id="tmDelBtn" class="tm-btn" style="color:var(--red);">🗑</button>
       </div>
-      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ <span style="color:#2f6fd6;">●</span> 現在地<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
+      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ <span style="color:#2f6fd6;">●</span> 現在地 ・ 丸=迎(迎車ボタン)・乗(乗車)・降(降車)の地点、タップで住所<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
     </div>`;
   document.body.appendChild(ov);
   tm={ov, userMoved:false, date:null, pts:[], z:11, cx:0, cy:0, W:300, H:300, dpr:1, tiles:true, tileCache:new Map(), raf:0, live:false,
@@ -5841,10 +5876,11 @@ function openTrackViewer(date){
   };
   // ドラッグ移動・ピンチ拡大・ホイール拡大
   const cv=tm.cv;
-  cv.addEventListener('pointerdown',(e)=>{ cv.setPointerCapture(e.pointerId); tm.pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY}); tm.last=null; });
+  cv.addEventListener('pointerdown',(e)=>{ cv.setPointerCapture(e.pointerId); tm.pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY}); tm.last=null; tm.tap = (tm.pointers.size===1) ? {x:e.offsetX,y:e.offsetY,moved:false} : {moved:true}; });
   cv.addEventListener('pointermove',(e)=>{
     const P=tm.pointers; if(!P.has(e.pointerId)) return;
     const old=P.get(e.pointerId), nw={x:e.offsetX,y:e.offsetY};
+    if(tm.tap && tm.tap.x!==undefined && Math.hypot(nw.x-tm.tap.x,nw.y-tm.tap.y)>8) tm.tap.moved=true;
     if(P.size===1){ tm.userMoved=true; tm.cx-=nw.x-old.x; tm.cy-=nw.y-old.y; P.set(e.pointerId,nw); tmRequest(); return; }
     if(P.size===2){
       const ids=[...P.keys()], a=P.get(ids[0]), b=P.get(ids[1]);
@@ -5857,12 +5893,12 @@ function openTrackViewer(date){
       if(d0>10 && d1>10) tmZoomAt(m1.x,m1.y,Math.log2(d1/d0)); else tmRequest();
     }
   });
-  const up=(e)=>{ tm.pointers.delete(e.pointerId); };
+  const up=(e)=>{ tm.pointers.delete(e.pointerId); const tp=tm.tap; if(tp && tp.x!==undefined && !tp.moved && e.type==='pointerup' && tm.pointers.size===0){ tmPinTap(tp.x,tp.y); } if(tm.pointers.size===0) tm.tap=null; };
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
   cv.addEventListener('wheel',(e)=>{ e.preventDefault(); tmZoomAt(e.offsetX,e.offsetY,-e.deltaY*0.002); },{passive:false});
   tmSetDate(date||'');
   // 記録中の出番は10秒ごとに自動更新
-  tm.timer=setInterval(()=>{ if(!tm) return; tm.live=(tm.date===trackDate && trackWatchId!==null); tmRefreshInfo(); tmRequest(); },10000);
+  tm.timer=setInterval(()=>{ if(!tm) return; tm.live=(tm.date===trackDate && trackWatchId!==null); try{ tm.pins=evPinsFor(tm.date); }catch(e){} tmRefreshInfo(); tmRequest(); },10000);
 }
 function trackButtonRowHTML(btnId){
   return `<div class="summary-actions" style="margin-top:6px;"><button class="btn-ghost" id="${btnId}">🗺 走行軌跡を見る</button></div>`;
