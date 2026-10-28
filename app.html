@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102835">
+<meta name="taxiops-build" content="2026102836">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app35</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app36</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2577,6 +2577,7 @@ function renderHistoryDetail(date){
   // 同時刻の分割払い(チケット/現金等)は、距離が入っているのはどちらか片方だけでよい。
   // 同時刻の他の記録に距離入力があれば、この時刻は距離入力済み扱いにする。
   const timesWithDist = new Set(entries.filter(e=>e.dist).map(e=>e.time));
+  const timesWithBd = new Set(entries.filter(e=>e.bd&&e.bd.t!=null).map(e=>e.time));   // 乗車時刻が入っている降車時刻(同時刻の分割記録は片方にあればよい)
   const sortedEntries = [...entries].sort((a,b)=>a.time-b.time);
   let entryHTML = sortedEntries.slice().reverse().map((e,ri)=>{
     const idx = sortedEntries.length - 1 - ri;
@@ -2593,6 +2594,7 @@ function renderHistoryDetail(date){
       distWarn = true;
       subParts.push('⚠距離未入力');
     }
+    if(noBdTime(e,timesWithBd)) subParts.push('⚠乗車時刻なし(軌跡がグレー)');
     if((e.toll||0)+(e.fee||0)>0) subParts.push('内、高速+手数料¥'+fmtYen((e.toll||0)+(e.fee||0))+' → 運賃¥'+fmtYen(netFare(e)));
     if(e.actualDist!=null){
       if(leg!==null && leg>0){
@@ -3129,6 +3131,7 @@ function runIntegrityCheck(entries){
   const DIST_EXEMPT = ['キャンセル','B空転','障割','定額負け'];
   const sorted = [...entries].sort((a,b)=>a.time-b.time);
   const timesWithDist = new Set(entries.filter(e=>e.dist).map(e=>e.time));
+  const timesWithBd = new Set(entries.filter(e=>e.bd&&e.bd.t!=null).map(e=>e.time));   // 乗車時刻が入っている降車時刻(同時刻の分割記録は片方にあればよい)
   let distMissCount = 0, distRevCount = 0, zeroFareCount = 0;
   const timeCounts = {};
   sorted.forEach((e, idx)=>{
@@ -3679,6 +3682,7 @@ function renderMain(){
   const DIST_EXEMPT_PAYS = ['キャンセル','B空転','障割','定額負け'];
   // 同時刻の分割払い(チケット/現金等)は、距離が入っているのはどちらか片方だけでよい。
   const timesWithDist = new Set(entries.filter(e=>e.dist).map(e=>e.time));
+  const timesWithBd = new Set(entries.filter(e=>e.bd&&e.bd.t!=null).map(e=>e.time));   // 乗車時刻が入っている降車時刻(同時刻の分割記録は片方にあればよい)
   let entryHTML = entries.slice().reverse().map((e,ri)=>{
     const idx = entries.length - 1 - ri;
     const leg = legDist(entries, idx);
@@ -3695,6 +3699,7 @@ function renderMain(){
       distWarn = true;
       subParts.push('⚠距離未入力');
     }
+    if(noBdTime(e,timesWithBd)) subParts.push('⚠乗車時刻なし(軌跡がグレー)');
     if((e.toll||0)+(e.fee||0)>0){
       const tfParts = [];
       if(e.toll) tfParts.push('高速代¥'+fmtYen(e.toll));
@@ -5605,6 +5610,7 @@ function openRestModal(){
   if(c) c.onclick=()=>{ state.restRun=null; restDiscardAt=0; saveState(); evRefreshStat(); openRestModal(); };
 }
 /* ---------- 直近の降車時点の距離(メーター系+GPS状態別)を、出動中にいつでも確認 ---------- */
+function noBdTime(e,withBd){ return e.pay!=='障割' && e.pay!=='キャンセル' && e.pay!=='B空転' && !withBd.has(e.time); }   // 軌跡がグレーになる記録(乗車時刻なし)
 function evKmByStateRange(pts,m,t0,t1){     // 区間の中点が[t0,t1]に入る線分だけ集計(測位なし区間は含めない)
   const r={red:0,yel:0,blue:0,unk:0};
   for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC) continue; const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; r[evColorAt(m,mid)]+=trackDistM(a,b)/1000; }
