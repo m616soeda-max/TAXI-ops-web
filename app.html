@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102834">
+<meta name="taxiops-build" content="2026102835">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app34</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app35</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3867,6 +3867,9 @@ function renderMain(){
       <button class="btn-ghost" id="distListBtn">📏 降車時点の距離</button>
     </div>
     <div class="footer-row">
+      <button class="btn-ghost" id="fillAddrBtn">📍 住所未取得をまとめて取得</button>
+    </div>
+    <div class="footer-row">
       <button class="btn-ghost" id="backupFileBtn">💾 バックアップをファイル保存</button>
     </div>
     <div class="footer-row">
@@ -3977,6 +3980,7 @@ function renderMain(){
   document.getElementById('restListBtn').onclick = openRestModal;
   document.getElementById('distCell').onclick = openDistModal;
   document.getElementById('distListBtn').onclick = openDistModal;
+  document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -5414,15 +5418,61 @@ function evPosAt(date,h){            // 軌跡から、その時刻に最も近�
   const a=pts[Math.max(0,lo-1)], b=pts[lo], q=(Math.abs(a.t-t)<=Math.abs(b.t-t))?a:b;
   return Math.abs(q.t-t)>600 ? null : {la:q.la, lo:q.lo};
 }
-async function evGeocode(la,lo){     // 国土地理院の逆ジオコーダー(町丁目まで)。取れなければnull
-  try{
-    const ac=new AbortController(), tid=setTimeout(()=>ac.abort(),4000);
-    const r=await fetch('https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat='+la+'&lon='+lo,{signal:ac.signal});
-    clearTimeout(tid);
-    const x=(await r.json()).results; if(!x||!x.lv01Nm) return null;
-    return (MUNI[String(x.muniCd||'')]||'')+x.lv01Nm;
-  }catch(e){ return null; }
+async function evGeocode(la,lo){     // 国土地理院の逆ジオコーダー(町丁目まで)。取れなければnull。通信失敗(電波・タイムアウト)は1回だけ再試行
+  for(let i=0;i<2;i++){
+    try{
+      const ac=new AbortController(), tid=setTimeout(()=>ac.abort(),7000);
+      const r=await fetch('https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat='+la+'&lon='+lo,{signal:ac.signal});
+      clearTimeout(tid);
+      const x=(await r.json()).results; if(!x||!x.lv01Nm) return null;   // 返事は来たが町丁目なし(海上など)は再試行しない
+      return (MUNI[String(x.muniCd||'')]||'')+x.lv01Nm;
+    }catch(e){ if(i===0) await new Promise(r=>setTimeout(r,1500)); }
+  }
+  return null;
 }
+/* ---------- 住所未取得の自動補完: 座標はあるのに住所が空の迎車・乗車・降車を、あとからまとめて取得 ---------- */
+let evFillBusy=false;
+async function evFillMissingIn(st,date,budget){
+  let fixed=0,left=0,changed=false;
+  const items=[];
+  for(const e of (st.entries||[])) for(const k of ['pu','bd','dr']) if(e[k]) items.push(e[k]);
+  for(const k of ['evPu','evBd','evDr']) if(st[k]) items.push(st[k]);
+  for(const o of items){
+    if(o.ad) continue;
+    if(o.la==null){                       // 押した瞬間に位置が取れていなかった分は、軌跡から補う
+      if(o.t==null) continue;
+      const q=evPosAt(date,o.t); if(!q){ left++; continue; }
+      o.la=q.la; o.lo=q.lo; changed=true;
+    }
+    if(budget.n<=0){ left++; continue; }
+    budget.n--;
+    const ad=await evGeocode(o.la,o.lo);
+    if(ad){ o.ad=ad; fixed++; changed=true; } else left++;
+  }
+  return {fixed,left,changed};
+}
+async function evFillMissing(manual){
+  if(evFillBusy){ if(manual) toast('取得中です。少し待ってください'); return; }
+  evFillBusy=true;
+  try{
+    if(manual) toast('住所未取得を探しています…');
+    const budget={n:40}; let fixed=0,left=0;
+    if(state && state.shiftDate && state.depTime!==null){
+      const r=await evFillMissingIn(state,state.shiftDate,budget); fixed+=r.fixed; left+=r.left;
+      if(r.changed){ saveState(); evRefreshStat(); }
+    }
+    const dates=shiftDateKeysAll().filter(d=>d!==(state&&state.shiftDate)).reverse().slice(0,manual?60:15);
+    for(const d of dates){
+      if(budget.n<=0) break;
+      let st; try{ const raw=localStorage.getItem(LS_PREFIX+'shift:'+d); if(!raw) continue; st=JSON.parse(raw); }catch(e){ continue; }
+      const r=await evFillMissingIn(st,d,budget); fixed+=r.fixed; left+=r.left;
+      if(r.changed){ try{ localStorage.setItem(LS_PREFIX+'shift:'+d, JSON.stringify(st)); }catch(e){} }
+    }
+    if(manual) toast(fixed||left ? ('住所を'+fixed+'件取得しました'+(left?'(取得できなかった分'+left+'件。電波のあるところでもう一度)':'')) : '住所未取得はありません');
+  } finally { evFillBusy=false; }
+}
+window.addEventListener('online',()=>{ evFillMissing(false); });
+setTimeout(()=>{ evFillMissing(false); }, 8000);
 async function evMk(date,h,old,withT){
   if(h===null||h===undefined) return null;
   const o={}; if(withT) o.t=h;
@@ -5633,9 +5683,11 @@ async function evBtn(k,kind){
   else { state.evDr=o; const ti=document.getElementById('timeInput'); if(ti) ti.value=fmtTime(h); }   // 降車は降車時刻に自動入力
   evRefreshStat(); saveState();
   toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+(pos?'':'(位置が取れていません)'));
+  if(!pos){ setTimeout(()=>evFillMissing(false),60000); }   // 位置なしで押した分は、軌跡から後で補う
   if(pos){
     const ad=await evGeocode(pos.la,pos.lo);
     if(ad && state[EV_KEY[k]]===o){ o.ad=ad; saveState(); toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+' '+ad); }
+    else if(!ad){ setTimeout(()=>evFillMissing(false),20000); setTimeout(()=>evFillMissing(false),90000); }   // 取れなかった分は自動で取り直す
   }
 }
 
