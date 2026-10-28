@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102732">
+<meta name="taxiops-build" content="2026102833">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261027-app32</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app33</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2694,6 +2694,7 @@ function renderHistoryDetail(date){
       <div class="gt">運賃帯</div>
       <div class="gc">ミドル<b>${midCountH}件</b></div>
       <div class="gc">ロング<b>${longCountH}件</b></div>
+      ${restGridCells(st)}
     </div>
     </div>
     <div id="histTimeCaptureRoot" style="margin-top:8px;">
@@ -2876,7 +2877,9 @@ function buildBackupText(){
     entries: state.entries,
     careerNo: state.careerNo,
     monthIndex: state.monthIndex,
-    monthTotal: state.monthTotal
+    monthTotal: state.monthTotal,
+    rests: restList(state),
+    restRun: state.restRun || null
   };
   return '#GYOTOU-BACKUP#' + JSON.stringify(payload);
 }
@@ -2974,7 +2977,9 @@ async function handleRestore(){
     selType: '連配GO', selPay: 'GOPay',
     careerNo: payload.careerNo!==undefined ? payload.careerNo : null,
     monthIndex: payload.monthIndex!==undefined ? payload.monthIndex : null,
-    monthTotal: payload.monthTotal!==undefined ? payload.monthTotal : null
+    monthTotal: payload.monthTotal!==undefined ? payload.monthTotal : null,
+    rests: Array.isArray(payload.rests) ? payload.rests : [],
+    restRun: payload.restRun || null
   };
   // 通算出番数・今月度何出番目は、保存済みの出番データから毎回自動計算するため、
   // ここで何もしなくても次の描画時にensureShiftNumber()が正しく計算し直す。
@@ -3053,7 +3058,7 @@ function renderSetup(){
     const dateVal = document.getElementById('dateInput').value || todayLocalStr();
     const t = parseTime(v);
     if(t===null){ toast('時刻の形式が正しくありません(例: 0730)'); return; }
-    state.depTime = t; state.shiftDate = dateVal; state.entries = []; state.returnTime = null; state.evPu = state.evBd = state.evDr = null;
+    state.depTime = t; state.shiftDate = dateVal; state.entries = []; state.returnTime = null; state.evPu = state.evBd = state.evDr = null; state.rests = []; state.restRun = null;
     trackDelete(dateVal); // 同じ日付で出番をやり直す場合は旧軌跡も消す
     setupDefaultsApplied = false; // 次回の開始前画面でまた7:30を初期値にする
     state.startDist = 0; // 出庫時にトリップメーターをゼロクリアする運用のため常に0起点
@@ -3858,6 +3863,9 @@ function renderMain(){
       <button class="btn-ghost" id="openHistoryBtn2">📖 過去の出番</button>
     </div>
     <div class="footer-row">
+      <button class="btn-ghost" id="restListBtn">☕ 休憩の記録・修正</button>
+    </div>
+    <div class="footer-row">
       <button class="btn-ghost" id="backupFileBtn">💾 バックアップをファイル保存</button>
     </div>
     <div class="footer-row">
@@ -3938,6 +3946,7 @@ function renderMain(){
           if(t===null){ toast('時刻の形式が正しくありません(例: 2130)'); return; }
           state.returnTime = t;
         }
+        restFinish(Date.now());   // 休憩タイマーが動いたままなら、ここで確定(10分未満は破棄)
         if(distVal){
           const dv = parseFloat(distVal);
           if(!isNaN(dv) && dv>=0){ state.endDist = dv; }
@@ -3964,6 +3973,7 @@ function renderMain(){
   document.getElementById('saveDiagBtn').onclick = taxiopsSaveDiag;
   document.getElementById('helpBtn').onclick = openHelpModal;
   document.getElementById('healthBtn').onclick = taxiopsTrackHealth;
+  document.getElementById('restListBtn').onclick = openRestModal;
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -4487,6 +4497,7 @@ function renderSummary(){
           <div class="gt">運賃帯</div>
           <div class="gc">ミドル<b>${midCountS}件</b></div>
           <div class="gc">ロング<b>${longCountS}件</b></div>
+          ${restGridCells(state)}
         </div>
         </div>
         <div id="sumTimeCaptureRoot" style="margin-top:8px;">
@@ -5005,7 +5016,9 @@ async function handleExport(){
   const fee = finalEntries.reduce((s,e)=>s+(e.fee||0),0);
   const dist = totalLegDist(sorted); // 走行距離合計は実際の走行分(全記録の連鎖から算出)
   const footer = `\n${hasTimes?'\t\t':''}合計\t${countForFooter}件\t¥${total}\t¥${toll}\t¥${fee}\t${dist.toFixed(1)}km`;
-  const text = [header, ...rows, footer].join('\n');
+  const rl = restList(state);
+  const restLine = rl.length ? '\n休憩\t'+rl.length+'回\t合計'+restDurText(restTotalMs(state))+'\t'+rl.map(r=>restClock(r.s,state.shiftDate)+'〜'+restClock(r.e,state.shiftDate)+'('+restDurText(r.e-r.s)+')').join(' / ') : '';
+  const text = [header, ...rows, footer+restLine].join('\n');
   try{
     await navigator.clipboard.writeText(text);
     toast('コピーしました。チャットに貼り付けてください');
@@ -5459,12 +5472,95 @@ function evNowPos(){        // 直近3分以内の測位(軌跡の記録が動�
   if(q && trackDate===state.shiftDate && Date.now()/1000-q.t<=180) return {la:q.la, lo:q.lo};
   return null;
 }
+/* ---------- 休憩タイマー: 完全停止10分以上だけを休憩に数える(10分未満は破棄) ---------- */
+const REST_MIN_MS = 10*60*1000;
+let restDiscardAt = 0;      // 10分未満で止めようとしたときの「もう一度で破棄」確認(5秒間有効)
+function restList(st){ return (st && Array.isArray(st.rests)) ? st.rests : []; }
+function restTotalMs(st){ return restList(st).reduce((a,r)=>a+Math.max(0,r.e-r.s),0); }
+function restDurText(ms){ const m=Math.round(ms/60000); return m>=60 ? Math.floor(m/60)+'時間'+(m%60)+'分' : m+'分'; }
+function restClock(ms,date){ return fmtTime((ms/1000-evDayStart(date))/3600); }   // 出番日基準(0時過ぎは24:15表記)
+function restView(){
+  const run=state.restRun, now=Date.now();
+  if(!run){
+    const n=restList(state).length;
+    return {col:'#2fb36b', bg:'', lbl:'休憩', sub: n ? '計'+Math.round(restTotalMs(state)/60000)+'分' : ''};
+  }
+  if(restDiscardAt && now-restDiscardAt<5000) return {col:'#e5262b', bg:'rgba(229,38,43,.2)', lbl:'破棄?', sub:'もう一度'};
+  const el=now-run, sec=Math.floor(el/1000), ok=el>=REST_MIN_MS;
+  return {col: ok?'#2fb36b':'#ff8a3d', bg: ok?'rgba(47,179,107,.24)':'rgba(255,138,61,.16)', lbl: ok?'休憩✔':'休憩中', sub: Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
+}
+function restBtnHTML(){
+  const v=restView();
+  return '<button id="restBtn" class="btn-ghost" onclick="restBtn()" style="flex:0 0 46px;min-width:0;min-height:0;height:38px;font-size:13px;white-space:nowrap;font-weight:700;line-height:1.05;padding:0 2px;color:'+v.col+';border-color:'+v.col+';'+(v.bg?'background-color:'+v.bg+';':'')+'">'
+    +'<span id="restLbl">'+v.lbl+'</span><div id="restSub" style="font-size:9px;font-weight:500;opacity:.9;min-height:10px;">'+v.sub+'</div></button>';
+}
+function restTickUpdate(){      // 1秒ごと。ボタンを作り直さず文字と色だけ更新する(押下中に要素が消えて押せなくなるのを防ぐ)
+  const b=document.getElementById('restBtn'); if(!b || typeof state==='undefined' || !state) return;
+  const v=restView();
+  b.style.color=v.col; b.style.borderColor=v.col; b.style.backgroundColor=v.bg||'';
+  const l=document.getElementById('restLbl'), u=document.getElementById('restSub');
+  if(l && l.textContent!==v.lbl) l.textContent=v.lbl;
+  if(u && u.textContent!==v.sub) u.textContent=v.sub;
+}
+setInterval(()=>{ if(state && state.restRun) restTickUpdate(); }, 1000);
+function restFinish(now){       // 稼働中のタイマーを止める。10分以上なら記録、未満なら破棄。戻り値: 記録したらtrue
+  const run=state.restRun; if(!run) return false;
+  state.restRun=null; restDiscardAt=0;
+  if(now-run>=REST_MIN_MS){ state.rests=restList(state).concat([{s:run,e:now}]); return true; }
+  return false;
+}
+function restBtn(){
+  if(!state.shiftDate || state.depTime===null) return;
+  const now=Date.now();
+  if(!state.restRun){
+    state.restRun=now; restDiscardAt=0;
+    toast('休憩タイマー開始(完全停止10分以上で休憩に数えます)');
+  } else {
+    const el=now-state.restRun;
+    if(el>=REST_MIN_MS){
+      restFinish(now);
+      toast('休憩を記録 '+restDurText(el)+'(合計 '+restDurText(restTotalMs(state))+' / '+restList(state).length+'回)');
+    } else if(restDiscardAt && now-restDiscardAt<5000){
+      state.restRun=null; restDiscardAt=0;
+      toast('10分未満のため休憩に数えませんでした');
+    } else {
+      restDiscardAt=now;
+      const sec=Math.floor(el/1000);
+      toast('まだ'+Math.floor(sec/60)+'分'+(sec%60)+'秒。10分未満は数えません。やめるならもう一度押す');
+    }
+  }
+  evRefreshStat(); saveState();
+}
+function openRestModal(){
+  closeBackupModal();
+  const ov=document.createElement('div'); ov.id='backupModal';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+  const rs=restList(state);
+  const rows=rs.length ? rs.map((r,i)=>'<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border);"><span style="flex:1;font-family:\'PT Mono\',monospace;">'+restClock(r.s,state.shiftDate)+'〜'+restClock(r.e,state.shiftDate)+'</span><b>'+restDurText(r.e-r.s)+'</b><button class="btn-ghost" data-ri="'+i+'" style="padding:3px 9px;font-size:11px;">削除</button></div>').join('')
+    : '<div style="font-size:12px;color:var(--muted);">まだ休憩の記録はありません</div>';
+  ov.innerHTML='<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'
+    +'<div style="font-weight:700;font-size:15px;color:var(--text);">休憩の記録</div>'
+    +'<div style="font-size:12px;color:var(--muted);">完全停止10分以上だけを数えます。合計 <b style="color:var(--text);">'+restDurText(restTotalMs(state))+'</b>(' +rs.length+'回)</div>'
+    +rows
+    +(state.restRun?'<button class="btn-ghost" id="restCancelRun" style="margin-top:4px;">稼働中のタイマーを取り消す</button>':'')
+    +'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
+  document.body.appendChild(ov);
+  document.getElementById('bkClose').onclick=closeBackupModal;
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+  ov.querySelectorAll('button[data-ri]').forEach(b=>{ b.onclick=()=>{ state.rests=restList(state).filter((_,i)=>i!==+b.dataset.ri); saveState(); evRefreshStat(); openRestModal(); }; });
+  const c=document.getElementById('restCancelRun');
+  if(c) c.onclick=()=>{ state.restRun=null; restDiscardAt=0; saveState(); evRefreshStat(); openRestModal(); };
+}
+function restGridCells(st){     // まとめ・履歴詳細の1行(sum-gridの中に入れる)
+  return '<div class="gt">休憩</div><div class="gc">合計<b>'+restDurText(restTotalMs(st))+'</b></div><div class="gc">回数<b>'+restList(st).length+'回</b></div>';
+}
+
 function evBarInner(){
-  const mk=(k,kind,label,col,o)=>'<button class="btn-ghost" onclick="evBtn(\''+k+'\','+(kind?'\''+kind+'\'':'null')+')" style="flex:1;min-width:0;min-height:0;height:38px;font-size:13px;font-weight:700;line-height:1.05;padding:0 2px;color:'+col+';border-color:'+col+';">'+label+(o?'<div style="font-size:9px;font-weight:500;opacity:.85;">'+fmtTime(o.t)+'</div>':'')+'</button>';
+  const mk=(k,kind,label,col,o)=>'<button class="btn-ghost" onclick="evBtn(\''+k+'\','+(kind?'\''+kind+'\'':'null')+')" style="flex:1;min-width:0;min-height:0;height:38px;font-size:13px;font-weight:700;line-height:1.05;padding:0 2px;white-space:nowrap;color:'+col+';border-color:'+col+';">'+label+(o?'<div style="font-size:9px;font-weight:500;opacity:.85;">'+fmtTime(o.t)+'</div>':'')+'</button>';
   const pu=state.evPu, any=state.evPu||state.evBd||state.evDr;
   return mk('pu','GO','迎車GO','#f0b400',pu&&pu.k==='GO'?pu:null)+mk('pu','自社','迎車自社','#f0b400',pu&&pu.k==='自社'?pu:null)
-    +mk('bd',null,'乗車','#e5262b',state.evBd)+mk('dr',null,'降車','#1f78ff',state.evDr)
-    +(any?'<button class="btn-ghost" onclick="evClear()" style="flex:0 0 44px;min-height:0;height:38px;font-size:11px;padding:0;">取消</button>':'');
+    +mk('bd',null,'乗車','#e5262b',state.evBd)+mk('dr',null,'降車','#1f78ff',state.evDr)+restBtnHTML()
+    +(any?'<button class="btn-ghost" onclick="evClear()" style="flex:0 0 36px;min-height:0;height:38px;font-size:11px;padding:0;">取消</button>':'');
 }
 function evRefreshStat(){ const el=document.getElementById('evBar'); if(el) el.innerHTML=evBarInner(); }
 function evBarHTML(){
