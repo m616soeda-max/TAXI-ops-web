@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102837">
+<meta name="taxiops-build" content="2026102838">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app37</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app38</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3873,6 +3873,7 @@ function renderMain(){
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="fillAddrBtn">📍 住所未取得をまとめて取得</button>
+      <button class="btn-ghost" id="grayBtn">🩶 グレー区間を探す</button>
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="backupFileBtn">💾 バックアップをファイル保存</button>
@@ -3986,6 +3987,7 @@ function renderMain(){
   document.getElementById('distCell').onclick = openDistModal;
   document.getElementById('distListBtn').onclick = openDistModal;
   document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
+  document.getElementById('grayBtn').onclick = openGrayModal;
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -5662,6 +5664,46 @@ function openDistModal(){
       +row('累計の実車率', ar?ar.rate.toFixed(1)+'%':'—')
       +gps);
   }
+  document.body.appendChild(ov);
+  document.getElementById('bkClose').onclick=closeBackupModal;
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+}
+/* ---------- グレー(乗車時刻未入力)の軌跡区間を、時刻と原因つきで一覧にする ---------- */
+function openGrayModal(){
+  closeBackupModal();
+  const ov=document.createElement('div'); ov.id='backupModal';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+  const box=(inner)=>'<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'+inner+'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
+  const date=state.shiftDate;
+  const pts=date?((trackDate===date && trackPts.length>1)?trackPts:trackLoad(date)):[];
+  let body;
+  if(!date || state.depTime===null || pts.length<2){
+    body='<div style="font-size:12px;color:var(--muted);">この出番の軌跡がありません。</div>';
+  } else {
+    const m=evIntervals(date), base=evDayStart(date), rs=[]; let cur=null;
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1], b=pts[i];
+      if(b.t-a.t>TRACK_GAP_SEC){ cur=null; continue; }
+      if(evColorAt(m,(a.t+b.t)/2)!=='unk'){ cur=null; continue; }
+      const d=trackDistM(a,b)/1000;
+      if(cur && Math.abs(a.t-cur.e)<1){ cur.e=b.t; cur.km+=d; } else { cur={s:a.t,e:b.t,km:d}; rs.push(cur); }
+    }
+    const hm=sec=>fmtTime((sec-base)/3600);
+    const why=r=>{
+      const mid=(r.s+r.e)/2, x=(m&&m.iv||[]).find(v=>v[2]==='unk'&&v[0]<=mid&&mid<v[1]);
+      if(x){
+        const h=(x[1]-base)/3600, e=state.entries.find(q=>q.pay!=='障割'&&Math.abs(q.time-h)<1e-6);
+        if(e){ const c=(e.pay==='キャンセル'||e.pay==='B空転'); return fmtTime(e.time)+'の'+e.pay+'の記録に'+(c?'迎車':'乗車')+'時刻がありません'; }
+      }
+      return '記録に属さない区間(出庫前など)';
+    };
+    const tot=rs.reduce((a,r)=>a+r.km,0);
+    body = rs.length
+      ? '<div style="font-size:12px;color:var(--muted);">グレー合計 <b style="color:var(--text);">'+fmtKm(tot)+'km</b>('+rs.length+'か所)</div>'
+        + rs.map(r=>'<div style="padding:5px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);"><b style="font-family:\'PT Mono\',monospace;">'+hm(r.s)+'〜'+hm(r.e)+'</b><span>'+fmtKm(r.km)+'km</span></div><div style="font-size:11px;color:var(--muted);">'+why(r)+'</div></div>').join('')
+      : '<div style="font-size:12px;color:var(--muted);">グレー区間はありません。</div>';
+  }
+  ov.innerHTML=box('<div style="font-weight:700;font-size:15px;color:var(--text);">グレー区間(乗車時刻未入力)</div>'+body);
   document.body.appendChild(ov);
   document.getElementById('bkClose').onclick=closeBackupModal;
   ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
