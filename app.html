@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102833">
+<meta name="taxiops-build" content="2026102834">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app33</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app34</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3755,7 +3755,7 @@ function renderMain(){
       </div>
       <div class="meter-sub2">
         <div>メーター金額<b>¥${fmtYen(total)}</b></div>
-        <div>走行距離<b>${fmtKm(dist)}km</b></div>
+        <div id="distCell" style="cursor:pointer;">走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span><b>${fmtKm(dist)}km</b></div>
         <div>高速代<b>¥${fmtYen(tollTotal)}</b></div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
@@ -3864,6 +3864,7 @@ function renderMain(){
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="restListBtn">☕ 休憩の記録・修正</button>
+      <button class="btn-ghost" id="distListBtn">📏 降車時点の距離</button>
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="backupFileBtn">💾 バックアップをファイル保存</button>
@@ -3974,6 +3975,8 @@ function renderMain(){
   document.getElementById('helpBtn').onclick = openHelpModal;
   document.getElementById('healthBtn').onclick = taxiopsTrackHealth;
   document.getElementById('restListBtn').onclick = openRestModal;
+  document.getElementById('distCell').onclick = openDistModal;
+  document.getElementById('distListBtn').onclick = openDistModal;
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -5550,6 +5553,58 @@ function openRestModal(){
   ov.querySelectorAll('button[data-ri]').forEach(b=>{ b.onclick=()=>{ state.rests=restList(state).filter((_,i)=>i!==+b.dataset.ri); saveState(); evRefreshStat(); openRestModal(); }; });
   const c=document.getElementById('restCancelRun');
   if(c) c.onclick=()=>{ state.restRun=null; restDiscardAt=0; saveState(); evRefreshStat(); openRestModal(); };
+}
+/* ---------- 直近の降車時点の距離(メーター系+GPS状態別)を、出動中にいつでも確認 ---------- */
+function evKmByStateRange(pts,m,t0,t1){     // 区間の中点が[t0,t1]に入る線分だけ集計(測位なし区間は含めない)
+  const r={red:0,yel:0,blue:0,unk:0};
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC) continue; const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; r[evColorAt(m,mid)]+=trackDistM(a,b)/1000; }
+  return r;
+}
+function openDistModal(){
+  closeBackupModal();
+  const ov=document.createElement('div'); ov.id='backupModal';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+  const box=(inner)=>'<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'+inner+'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
+  const all=state.entries.slice().sort((a,b)=>a.time-b.time);
+  const drops=all.filter(e=>e.pay!=='障割');
+  if(!drops.length){
+    ov.innerHTML=box('<div style="font-weight:700;font-size:15px;color:var(--text);">降車時点の距離</div><div style="font-size:12px;color:var(--muted);">まだ記録がありません。</div>');
+  } else {
+    const last=drops[drops.length-1];
+    const prevT=drops.length>1 ? drops[drops.length-2].time : state.depTime;
+    const leg=legDist(all, all.indexOf(last), state.startDist);
+    let cum=null, cumT=null;
+    for(const e of all){ if(e.time<=last.time && e.dist!=null && e.dist!=='' && e.dist>0){ cum=e.dist; cumT=e.time; } }
+    const ar=shiftActualRate({entries:all.filter(e=>e.time<=last.time), startDist:state.startDist});
+    const km=v=>(v==null?'—':fmtKm(v)+'km');
+    const row=(a,b)=>'<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">'+a+'</span><b style="font-family:\'PT Mono\',monospace;">'+b+'</b></div>';
+    let gps='';
+    const date=state.shiftDate;
+    const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
+    if(pts.length>1){
+      const m=evIntervals(date), base=evDayStart(date), S=base+last.time*3600, S0=base+prevT*3600;
+      const c=evKmByStateRange(pts,m,-Infinity,S), g=evKmByStateRange(pts,m,S0,S);
+      const sum=o=>o.red+o.yel+o.blue+o.unk;
+      const gr=(n,col,k)=>(c[k]>0||g[k]>0)?'<tr><td style="color:'+col+';padding:4px 0;border-bottom:1px solid var(--border);">'+n+'</td><td style="text-align:right;font-family:\'PT Mono\',monospace;border-bottom:1px solid var(--border);">'+fmtKm(g[k])+'</td><td style="text-align:right;font-family:\'PT Mono\',monospace;border-bottom:1px solid var(--border);"><b>'+fmtKm(c[k])+'</b></td></tr>':'';
+      gps='<div style="font-weight:700;font-size:13px;color:var(--text);margin-top:8px;">GPS軌跡の状態別(km)</div>'
+        +'<table style="width:100%;font-size:13px;color:var(--text);border-collapse:collapse;"><tr style="font-size:11px;color:var(--muted);"><td></td><td style="text-align:right;">今回</td><td style="text-align:right;">累計</td></tr>'
+        +gr('実車','#e5262b','red')+gr('迎車','#f0b400','yel')+gr('空車','#1f78ff','blue')+gr('乗車時刻未入力','#9aa0a6','unk')
+        +'<tr><td style="padding:4px 0;color:var(--muted);">GPS合計</td><td style="text-align:right;font-family:\'PT Mono\',monospace;">'+fmtKm(sum(g))+'</td><td style="text-align:right;font-family:\'PT Mono\',monospace;"><b>'+fmtKm(sum(c))+'</b></td></tr></table>'
+        +'<div style="font-size:10px;color:var(--muted2);">今回=前の降車('+fmtTime(prevT)+')からこの降車まで。測位が途切れた区間は含みません</div>';
+    } else {
+      gps='<div style="font-weight:700;font-size:13px;color:var(--text);margin-top:8px;">GPS軌跡の状態別(km)</div><div style="font-size:12px;color:var(--muted);">この出番の軌跡がありません。</div>';
+    }
+    ov.innerHTML=box('<div style="font-weight:700;font-size:15px;color:var(--text);">直近の降車 '+fmtTime(last.time)+' 時点の距離</div>'
+      +'<div style="font-weight:700;font-size:13px;color:var(--text);">メーター系</div>'
+      +row('累計走行距離'+(cumT!=null&&cumT!==last.time?'(降車'+fmtTime(cumT)+'の入力)':''), km(cum))
+      +row('今回の区間走行(迎車+実車)', km(leg))
+      +row('累計実車距離(入力済み'+(ar?ar.count:0)+'件)', ar?km(ar.actualSum):'—')
+      +row('累計の実車率', ar?ar.rate.toFixed(1)+'%':'—')
+      +gps);
+  }
+  document.body.appendChild(ov);
+  document.getElementById('bkClose').onclick=closeBackupModal;
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
 }
 function restGridCells(st){     // まとめ・履歴詳細の1行(sum-gridの中に入れる)
   return '<div class="gt">休憩</div><div class="gc">合計<b>'+restDurText(restTotalMs(st))+'</b></div><div class="gc">回数<b>'+restList(st).length+'回</b></div>';
