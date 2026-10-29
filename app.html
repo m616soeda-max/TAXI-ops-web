@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102842">
+<meta name="taxiops-build" content="2026102843">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app42</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app43</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5789,8 +5789,60 @@ function tmPlayBtnUpdate(){
   const pl=tm&&tm.play;
   b.textContent = !pl ? '▶' : pl.done ? '↻' : pl.playing ? '⏸' : '▶';
 }
-function tmPlayToggle(){
+/* ---------- 走行の再生を、アプリの中で小さい動画にして保存(圧縮・日付入りの名前・無駄な前後なし) ---------- */
+function tmRecPickMime(){
+  if(typeof MediaRecorder==='undefined' || !HTMLCanvasElement.prototype.captureStream) return null;
+  for(const m of ['video/mp4;codecs=avc1.42E01E','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']){   // mp4はH.264のときだけ(中身が不明なmp4は避ける)
+    try{ if(MediaRecorder.isTypeSupported(m)) return m; }catch(e){}
+  }
+  return null;
+}
+function tmVidBtnUpdate(){
+  const b=document.getElementById('tmVidBtn'); if(!b) return;
+  b.textContent = (tm&&tm.recording) ? '⏺' : '🎬';
+  b.style.color = (tm&&tm.recording) ? '#e5262b' : '';
+}
+async function tmRecordVideo(){
+  if(!tm || tm.recording) return;
+  const mime=tmRecPickMime();
+  if(!mime){ toast('この端末では動画を作れません。画面録画をお使いください'); return; }
+  if(tm.pts.length<2){ toast('再生できる軌跡がありません'); return; }
+  const date=tm.date, src=tm.cv, W=480, H=Math.max(2,Math.round(W*src.height/src.width/2)*2);
+  const rc=document.createElement('canvas'); rc.width=W; rc.height=H; const rx=rc.getContext('2d');
+  let rec;
+  try{ rec=new MediaRecorder(rc.captureStream(30),{mimeType:mime, videoBitsPerSecond:700000}); }
+  catch(e){ toast('動画を作れませんでした: '+((e&&e.message)||e)); return; }
+  const chunks=[]; rec.ondataavailable=(e)=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  const stopped=new Promise((res)=>{ rec.onstop=res; });
+  tm.recording=true; tmVidBtnUpdate();
+  toast('動画を作っています(約30秒)。画面はそのままにしてください');
+  tmPlayStop(); tmPlayToggle(true);          // 最初から再生して、その間だけ録る
+  rec.start(500);
+  let alive=true;
+  const pump=()=>{
+    if(!alive) return;
+    if(tm && tm.cv){
+      rx.drawImage(tm.cv,0,0,W,H);
+      rx.font='10px sans-serif'; rx.fillStyle='rgba(60,60,60,.85)'; rx.fillText('地理院タイル(淡色地図)',6,H-6);
+    }
+    requestAnimationFrame(pump);
+  };
+  pump();
+  await new Promise((res)=>{ const chk=()=>{ if(!tm || !tm.play || tm.play.done) res(); else setTimeout(chk,200); }; chk(); });
+  const aborted=!tm;
+  if(!aborted) await new Promise((r)=>setTimeout(r,1000));      // 最後の絵を1秒だけ見せて終わる
+  alive=false; try{ rec.stop(); }catch(e){}
+  await stopped;
+  if(tm){ tm.recording=false; tmVidBtnUpdate(); }
+  if(aborted){ return; }                                          // 地図を閉じたら破棄
+  if(!chunks.length){ toast('動画を作れませんでした'); return; }
+  const ext=mime.indexOf('video/mp4')===0?'mp4':'webm';
+  const blob=new Blob(chunks,{type:mime.split(';')[0]});
+  await saveBlobSmart(blob,'TAXI_OPS_'+String(date).replace(/-/g,'')+'.'+ext,'動画を保存しました('+Math.round(blob.size/1024)+'KB)');
+}
+function tmPlayToggle(fromRec){
   if(!tm) return;
+  if(tm.recording && fromRec!==true){ toast('動画を作っている間は操作できません'); return; }
   const pl=tm.play;
   if(pl && !pl.done){                       // 再生中→一時停止 / 停止中→再開
     pl.playing=!pl.playing;
@@ -6086,6 +6138,7 @@ function openTrackViewer(date){
     <div class="tm-top">
       <select id="tmDateSel">${opts||'<option value="">軌跡なし</option>'}</select>
       <button id="tmPlayBtn" class="tm-btn" style="flex:0 0 auto;padding:6px 10px;" title="1日の走行を再生(画面録画で動画にできます)">▶</button>
+      <button id="tmVidBtn" class="tm-btn" style="flex:0 0 auto;padding:6px 10px;" title="再生を小さい動画にして保存(日付入りの名前)">🎬</button>
       <span id="tmStatus" style="font-size:10px;color:var(--green);white-space:nowrap;"></span>
       <button id="tmCloseBtn" class="tm-btn" style="flex:0 0 auto;padding:6px 12px;">✕</button>
     </div>
@@ -6120,7 +6173,8 @@ function openTrackViewer(date){
   const sel=document.getElementById('tmDateSel'); if(date) sel.value=date;
   sel.onchange=()=>tmSetDate(sel.value);
   document.getElementById('tmCloseBtn').onclick=closeTrackViewer;
-  document.getElementById('tmPlayBtn').onclick=tmPlayToggle;
+  document.getElementById('tmPlayBtn').onclick=()=>tmPlayToggle();
+  document.getElementById('tmVidBtn').onclick=tmRecordVideo;
   document.getElementById('tmZoomIn').onclick=()=>tmZoomAt(tm.W/2,tm.H/2,1);
   document.getElementById('tmZoomOut').onclick=()=>tmZoomAt(tm.W/2,tm.H/2,-1);
   document.getElementById('tmShotBtn').onclick=tmExport;
