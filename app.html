@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102841">
+<meta name="taxiops-build" content="2026102842">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app41</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app42</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5924,9 +5924,17 @@ function tmDraw(){
     const PC={pu:'#f0b400',bd:'#e5262b',dr:'#1f78ff'};      // 文字は付けず色だけ(黄=迎車・赤=乗車・青=降車)。線が見えるよう小さくする
     for(const k of ['dr','bd','pu']) for(const p of tm.pins){
       if(p.k!==k) continue;
-      const q=xy(p);
-      ctx.beginPath(); ctx.arc(q[0],q[1],4.5,0,Math.PI*2); ctx.fillStyle=PC[k]; ctx.fill();
-      ctx.lineWidth=1.5; ctx.strokeStyle='#fff'; if(p.pending) ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+      const q=xy(p), hd=tmPinHeading(p);
+      if(hd!==null){      // 進行方向の矢印(黄=迎車・赤=乗車・青=降車)
+        ctx.save(); ctx.translate(q[0],q[1]); ctx.rotate(hd);
+        ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(-5,5.5); ctx.lineTo(-2,0); ctx.lineTo(-5,-5.5); ctx.closePath();
+        ctx.fillStyle=PC[k]; ctx.fill();
+        ctx.lineWidth=1.4; ctx.lineJoin='round'; ctx.strokeStyle='#fff'; if(p.pending) ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+        ctx.restore();
+      } else {            // その時刻の軌跡が無く向きが分からないときだけ、小さい丸
+        ctx.beginPath(); ctx.arc(q[0],q[1],4.5,0,Math.PI*2); ctx.fillStyle=PC[k]; ctx.fill();
+        ctx.lineWidth=1.5; ctx.strokeStyle='#fff'; if(p.pending) ctx.setLineDash([2,2]); ctx.stroke(); ctx.setLineDash([]);
+      }
     }
   }
   if(pts.length){
@@ -5950,6 +5958,22 @@ function tmDraw(){
     ctx.beginPath(); ctx.arc(s[0],s[1],7,0,Math.PI*2); ctx.fillStyle='#2f6fd6'; ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle='#fff'; ctx.stroke();
   }
   if(pl) tmDrawHud(ctx,W,H,pl);
+}
+function tmPinHeading(p){      // 地点を押した時刻の前後の軌跡から進行方向(画面上の角度)を出す。分からなければnull
+  if(p.hd!==undefined) return p.hd;
+  p.hd=null;
+  try{
+    const pts=tm.pts; if(!pts||pts.length<2||p.t==null) return null;
+    const T=evDayStart(tm.date)+p.t*3600;
+    let lo=0,hi=pts.length-1; while(lo<hi){ const mid=(lo+hi)>>1; if(pts[mid].t<T) lo=mid+1; else hi=mid; }
+    if(Math.abs(pts[lo].t-T)>120) return null;
+    for(const w of [20,60,150]){
+      let a=lo,b=lo; while(a>0 && T-pts[a].t<w) a--; while(b<pts.length-1 && pts[b].t-T<w) b++;
+      const A=tmProj(pts[a].la,pts[a].lo,16), B=tmProj(pts[b].la,pts[b].lo,16), dx=B[0]-A[0], dy=B[1]-A[1];
+      if(Math.hypot(dx,dy)>=6){ p.hd=Math.atan2(dy,dx); return p.hd; }      // 約15m以上動いていれば向きが取れる
+    }
+  }catch(e){}
+  return null;
 }
 function tmPinTap(x,y){
   const W=tm.W, H=tm.H, z=tm.z, ox=tm.cx-W/2, oy=tm.cy-H/2;
@@ -6027,7 +6051,7 @@ function tmExport(){
       x.fillText(it[1]+' '+km[it[0]].toFixed(1)+'km'+(tot>0?'('+Math.round(km[it[0]]/tot*100)+'%)':''),cx+28*s,cy);
     });
     x.font=(10*s)+'px sans-serif'; x.fillStyle='#555';
-    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)・丸=迎車(黄)・乗車(赤)・降車(青)の地点',8*s,y0+55*s);
+    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)・矢印=迎車(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)',8*s,y0+55*s);
     return c;
   };
   const fname='軌跡_'+String(tm.date||'').replace(/-/g,'')+'.png';
@@ -6081,7 +6105,7 @@ function openTrackViewer(date){
         <button id="tmRecBtn" class="tm-btn"></button>
         <button id="tmDelBtn" class="tm-btn" style="color:var(--red);">🗑</button>
       </div>
-      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ <span style="color:#2f6fd6;">●</span> 現在地 ・ 丸=迎車ボタン(黄)・乗車(赤)・降車(青)の地点、緑=出庫、タップで住所<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
+      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ <span style="color:#2f6fd6;">●</span> 現在地 ・ 矢印=迎車ボタン(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)、緑=出庫、タップで住所<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
     </div>`;
   document.body.appendChild(ov);
   tm={ov, userMoved:false, date:null, pts:[], z:11, cx:0, cy:0, W:300, H:300, dpr:1, tiles:true, tileCache:new Map(), raf:0, live:false,
