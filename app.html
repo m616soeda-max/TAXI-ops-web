@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102843">
+<meta name="taxiops-build" content="2026102844">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app43</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app44</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1625,6 +1625,28 @@ async function nativeSavePicture(canvas, filename){   // 成功=true / 失敗=fa
     const m=String((e&&e.message)||e||'');
     if(/UNIMPLEMENTED|not implemented|not available/i.test(m) || (e&&e.code==='UNIMPLEMENTED')) return 'noplugin';
     console.warn('native picture save failed', m);
+    window.__lastSaveError=m||'不明なエラー';
+    return false;
+  }
+}
+async function nativeSaveVideo(blob, filename){   // 動画をピクチャ(ギャラリー)の「TAXI-OPS」へ直接保存。成功=true / 部品なし='noplugin' / 失敗=false
+  if(typeof NATIVE_BG==='undefined' || !NATIVE_BG) return 'noplugin';
+  window.__lastSaveError='';
+  try{
+    const C=window.Capacitor, FS=C.registerPlugin('Filesystem'), M=C.registerPlugin('Media');
+    const w=await FS.writeFile({path:'taxi-ops/'+filename, data:await blobToBase64(blob), directory:'CACHE', recursive:true});
+    const ap=await M.getAlbumsPath();
+    const album=String(ap&&ap.path||'').replace(/\/+$/,'')+'/'+PIC_ALBUM;
+    try{ await M.createAlbum({name:PIC_ALBUM}); }catch(e){}
+    const base=String(filename).replace(/\.(mp4|webm)$/i,'');
+    const d=new Date(), p2=(n)=>String(n).padStart(2,'0');
+    try{ await M.saveVideo({path:w.uri, albumIdentifier:album, fileName:base}); }
+    catch(e1){ await M.saveVideo({path:w.uri, albumIdentifier:album, fileName:base+'_'+p2(d.getHours())+p2(d.getMinutes())+p2(d.getSeconds())}); }   // 同じ名前が既にあるときは時刻を足して保存し直す
+    return true;
+  }catch(e){
+    const m=String((e&&e.message)||e||'');
+    if(/UNIMPLEMENTED|not implemented|not available/i.test(m) || (e&&e.code==='UNIMPLEMENTED')) return 'noplugin';
+    console.warn('native video save failed', m);
     window.__lastSaveError=m||'不明なエラー';
     return false;
   }
@@ -5838,7 +5860,12 @@ async function tmRecordVideo(){
   if(!chunks.length){ toast('動画を作れませんでした'); return; }
   const ext=mime.indexOf('video/mp4')===0?'mp4':'webm';
   const blob=new Blob(chunks,{type:mime.split(';')[0]});
-  await saveBlobSmart(blob,'TAXI_OPS_'+String(date).replace(/-/g,'')+'.'+ext,'動画を保存しました('+Math.round(blob.size/1024)+'KB)');
+  const name='TAXI_OPS_'+String(date).replace(/-/g,'')+'.'+ext, kb=Math.round(blob.size/1024);
+  if(typeof NATIVE_BG!=='undefined' && NATIVE_BG){      // アプリ版: まずギャラリーの「TAXI-OPS」へ直接保存、だめなら共有シートで保存先を選ぶ
+    const r=await nativeSaveVideo(blob,name);
+    if(r===true){ toast('動画を「'+PIC_ALBUM+'」アルバムに保存しました('+kb+'KB)'); return; }
+  }
+  await saveBlobSmart(blob,name,'動画を保存しました('+kb+'KB)');
 }
 function tmPlayToggle(fromRec){
   if(!tm) return;
