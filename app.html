@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102845">
+<meta name="taxiops-build" content="2026102846">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app45</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app46</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1405,6 +1405,19 @@ function trimCanvasVertical(canvas, pad){
   }catch(e){ return canvas; }   // 読み取れない場合は切り落とさずそのまま
 }
 // ①画像(ヘッダー+情報ブロック)を、スマホ縦1画面いっぱいのレイアウトで1枚のcanvasにする。撮影の間だけ .cap-tall を付け、終わったら必ず元に戻す。
+/* ①画像をスマホの全画面表示に合わせる。画面は1080×2340で、上のステータスバー約115px・下のボタン欄約144pxが重なるので、その分を空けて内側に収める */
+const SHOT_PX = {W:1080, H:2340, TOP:115, BOT:144};
+function composeScreenCanvas(content){
+  const W=content.width, H=Math.round(W*SHOT_PX.H/SHOT_PX.W), top=Math.round(W*SHOT_PX.TOP/SHOT_PX.W), bot=Math.round(W*SHOT_PX.BOT/SHOT_PX.W);
+  const availH=H-top-bot, sc=Math.min(1, availH/content.height);      // 中身が長ければ、全体を縮めて収める
+  const dw=Math.round(content.width*sc), dh=Math.round(content.height*sc);
+  const out=document.createElement('canvas'); out.width=W; out.height=H;
+  const x=out.getContext('2d');
+  x.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg').trim() || '#12151b';
+  x.fillRect(0,0,W,H);
+  x.drawImage(content, Math.round((W-dw)/2), top+Math.round((availH-dh)/2), dw, dh);
+  return out;
+}
 async function buildTallInfoCanvas(elementIds){
   const els = elementIds.map(id=>document.getElementById(id)).filter(Boolean);
   els.forEach(el=>el.classList.add('cap-tall'));
@@ -1414,15 +1427,15 @@ async function buildTallInfoCanvas(elementIds){
     if(info){
       const w = info.getBoundingClientRect().width;
       const hh = (hdr && hdr!==info) ? hdr.getBoundingClientRect().height : 0;
-      // 縦横比 約1:2(スマホの画面)に合わせる。中身がそれより長ければ、そのまま長くなる。
-      info.style.minHeight = Math.max(0, Math.round(w*2.0 - hh))+'px';
+      // 上下の余白(ステータスバー・ボタン欄)を除いた、画面の中身ぶんの高さに合わせる。
+      info.style.minHeight = Math.max(0, Math.round(w*(SHOT_PX.H-SHOT_PX.TOP-SHOT_PX.BOT)/SHOT_PX.W - hh))+'px';
     }
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     merged = await buildMergedCanvas(elementIds, 3);
   }finally{
     els.forEach(el=>{ el.classList.remove('cap-tall'); el.style.minHeight=''; });
   }
-  return merged ? trimCanvasVertical(merged, 8) : null;   // 画面倍率が高いので、上下は少しだけ余白を残す
+  return merged ? composeScreenCanvas(trimCanvasVertical(merged, 8)) : null;   // 上下の余白を整えたあと、全画面の縦横比に収める
 }
 async function captureAndShareMulti(elementIds, filename){
   toast('画像を作成しています…');
@@ -2718,7 +2731,6 @@ function renderHistoryDetail(date){
       <div class="gt">運賃帯</div>
       <div class="gc">ミドル<b>${midCountH}件</b></div>
       <div class="gc">ロング<b>${longCountH}件</b></div>
-      ${restGridCells(st)}
     </div>
     </div>
     <div id="histTimeCaptureRoot" style="margin-top:8px;">
@@ -4533,7 +4545,6 @@ function renderSummary(){
           <div class="gt">運賃帯</div>
           <div class="gc">ミドル<b>${midCountS}件</b></div>
           <div class="gc">ロング<b>${longCountS}件</b></div>
-          ${restGridCells(state)}
         </div>
         </div>
         <div id="sumTimeCaptureRoot" style="margin-top:8px;">
