@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102846">
+<meta name="taxiops-build" content="2026102847">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app46</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app47</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5569,7 +5569,7 @@ function evNowPos(){        // 直近3分以内の測位(軌跡の記録が動�
 }
 /* ---------- 休憩タイマー: 完全停止10分以上だけを休憩に数える(10分未満は破棄) ---------- */
 const REST_MIN_MS = 10*60*1000;
-let restDiscardAt = 0;      // 10分未満で止めようとしたときの「もう一度で破棄」確認(5秒間有効)
+let restDiscardAt = 0;      // (使わない。10分未満は確認なしで即削除)
 function restList(st){ return (st && Array.isArray(st.rests)) ? st.rests : []; }
 function restTotalMs(st){ return restList(st).reduce((a,r)=>a+Math.max(0,r.e-r.s),0); }
 function restDurText(ms){ const m=Math.round(ms/60000); return m>=60 ? Math.floor(m/60)+'時間'+(m%60)+'分' : m+'分'; }
@@ -5580,7 +5580,6 @@ function restView(){
     const n=restList(state).length;
     return {col:'#2fb36b', bg:'', lbl:'休憩', sub: n ? '計'+Math.round(restTotalMs(state)/60000)+'分' : ''};
   }
-  if(restDiscardAt && now-restDiscardAt<5000) return {col:'#e5262b', bg:'rgba(229,38,43,.2)', lbl:'破棄?', sub:'もう一度'};
   const el=now-run, sec=Math.floor(el/1000), ok=el>=REST_MIN_MS;
   return {col: ok?'#2fb36b':'#ff8a3d', bg: ok?'rgba(47,179,107,.24)':'rgba(255,138,61,.16)', lbl: ok?'休憩✔':'休憩中', sub: Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
 }
@@ -5615,13 +5614,9 @@ function restBtn(){
     if(el>=REST_MIN_MS){
       restFinish(now);
       toast('休憩を記録 '+restDurText(el)+'(合計 '+restDurText(restTotalMs(state))+' / '+restList(state).length+'回)');
-    } else if(restDiscardAt && now-restDiscardAt<5000){
+    } else {      // 10分未満は問答無用で削除(確認なし)
       state.restRun=null; restDiscardAt=0;
-      toast('10分未満のため休憩に数えませんでした');
-    } else {
-      restDiscardAt=now;
-      const sec=Math.floor(el/1000);
-      toast('まだ'+Math.floor(sec/60)+'分'+(sec%60)+'秒。10分未満は数えません。やめるならもう一度押す');
+      toast('10分未満のため休憩に数えず、削除しました');
     }
   }
   evRefreshStat(); saveState();
@@ -5762,6 +5757,11 @@ function evBarHTML(){
 function evClear(){ state.evPu=state.evBd=state.evDr=null; evRefreshStat(); saveState(); }
 async function evBtn(k,kind){
   if(!state.shiftDate || state.depTime===null) return;
+  let restNote='';
+  if((k==='pu'||k==='bd') && state.restRun){        // 休憩中に迎車・乗車を押した=休憩はここまで
+    const n=Date.now(), el=n-state.restRun;
+    restNote = restFinish(n) ? '休憩'+restDurText(el)+'を記録' : '休憩は10分未満のため削除';
+  }
   const h=evNowH(), pos=evNowPos(), o={t:h};
   if(kind) o.k=kind;
   if(pos){ o.la=pos.la; o.lo=pos.lo; }
@@ -5769,11 +5769,11 @@ async function evBtn(k,kind){
   else if(k==='bd'){ state.evBd=o; state.evDr=null; }
   else { state.evDr=o; const ti=document.getElementById('timeInput'); if(ti) ti.value=fmtTime(h); }   // 降車は降車時刻に自動入力
   evRefreshStat(); saveState();
-  toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+(pos?'':'(位置が取れていません)'));
+  toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+(pos?'':'(位置が取れていません)')+(restNote?' ・'+restNote:''));
   if(!pos){ setTimeout(()=>evFillMissing(false),60000); }   // 位置なしで押した分は、軌跡から後で補う
   if(pos){
     const ad=await evGeocode(pos.la,pos.lo);
-    if(ad && state[EV_KEY[k]]===o){ o.ad=ad; saveState(); toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+' '+ad); }
+    if(ad && state[EV_KEY[k]]===o){ o.ad=ad; saveState(); toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+' '+ad+(restNote?' ・'+restNote:'')); }
     else if(!ad){ setTimeout(()=>evFillMissing(false),20000); setTimeout(()=>evFillMissing(false),90000); }   // 取れなかった分は自動で取り直す
   }
 }
