@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102851">
+<meta name="taxiops-build" content="2026102852">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app51</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app52</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -796,9 +796,32 @@
 
 <script>
 const TAX_RATE = 1.10; // 消費税率(税込運賃 ÷ 1.10 = 税抜)
-const CUTOFFS = [12,16,20,22]; // 時締め
-const SECTION_TARGETS = [30000,50000,70000,90000]; // 各区切り時刻までの目標売上(税込)
-const FINAL_TARGET = 121000; // 22時以降(出番終了まで)の目標売上(税込。税抜だとちょうど110,000円)
+/* ---------- 設定(目標・基準・勤務時間)。初期値は従来の固定値。⋯メニューの「⚙ 設定」で変えられる(保存すると再読み込み) ---------- */
+const CFG_LS_KEY = 'andon-meter:settings';
+const CFG_DEFAULT = {
+  cutoffs:[12,16,20,22], targets:[30000,50000,70000,90000], finalTarget:121000,   // 時締め・各時刻までの目標売上(税込)・出番終了までの目標(税込)
+  kmStep:25, kmPay:10000,                       // 距離の目標: ◯kmごとに◯円
+  rateLow:4000, rateGood:6000,                  // 時間単価の色分け: 未満=赤 / 以上=緑
+  midMin:5000, longMin:10000,                   // 運賃帯: ミドル・ロングの下限
+  restMin:10,                                   // 休憩に数える最短(分)
+  kaisoH:19.5, returnH:20.5, coreH:1.5,         // 出庫から回送まで・帰庫まで・連配のコアタイム(時間)
+  tags:[{name:'羽番',digits:'0,2,4,6,8'},{name:'NHK番',digits:'6'}]   // 出番の目印: 名前と、日の下1桁
+};
+function cfgLoad(){
+  const d=JSON.parse(JSON.stringify(CFG_DEFAULT));
+  try{
+    const o=JSON.parse(localStorage.getItem(CFG_LS_KEY)||'{}')||{};
+    const isNum=(v)=>typeof v==='number' && isFinite(v);
+    for(const k of ['finalTarget','kmStep','kmPay','rateLow','rateGood','midMin','longMin','restMin','kaisoH','returnH','coreH']) if(isNum(o[k])) d[k]=o[k];
+    for(const k of ['cutoffs','targets']) if(Array.isArray(o[k]) && o[k].length===d[k].length && o[k].every(isNum)) d[k]=o[k].slice();
+    if(Array.isArray(o.tags) && o.tags.length===d.tags.length && o.tags.every(t=>t && typeof t.name==='string' && typeof t.digits==='string')) d.tags=o.tags.map(t=>({name:t.name,digits:t.digits}));
+  }catch(e){}
+  return d;
+}
+const CFG = cfgLoad();
+const CUTOFFS = CFG.cutoffs; // 時締め
+const SECTION_TARGETS = CFG.targets; // 各区切り時刻までの目標売上(税込)
+const FINAL_TARGET = CFG.finalTarget; // 出番終了までの目標売上(税込)
 const TYPES = ['連配GO','自社無線','乗り場対応','流し','付け待ち','GO'];
 const PAYS = ['GOPay','現金','それ以外','キャンセル','B空転','障割','定額負け'];
 
@@ -951,8 +974,10 @@ function shiftDayTag(dateStr){
   const day = parseInt(String(dateStr).slice(8,10),10);
   if(isNaN(day)) return '';
   const tags = [];
-  if(day%2===0) tags.push('羽番');
-  if(day%10===6) tags.push('NHK番');
+  for(const t of CFG.tags){
+    const ds = String(t.digits||'').split(/[,、\s]+/).filter(x=>x!=='').map(Number);
+    if(t.name && ds.indexOf(day%10)>=0) tags.push(t.name);
+  }
   return tags.join(' ');
 }
 function depElapsedMin(depTime){
@@ -971,7 +996,7 @@ function depElapsedMin(depTime){
 }
 function kaisoRemainText(depTime){
   if(depTime==null) return '';
-  const mins = Math.round(19.5*60 - depElapsedMin(depTime));
+  const mins = Math.round(CFG.kaisoH*60 - depElapsedMin(depTime));
   const fmtHM = (m)=>{
     const h = Math.floor(m/60), mm = m%60;
     return (h>0 ? '<span class="nb">'+h+'</span>時間' : '') + '<span class="nb">'+mm+'</span>分';
@@ -1947,7 +1972,7 @@ function totalRowHTML_section(rows, overallHourly, overallActualRate){
     <td>${count}組</td>
     <td>¥${fmtYen(total)}</td>
     <td>¥${fmtYen(unit)}</td>
-    <td class="${overallHourly<6000?'neg':'pos'}">¥${fmtYen(overallHourly)}/h</td>
+    <td class="${overallHourly<CFG.rateGood?'neg':'pos'}">¥${fmtYen(overallHourly)}/h</td>
     <td>${achievedCell}</td>
     <td>${rateCell}</td>
   </tr>`;
@@ -1979,7 +2004,7 @@ function sectionRowsHTML(sectionRows, opts){
       <td>${r.secCount}組</td>
       <td>¥${fmtYen(r.secTotal)}</td>
       <td>¥${fmtYen(r.secUnit)}</td>
-      <td class="${r.secHourly<6000?'neg':'pos'}">¥${fmtYen(r.secHourly)}/h</td>
+      <td class="${r.secHourly<CFG.rateGood?'neg':'pos'}">¥${fmtYen(r.secHourly)}/h</td>
       <td>—</td>
       <td title="${(r.secLegKm!=null&&r.secActualKm!=null)?('区間走行距離'+r.secLegKm.toFixed(1)+'km中、実車'+r.secActualKm.toFixed(1)+'km'):''}">${r.secActualRate!=null?r.secActualRate.toFixed(1)+'%':'—'}</td>
     </tr>`;
@@ -2003,7 +2028,7 @@ function sectionRowsHTML(sectionRows, opts){
       <td>${count}組</td>
       <td>¥${fmtYen(total)}</td>
       <td>¥${fmtYen(unit)}</td>
-      <td class="${hourly!=null?(hourly<6000?'neg':'pos'):''}">${hourly!=null?'¥'+fmtYen(hourly)+'/h':'—'}</td>
+      <td class="${hourly!=null?(hourly<CFG.rateGood?'neg':'pos'):''}">${hourly!=null?'¥'+fmtYen(hourly)+'/h':'—'}</td>
       <td>${achievedCell}</td>
       <td>${actualRate!=null?actualRate.toFixed(1)+'%':'—'}</td>
     </tr>`;
@@ -2016,7 +2041,7 @@ function totalRowHTML_dist(rows, overallHourly, overallActualRate, totalDistKm){
   const total = rows.reduce((s,r)=>s+r.total,0);
   const unit = count? total/count : 0;
   const rateCell = overallActualRate!=null ? `${overallActualRate.toFixed(1)}%` : '—';
-  const distTarget = (totalDistKm||0)/25*10000;
+  const distTarget = (totalDistKm||0)/CFG.kmStep*CFG.kmPay;
   const distAchieved = distTarget>0 ? total/distTarget*100 : null;
   const achievedCell = distAchieved!=null ? `<span class="${distAchieved>=100?'pos':'neg'}">${distAchieved.toFixed(0)}%</span>` : '—';
   return `<tr style="font-weight:700;">
@@ -2024,7 +2049,7 @@ function totalRowHTML_dist(rows, overallHourly, overallActualRate, totalDistKm){
     <td>${count}組</td>
     <td>¥${fmtYen(total)}</td>
     <td>¥${fmtYen(unit)}</td>
-    <td class="${overallHourly<6000?'neg':'pos'}">¥${fmtYen(overallHourly)}/h</td>
+    <td class="${overallHourly<CFG.rateGood?'neg':'pos'}">¥${fmtYen(overallHourly)}/h</td>
     <td>${achievedCell}</td>
     <td>${rateCell}</td>
   </tr>`;
@@ -2050,7 +2075,7 @@ function distBinRowsHTML(rows, opts){
       <td>${r.count}組</td>
       <td>¥${fmtYen(r.total)}</td>
       <td>¥${fmtYen(r.unit)}</td>
-      <td class="${r.hourly<6000?'neg':'pos'}">¥${fmtYen(r.hourly)}/h</td>
+      <td class="${r.hourly<CFG.rateGood?'neg':'pos'}">¥${fmtYen(r.hourly)}/h</td>
       <td>—</td>
       <td title="${(r.legKm!=null&&r.actualKm!=null)?('区間走行距離'+r.legKm.toFixed(1)+'km中、実車'+r.actualKm.toFixed(1)+'km'):''}">${r.actualRate!=null?r.actualRate.toFixed(1)+'%':'—'}</td>
     </tr>`;
@@ -2067,7 +2092,7 @@ function distBinRowsHTML(rows, opts){
     // 達成率の分母は実測の走行距離を優先する(名目上の区切り数×区切り幅だと、区切り幅が異なる画面間で
     // 同じ出番でも達成率が変わってしまうため)。実測値が無い場合のみ、従来通り区切り数から概算する。
     const kmSoFar = (totalDistKm!=null) ? Math.min((i+1)*binSizeKm, totalDistKm) : (i+1)*binSizeKm;
-    const distTarget = kmSoFar/25*10000; // 25kmごとに¥10,000のペース目標
+    const distTarget = kmSoFar/CFG.kmStep*CFG.kmPay; // 25kmごとに¥10,000のペース目標
     const distAchieved = distTarget>0 ? runTotal/distTarget*100 : null;
     const distAchievedCell = distAchieved!=null ? `<span class="${distAchieved>=100?'pos':'neg'}">${distAchieved.toFixed(0)}%</span>` : '—';
     html += `
@@ -2076,7 +2101,7 @@ function distBinRowsHTML(rows, opts){
       <td>${runCount}組</td>
       <td>¥${fmtYen(runTotal)}</td>
       <td>¥${fmtYen(cumUnit)}</td>
-      <td class="${cumHourly!=null?(cumHourly<6000?'neg':'pos'):''}">${cumHourly!=null?'¥'+fmtYen(cumHourly)+'/h':'—'}</td>
+      <td class="${cumHourly!=null?(cumHourly<CFG.rateGood?'neg':'pos'):''}">${cumHourly!=null?'¥'+fmtYen(cumHourly)+'/h':'—'}</td>
       <td>${distAchievedCell}</td>
       <td>${cumRate!=null?cumRate.toFixed(1)+'%':'—'}</td>
     </tr>`;
@@ -2189,14 +2214,14 @@ function buildDistBinChartHTML(distBinRows){
   return svgComboChart(distBinRows.map(r=>({
     label: r.label, bar: r.total, barColor: 'var(--amber-dim)',
     line: r.hourly, lineLabel: '¥'+fmtYen(r.hourly)+'/h',
-    lineColor: r.hourly<6000 ? 'var(--red)' : 'var(--green)'
+    lineColor: r.hourly<CFG.rateGood ? 'var(--red)' : 'var(--green)'
   })));
 }
 function buildSectionChartHTML(sectionRows){
   return svgComboChart(sectionRows.filter(r=>r.hasData).map(r=>({
     label: r.label, bar: r.secTotal, barColor: 'var(--amber-dim)',
     line: r.secHourly, lineLabel: '¥'+fmtYen(r.secHourly)+'/h',
-    lineColor: r.secHourly<6000 ? 'var(--red)' : 'var(--green)'
+    lineColor: r.secHourly<CFG.rateGood ? 'var(--red)' : 'var(--green)'
   })));
 }
 function buildTypeChartHTML(typeRows){
@@ -2308,7 +2333,7 @@ function buildEntryHourlyTimeSeriesChartHTML(entries, depTime, withUnit){
       cumFare += fare;
       const elapsedFromDep = Math.max(e.time - depTime, 0.0167);
       const rate = cumFare / elapsedFromDep;
-      const color = rate<4000 ? 'var(--red)' : rate<6000 ? 'var(--amber)' : 'var(--green)';
+      const color = rate<CFG.rateLow ? 'var(--red)' : rate<CFG.rateGood ? 'var(--amber)' : 'var(--green)';
       const it = {label: fmtTime(e.time), value: rate, bar: fare, color};
       if(withUnit){
         // 組単価=その時点までの運賃合計(障割含む・isFareable)÷組数(billableを同時刻で1件に集約)。メーターの組単価と同じ定義。
@@ -2569,14 +2594,14 @@ function renderHistoryDetail(date){
   const curTargetH = curTargetIdxH < SECTION_TARGETS.length ? SECTION_TARGETS[curTargetIdxH] : FINAL_TARGET;
   const curTargetLabelH = curTargetIdxH < SECTION_TARGETS.length ? '<span class="nb">'+CUTOFFS[curTargetIdxH]+'</span>時迄に' : '帰庫迄に';
   const achievedMH = curTargetH>0 ? s.billableTotal/curTargetH*100 : null;
-  const curDistTargetH = s.dist/25*10000;
+  const curDistTargetH = s.dist/CFG.kmStep*CFG.kmPay;
   const achievedDistMH = curDistTargetH>0 ? s.billableTotal/curDistTargetH*100 : null;
   const goCancelCountH = entries.filter(e=>e.pay==='キャンセル' && ['連配GO','GO'].includes(e.type||'連配GO')).length;
   const musenCancelCountH = entries.filter(e=>e.pay==='キャンセル' && (e.type||'連配GO')==='自社無線').length;
   const goTotalCountH = dedupeByTime(entries.filter(e=>['連配GO','GO'].includes(e.type||'連配GO') && isBillable(e))).length;
   const musenTotalCountH = dedupeByTime(entries.filter(e=>(e.type||'連配GO')==='自社無線' && isBillable(e))).length;
-  const midCountH = entries.filter(e=>{ const nf = netFare(e); return nf>=5000 && nf<10000; }).length;
-  const longCountH = entries.filter(e=>netFare(e)>=10000).length;
+  const midCountH = entries.filter(e=>{ const nf = netFare(e); return nf>=CFG.midMin && nf<CFG.longMin; }).length;
+  const longCountH = entries.filter(e=>netFare(e)>=CFG.longMin).length;
   const sectionRows = computeSections(entries, st.depTime, st.startDist);
   const sectionHTML = sectionRowsHTML(sectionRows);
   const sectionTotalHTML = sectionRows.some(r=>r.hasData) ? totalRowHTML_section(sectionRows, s.hourly, arH?arH.rate:null) : '';
@@ -2672,7 +2697,7 @@ function renderHistoryDetail(date){
     <div class="meter-row3">
       <div class="meter-col" style="text-align:left;">
         <div class="meter-label">累計時間単価</div>
-        <div class="meter-digit ${s.hourly<6000?'low':''}">¥${fmtYen(s.hourly)}<span class="unit">/h</span></div>
+        <div class="meter-digit ${s.hourly<CFG.rateGood?'low':''}">¥${fmtYen(s.hourly)}<span class="unit">/h</span></div>
       </div>
       <div class="meter-col" style="text-align:center;">
         <div class="meter-label">時間帯別目標</div>
@@ -2682,7 +2707,7 @@ function renderHistoryDetail(date){
       <div class="meter-col" style="text-align:center;">
         <div class="meter-label">距離別目標</div>
         <div class="meter-digit meter-target-big ${achievedDistMH!=null?(achievedDistMH>=100?'pos':'neg'):''}">${achievedDistMH!=null?achievedDistMH.toFixed(0)+'%':'—'}</div>
-        <div class="meter-target-caption"><span class="nb">25</span>km毎<span class="nb">¥10,000</span>ペース</div>
+        <div class="meter-target-caption"><span class="nb">${CFG.kmStep}</span>km毎<span class="nb">¥${fmtYen(CFG.kmPay)}</span>ペース</div>
       </div>
       <div class="meter-col" style="text-align:left;">
         <div class="meter-label">出庫から</div>
@@ -2736,10 +2761,10 @@ function renderHistoryDetail(date){
     <div id="histTimeCaptureRoot" style="margin-top:8px;">
     <div class="card-title" style="margin:0 0 2px;">乗務別 時間単価推移</div>
     <div>${buildEntryHourlyTimeSeriesChartHTML(entries, st.depTime, true)}</div>
-    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:4,000円/h未満 黄:6,000円/h未満 緑:6,000円/h以上) 破線=累計組単価 棒=運賃</div>
+    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:${fmtYen(CFG.rateLow)}円/h未満 黄:${fmtYen(CFG.rateGood)}円/h未満 緑:${fmtYen(CFG.rateGood)}円/h以上) 破線=累計組単価 棒=運賃</div>
     <div class="card-title" style="margin:8px 0 2px;">時間帯別サマリー</div>
     <div>${sectionChartHTMLH}</div>
-    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:6,000円/h以上・赤:未満)</div>
+    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:${fmtYen(CFG.rateGood)}円/h以上・赤:未満)</div>
     <table class="summary-table has-target" style="margin-top:6px;">
       <tr><th>区間</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
       ${sectionHTML}
@@ -2749,7 +2774,7 @@ function renderHistoryDetail(date){
     <div id="histDistCaptureRoot" style="margin-top:10px;">
     <div class="card-title" style="margin:0 0 2px;">距離別サマリー</div>
     <div>${distChartHTMLH}</div>
-    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:6,000円/h以上・赤:未満)</div>
+    <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:${fmtYen(CFG.rateGood)}円/h以上・赤:未満)</div>
     <table class="summary-table has-target" style="margin-top:6px;">
       <tr><th>距離帯</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
       ${distBinHTML}
@@ -3118,8 +3143,8 @@ const EXCLUDE_FROM_COUNT = ['キャンセル','B空転','障割','定額負け']
 const EXCLUDE_FROM_FARE = ['キャンセル','B空転','定額負け']; // 運賃合計から除外(障割は組数には数えないが運賃には加算する)
 function netFare(e){ return (e.fare||0) - (e.toll||0) - (e.fee||0); }
 function buildFareDetailHTML(entries){
-  const mid = entries.filter(e=>{ const nf=netFare(e); return nf>=5000 && nf<10000; });
-  const long = entries.filter(e=>netFare(e)>=10000);
+  const mid = entries.filter(e=>{ const nf=netFare(e); return nf>=CFG.midMin && nf<CFG.longMin; });
+  const long = entries.filter(e=>netFare(e)>=CFG.longMin);
   const midSum = mid.reduce((s,e)=>s+netFare(e),0);
   const longSum = long.reduce((s,e)=>s+netFare(e),0);
   function items(list){
@@ -3136,11 +3161,11 @@ function buildFareDetailHTML(entries){
   return `
   <div class="card-title" style="margin:8px 0 2px;">運賃別明細</div>
   <div class="fare-group">
-    <div class="fare-group-title"><span>ミドル(¥5,000〜9,999)</span><span>${mid.length}件・¥${fmtYen(midSum)}</span></div>
+    <div class="fare-group-title"><span>ミドル(¥${fmtYen(CFG.midMin)}〜${fmtYen(CFG.longMin-1)})</span><span>${mid.length}件・¥${fmtYen(midSum)}</span></div>
     ${items(mid)}
   </div>
   <div class="fare-group">
-    <div class="fare-group-title long"><span>ロング(¥10,000〜)</span><span>${long.length}件${long.length?'・¥'+fmtYen(longSum):''}</span></div>
+    <div class="fare-group-title long"><span>ロング(¥${fmtYen(CFG.longMin)}〜)</span><span>${long.length}件${long.length?'・¥'+fmtYen(longSum):''}</span></div>
     ${items(long)}
   </div>`;
 }
@@ -3306,7 +3331,7 @@ function computeSections(entries, depTime, startDist){
   return sectionRows;
 }
 
-const DIST_BIN_KM = 25;
+const DIST_BIN_KM = CFG.kmStep;
 const DIST_BIN_KM_SUMMARY = 50;
 function computeDistanceBins(entries, depTime, binSize, startDist){
   binSize = binSize || DIST_BIN_KM;
@@ -3404,7 +3429,7 @@ function goInfoLine(st, showRenpai){
     if(st.goRank.acceptRate!=null) line2.push(`了解率 <span class="nb">${st.goRank.acceptRate}%</span>`);
   }
   if(showRenpai && st.renpaiStart!==null && st.renpaiStart!==undefined){
-    line3.push(`連配開始 <span class="nb">${fmtTime(st.renpaiStart)}</span>(コアタイム期限 <span class="nb">${fmtTime(st.renpaiStart+1.5)}</span>)`);
+    line3.push(`連配開始 <span class="nb">${fmtTime(st.renpaiStart)}</span>(コアタイム期限 <span class="nb">${fmtTime(st.renpaiStart+CFG.coreH)}</span>)`);
   }
   if(st.weather){
     line3.push(`天気 ${st.weather}`);
@@ -3448,7 +3473,7 @@ function renderRenpaiHTML(){
   }
   return `<div style="font-size:9.5px;color:var(--muted2);">連配開始</div>
     <div style="font-family:'PT Mono',monospace;font-size:16px;font-weight:700;color:var(--text);margin-top:2px;">${fmtTime(t)}</div>
-    <div style="font-size:9px;color:var(--muted);margin-top:2px;">コアタイム期限 ${fmtTime(t+1.5)}</div>`;
+    <div style="font-size:9px;color:var(--muted);margin-top:2px;">コアタイム期限 ${fmtTime(t+CFG.coreH)}</div>`;
 }
 const WEATHER_OPTIONS = ['晴れ/くもり','小雨','雨','大雨','雨時々止む','くもりのち雨','雨のちくもり','晴れのち雨','雨のち晴れ','ゲリラ豪雨','雪','台風','猛暑'];
 function renderWeatherHTML(){
@@ -3674,7 +3699,7 @@ function renderMain(){
   const elapsed = Math.max(lastTime - state.depTime, 0.0167);
   const hourlyRate = billableTotal / elapsed;
   const unitRate = count>0 ? billableTotal/count : 0;
-  const low = hourlyRate < 6000;
+  const low = hourlyRate<CFG.rateGood;
 
   const arM = shiftActualRate(state);
   const sectionRows = computeSections(entries, state.depTime, state.startDist);
@@ -3682,7 +3707,7 @@ function renderMain(){
   const curTarget = curTargetIdx < SECTION_TARGETS.length ? SECTION_TARGETS[curTargetIdx] : FINAL_TARGET;
   const curTargetLabel = curTargetIdx < SECTION_TARGETS.length ? '<span class="nb">'+CUTOFFS[curTargetIdx]+'</span>時迄に' : '帰庫迄に';
   const achievedM = curTarget>0 ? billableTotal/curTarget*100 : null;
-  const curDistTarget = dist/25*10000; // 25kmごとに¥10,000のペース目標(距離別サマリー表の達成率と同じ考え方)
+  const curDistTarget = dist/CFG.kmStep*CFG.kmPay; // 25kmごとに¥10,000のペース目標(距離別サマリー表の達成率と同じ考え方)
   const achievedDistM = curDistTarget>0 ? billableTotal/curDistTarget*100 : null;
   let sectionHTML = sectionRowsHTML(sectionRows);
   const sectionTotalHTML = sectionRows.some(r=>r.hasData) ? totalRowHTML_section(sectionRows, hourlyRate, arM?arM.rate:null) : '';
@@ -3764,7 +3789,7 @@ function renderMain(){
         <span id="editDepBtn" style="cursor:pointer;text-decoration:underline dotted;">出庫<span class="nb">${fmtTime(state.depTime)}</span> ✎</span>
         <span id="editRenpaiBtn2" style="cursor:pointer;text-decoration:underline dotted;">連配${state.renpaiStart!=null?'<span class="nb">'+fmtTime(state.renpaiStart)+'</span>':'未設定'} ✎</span>${state.renpaiStart!=null?`<span>コアタイム期限<span class="nb">${fmtTime(state.renpaiStart+1.5)}</span></span>`:''}
         <span id="editWeatherBtn2" style="cursor:pointer;text-decoration:underline dotted;">天気${state.weather?state.weather:'未設定'} ✎</span>
-        ${shiftDayTag(state.shiftDate)?`<span style="flex:0 0 100%;display:flex;justify-content:space-between;align-items:center;"><span id="shiftDayTag" style="font-size:13px;font-weight:700;line-height:1.1;white-space:nowrap;">${shiftDayTag(state.shiftDate)}</span><span style="font-size:9px;white-space:nowrap;">回送<span class="nb">${fmtTime(state.depTime+19.5)}</span><span id="kaisoRemain">${kaisoRemainText(state.depTime)}</span>・帰庫<span class="nb">${fmtTime(state.depTime+20.5)}</span></span></span>`:`<span style="font-size:9px;margin-left:auto;">回送<span class="nb">${fmtTime(state.depTime+19.5)}</span><span id="kaisoRemain">${kaisoRemainText(state.depTime)}</span>・帰庫<span class="nb">${fmtTime(state.depTime+20.5)}</span></span>`}
+        ${shiftDayTag(state.shiftDate)?`<span style="flex:0 0 100%;display:flex;justify-content:space-between;align-items:center;"><span id="shiftDayTag" style="font-size:13px;font-weight:700;line-height:1.1;white-space:nowrap;">${shiftDayTag(state.shiftDate)}</span><span style="font-size:9px;white-space:nowrap;">回送<span class="nb">${fmtTime(state.depTime+CFG.kaisoH)}</span><span id="kaisoRemain">${kaisoRemainText(state.depTime)}</span>・帰庫<span class="nb">${fmtTime(state.depTime+CFG.returnH)}</span></span></span>`:`<span style="font-size:9px;margin-left:auto;">回送<span class="nb">${fmtTime(state.depTime+CFG.kaisoH)}</span><span id="kaisoRemain">${kaisoRemainText(state.depTime)}</span>・帰庫<span class="nb">${fmtTime(state.depTime+CFG.returnH)}</span></span>`}
       </div>
       <div class="meter-row3">
         <div class="meter-col" style="text-align:left;">
@@ -3779,7 +3804,7 @@ function renderMain(){
         <div class="meter-col" style="text-align:center;">
           <div class="meter-label">距離別目標</div>
           <div class="meter-digit meter-target-big ${achievedDistM!=null?(achievedDistM>=100?'pos':'neg'):''}">${achievedDistM!=null?achievedDistM.toFixed(0)+'%':'—'}</div>
-          <div class="meter-target-caption"><span class="nb">25</span>km毎<span class="nb">¥10,000</span>ペース</div>
+          <div class="meter-target-caption"><span class="nb">${CFG.kmStep}</span>km毎<span class="nb">¥${fmtYen(CFG.kmPay)}</span>ペース</div>
         </div>
         <div class="meter-col" style="text-align:left;">
           <div class="meter-label">出庫から</div>
@@ -3851,7 +3876,7 @@ function renderMain(){
     <div class="section-card">
       <div class="card-title">乗務別 時間単価推移</div>
       <div>${buildEntryHourlyTimeSeriesChartHTML(entries, state.depTime, true)}</div>
-      <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:4,000円/h未満 黄:6,000円/h未満 緑:6,000円/h以上) 破線=累計組単価 棒=運賃</div>
+      <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:${fmtYen(CFG.rateLow)}円/h未満 黄:${fmtYen(CFG.rateGood)}円/h未満 緑:${fmtYen(CFG.rateGood)}円/h以上) 破線=累計組単価 棒=運賃</div>
       ${buildFareDetailHTML(entries)}
     </div>
 
@@ -3900,6 +3925,9 @@ function renderMain(){
     <div class="footer-row">
       <button class="btn-ghost" id="backupBtn">💾 バックアップをコピー</button>
       <button class="btn-ghost" id="openHistoryBtn2">📖 過去の出番</button>
+    </div>
+    <div class="footer-row">
+      <button class="btn-ghost" id="settingsBtn">⚙ 設定(目標・基準・勤務時間)</button>
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="restListBtn">☕ 休憩の記録・修正</button>
@@ -4018,6 +4046,7 @@ function renderMain(){
   document.getElementById('helpBtn').onclick = openHelpModal;
   document.getElementById('healthBtn').onclick = taxiopsTrackHealth;
   document.getElementById('restListBtn').onclick = openRestModal;
+  document.getElementById('settingsBtn').onclick = openSettingsModal;
   document.getElementById('distCell').onclick = openDistModal;
   document.getElementById('distListBtn').onclick = openDistModal;
   document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
@@ -4423,8 +4452,8 @@ function renderSummary(){
   const musenCancelCount = entries.filter(e=>e.pay==='キャンセル' && (e.type||'連配GO')==='自社無線').length;
   const goTotalCountS = dedupeByTime(entries.filter(e=>['連配GO','GO'].includes(e.type||'連配GO') && isBillable(e))).length;
   const musenTotalCountS = dedupeByTime(entries.filter(e=>(e.type||'連配GO')==='自社無線' && isBillable(e))).length;
-  const midCountS = entries.filter(e=>{ const nf = netFare(e); return nf>=5000 && nf<10000; }).length;
-  const longCountS = entries.filter(e=>netFare(e)>=10000).length;
+  const midCountS = entries.filter(e=>{ const nf = netFare(e); return nf>=CFG.midMin && nf<CFG.longMin; }).length;
+  const longCountS = entries.filter(e=>netFare(e)>=CFG.longMin).length;
   const arS = shiftActualRate(state);
   const DIST_EXEMPT_PAYS_S = ['キャンセル','B空転','障割','定額負け'];
   const timesWithDistS = new Set(entries.filter(e=>e.dist).map(e=>e.time));
@@ -4550,10 +4579,10 @@ function renderSummary(){
         <div id="sumTimeCaptureRoot" style="margin-top:8px;">
         <div class="card-title" style="margin:0 0 2px;">乗務別 時間単価推移</div>
         <div>${buildEntryHourlyTimeSeriesChartHTML(entries, state.depTime, true)}</div>
-        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:4,000円/h未満 黄:6,000円/h未満 緑:6,000円/h以上) 破線=累計組単価 棒=運賃</div>
+        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:${fmtYen(CFG.rateLow)}円/h未満 黄:${fmtYen(CFG.rateGood)}円/h未満 緑:${fmtYen(CFG.rateGood)}円/h以上) 破線=累計組単価 棒=運賃</div>
         <div class="card-title" style="margin:8px 0 2px;">時間帯別サマリー</div>
         <div>${sectionChartHTML}</div>
-        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:6,000円/h以上・赤:未満)</div>
+        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:${fmtYen(CFG.rateGood)}円/h以上・赤:未満)</div>
         <table class="summary-table has-target" style="margin-top:6px;">
           <tr><th>区間</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
           ${sectionHTML}
@@ -4563,7 +4592,7 @@ function renderSummary(){
         <div id="sumDistCaptureRoot" style="margin-top:10px;">
         <div class="card-title" style="margin:0 0 2px;">距離別サマリー</div>
         <div>${distChartHTML}</div>
-        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:6,000円/h以上・赤:未満)</div>
+        <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">棒=運賃合計 折れ線=時間単価(緑:${fmtYen(CFG.rateGood)}円/h以上・赤:未満)</div>
         <table class="summary-table has-target" style="margin-top:6px;">
           <tr><th>距離帯</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
           ${distBinHTML}
@@ -4691,7 +4720,7 @@ function renderSummary(){
 const ANALYSIS_ICON = {good:'✅', warn:'⚠️', info:'🩺', trend:'📈'};
 function buildAnalysis(s, sectionRows, entries, distBinRows, arObj, cancelInfo, dateStr, weather){
   const items = [];
-  const THRESH = 6000;
+  const THRESH = CFG.rateGood;
   const withData = sectionRows.filter(r=>r.hasData);
   const withDistData = (distBinRows||[]).filter(r=>r.count>0);
   const SEASON_PHRASE = {
@@ -4989,8 +5018,8 @@ function localComment(entry, before, after){
   const mr = Math.round(netFare(entry)/elapsed);
   let qual;
   if(mr>=8000) qual = pick(entry.id, RATE_TOP_PHRASES);
-  else if(mr>=6000) qual = pick(entry.id, RATE_GOOD_PHRASES);
-  else if(mr>=4000) qual = pick(entry.id, RATE_OK_PHRASES);
+  else if(mr>=CFG.rateGood) qual = pick(entry.id, RATE_GOOD_PHRASES);
+  else if(mr>=CFG.rateLow) qual = pick(entry.id, RATE_OK_PHRASES);
   else qual = pick(entry.id, RATE_LOW_PHRASES);
   const trendDiff = before.count>0 ? (after.hourly - before.hourly) : 0;
   let trend = '';
@@ -5381,7 +5410,7 @@ function trackImportWindow(date){
   let s=base+5*3600, e=base+29*3600;
   if(typeof state!=='undefined' && state && state.shiftDate===date && state.depTime!=null){
     s=base+state.depTime*3600-600;
-    const end=(state.returnTime!=null)?state.returnTime:(state.depTime+20.5);
+    const end=(state.returnTime!=null)?state.returnTime:(state.depTime+CFG.returnH);
     e=base+end*3600+1800;
   }
   return {s,e};
@@ -5568,7 +5597,7 @@ function evNowPos(){        // 直近3分以内の測位(軌跡の記録が動�
   return null;
 }
 /* ---------- 休憩タイマー: 完全停止10分以上だけを休憩に数える(10分未満は破棄) ---------- */
-const REST_MIN_MS = 10*60*1000;
+const REST_MIN_MS = CFG.restMin*60*1000;
 let restDiscardAt = 0;      // (使わない。10分未満は確認なしで即削除)
 function restList(st){ return (st && Array.isArray(st.rests)) ? st.rests : []; }
 function restTotalMs(st){ return restList(st).reduce((a,r)=>a+Math.max(0,r.e-r.s),0); }
@@ -5608,7 +5637,7 @@ function restBtn(){
   const now=Date.now();
   if(!state.restRun){
     state.restRun=now; restDiscardAt=0;
-    toast('休憩タイマー開始(完全停止10分以上で休憩に数えます)');
+    toast('休憩タイマー開始(完全停止'+CFG.restMin+'分以上で休憩に数えます)');
   } else {
     const el=now-state.restRun;
     if(el>=REST_MIN_MS){
@@ -5616,10 +5645,77 @@ function restBtn(){
       toast('休憩を記録 '+restDurText(el)+'(合計 '+restDurText(restTotalMs(state))+' / '+restList(state).length+'回)');
     } else {      // 10分未満は問答無用で削除(確認なし)
       state.restRun=null; restDiscardAt=0;
-      toast('10分未満のため休憩に数えず、削除しました');
+      toast(CFG.restMin+'分未満のため休憩に数えず、削除しました');
     }
   }
   evRefreshStat(); saveState();
+}
+/* ---------- ⚙ 設定: 目標・基準・勤務時間を、自分の営業所・運用に合わせて変える(保存すると再読み込みして反映) ---------- */
+function openSettingsModal(){
+  closeBackupModal();
+  const ov=document.createElement('div'); ov.id='backupModal';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+  const inp=(id,val,w,extra)=>'<input id="'+id+'" value="'+String(val).replace(/"/g,'&quot;')+'" inputmode="'+(extra||'decimal')+'" style="width:'+w+'px;padding:6px 7px;border-radius:8px;border:1px solid var(--border);background:var(--card2,#1b1f27);color:var(--text);font-size:14px;text-align:right;">';
+  const row=(label,html)=>'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--text);padding:4px 0;"><span style="flex:1 1 96px;color:var(--muted);">'+label+'</span>'+html+'</div>';
+  const h=(t)=>'<div style="font-weight:700;font-size:13px;color:var(--text);margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">'+t+'</div>';
+  let tg=''; for(let i=0;i<4;i++) tg+=row('目標'+(i+1),inp('cfCut'+i,CFG.cutoffs[i],44)+'時迄に ¥'+inp('cfTgt'+i,CFG.targets[i],86,'numeric'));
+  ov.innerHTML='<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'
+    +'<div style="font-weight:700;font-size:15px;color:var(--text);">⚙ 設定</div>'
+    +'<div style="font-size:11px;color:var(--muted);">保存すると画面を読み込み直します。過去の出番の表示も、新しい基準で計算し直されます。</div>'
+    +h('時間帯別の目標(税込)')+tg
+    +row('出番終了(帰庫)まで','¥'+inp('cfFinal',CFG.finalTarget,86,'numeric'))
+    +h('距離の目標')
+    +row('ペース',inp('cfKmStep',CFG.kmStep,46)+'kmごとに ¥'+inp('cfKmPay',CFG.kmPay,74,'numeric'))
+    +h('時間単価の色分け(円/h)')
+    +row('赤にする(未満)',inp('cfRateLow',CFG.rateLow,80,'numeric'))
+    +row('緑にする(以上)',inp('cfRateGood',CFG.rateGood,80,'numeric'))
+    +h('運賃帯(円以上)')
+    +row('ミドル',inp('cfMid',CFG.midMin,80,'numeric'))
+    +row('ロング',inp('cfLong',CFG.longMin,80,'numeric'))
+    +h('休憩')
+    +row('休憩に数える最短(完全停止)',inp('cfRest',CFG.restMin,52)+'分')
+    +h('勤務時間(出庫からの時間)')
+    +row('回送まで',inp('cfKaiso',CFG.kaisoH,60)+'時間')
+    +row('帰庫まで',inp('cfReturn',CFG.returnH,60)+'時間')
+    +row('連配のコアタイム',inp('cfCore',CFG.coreH,60)+'時間')
+    +h('出番の目印(日付の下1桁で表示)')
+    +row('目印1<br><span style="font-size:10px;">名前 / 下1桁(,区切り)</span>','<input id="cfTag0n" value="'+CFG.tags[0].name+'" style="width:80px;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--card2,#1b1f27);color:var(--text);font-size:14px;">'+inp('cfTag0d',CFG.tags[0].digits,90,'text'))
+    +row('目印2','<input id="cfTag1n" value="'+CFG.tags[1].name+'" style="width:80px;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--card2,#1b1f27);color:var(--text);font-size:14px;">'+inp('cfTag1d',CFG.tags[1].digits,90,'text'))
+    +'<div id="cfErr" style="font-size:12px;color:#e5262b;min-height:16px;margin-top:6px;"></div>'
+    +'<button class="btn-ghost" id="cfSave" style="margin-top:2px;font-weight:700;">保存して反映</button>'
+    +'<button class="btn-ghost" id="cfReset" style="margin-top:4px;">初期値に戻す</button>'
+    +'<button class="btn-ghost" id="bkClose" style="margin-top:4px;">閉じる</button></div>';
+  document.body.appendChild(ov);
+  document.getElementById('bkClose').onclick=closeBackupModal;
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+  const g=(id)=>document.getElementById(id).value.trim();
+  const num=(id)=>{ const v=g(id).replace(/[,，]/g,'').replace(/[０-９．]/g,(c)=>c==='．'?'.':String.fromCharCode(c.charCodeAt(0)-65248)); return v===''?NaN:Number(v); };
+  document.getElementById('cfSave').onclick=()=>{
+    const err=(m)=>{ document.getElementById('cfErr').textContent=m; };
+    const o={cutoffs:[],targets:[],tags:[]};
+    for(let i=0;i<4;i++){ o.cutoffs.push(num('cfCut'+i)); o.targets.push(num('cfTgt'+i)); }
+    o.finalTarget=num('cfFinal'); o.kmStep=num('cfKmStep'); o.kmPay=num('cfKmPay'); o.rateLow=num('cfRateLow'); o.rateGood=num('cfRateGood');
+    o.midMin=num('cfMid'); o.longMin=num('cfLong'); o.restMin=num('cfRest'); o.kaisoH=num('cfKaiso'); o.returnH=num('cfReturn'); o.coreH=num('cfCore');
+    const all=[].concat(o.cutoffs,o.targets,[o.finalTarget,o.kmStep,o.kmPay,o.rateLow,o.rateGood,o.midMin,o.longMin,o.restMin,o.kaisoH,o.returnH,o.coreH]);
+    if(all.some(v=>!isFinite(v)||v<0)) return err('数字を入れてください(空欄や文字は使えません)');
+    for(let i=0;i<4;i++) if(o.cutoffs[i]<1||o.cutoffs[i]>30||Math.floor(o.cutoffs[i])!==o.cutoffs[i]) return err('時刻は1〜30の整数にしてください');
+    for(let i=1;i<4;i++) if(o.cutoffs[i]<=o.cutoffs[i-1]) return err('目標の時刻は、早い順に並べてください');
+    if(o.kmStep<1||o.kmPay<1) return err('距離の目標は、1以上にしてください');
+    if(o.rateLow>o.rateGood) return err('時間単価は「赤 ≦ 緑」にしてください');
+    if(o.midMin>=o.longMin) return err('運賃帯は「ミドル < ロング」にしてください');
+    if(o.restMin<1||o.restMin>180) return err('休憩の最短は1〜180分にしてください');
+    if(o.kaisoH<1||o.returnH<o.kaisoH||o.returnH>40) return err('勤務時間は「回送 ≦ 帰庫」にしてください');
+    for(let i=0;i<2;i++){ const d=g('cfTag'+i+'d'); if(!/^[0-9０-９,、\s]*$/.test(d)) return err('目印の「下1桁」は、数字を , で区切って入れてください'); o.tags.push({name:g('cfTag'+i+'n'), digits:d.replace(/[０-９]/g,(c)=>String.fromCharCode(c.charCodeAt(0)-65248))}); }
+    try{ localStorage.setItem(CFG_LS_KEY, JSON.stringify(o)); }catch(e){ return err('保存できませんでした'); }
+    toast('設定を保存しました。読み込み直します');
+    setTimeout(()=>{ location.reload(); }, 700);
+  };
+  document.getElementById('cfReset').onclick=()=>{
+    if(!confirm('設定をすべて初期値に戻します。よろしいですか?')) return;
+    try{ localStorage.removeItem(CFG_LS_KEY); }catch(e){}
+    toast('初期値に戻しました。読み込み直します');
+    setTimeout(()=>{ location.reload(); }, 700);
+  };
 }
 function openRestModal(){
   closeBackupModal();
@@ -5630,7 +5726,7 @@ function openRestModal(){
     : '<div style="font-size:12px;color:var(--muted);">まだ休憩の記録はありません</div>';
   ov.innerHTML='<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'
     +'<div style="font-weight:700;font-size:15px;color:var(--text);">休憩の記録</div>'
-    +'<div style="font-size:12px;color:var(--muted);">完全停止10分以上だけを数えます。合計 <b style="color:var(--text);">'+restDurText(restTotalMs(state))+'</b>(' +rs.length+'回)</div>'
+    +'<div style="font-size:12px;color:var(--muted);">完全停止'+CFG.restMin+'分以上だけを数えます。合計 <b style="color:var(--text);">'+restDurText(restTotalMs(state))+'</b>(' +rs.length+'回)</div>'
     +rows
     +(state.restRun?'<button class="btn-ghost" id="restCancelRun" style="margin-top:4px;">稼働中のタイマーを取り消す</button>':'')
     +'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
@@ -5760,7 +5856,7 @@ async function evBtn(k,kind){
   let restNote='';
   if((k==='pu'||k==='bd') && state.restRun){        // 休憩中に迎車・乗車を押した=休憩はここまで
     const n=Date.now(), el=n-state.restRun;
-    restNote = restFinish(n) ? '休憩'+restDurText(el)+'を記録' : '休憩は10分未満のため削除';
+    restNote = restFinish(n) ? '休憩'+restDurText(el)+'を記録' : '休憩は'+CFG.restMin+'分未満のため削除';
   }
   const h=evNowH(), pos=evNowPos(), o={t:h};
   if(kind) o.k=kind;
