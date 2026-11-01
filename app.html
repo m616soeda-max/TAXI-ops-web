@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102854">
+<meta name="taxiops-build" content="2026102855">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app54</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app55</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5983,6 +5983,18 @@ async function tmRecordVideo(){
   }
   await saveBlobSmart(blob,name,'動画を保存しました('+kb+'KB)');
 }
+function tmPlayRange(){      // 再生・動画に使う範囲=出庫時刻〜帰庫時刻(帰庫前なら最後の点まで)。その前後はカット
+  const all=tm.pts; let dep=null, ret=null;
+  try{
+    const st=(tm.date===state.shiftDate) ? state : loadShiftByDate(tm.date);
+    if(st){ dep=st.depTime; ret=st.returnTime; }
+  }catch(e){}
+  const base=evDayStart(tm.date);
+  const s0=(typeof dep==='number') ? base+dep*3600 : -Infinity, s1=(typeof ret==='number') ? base+ret*3600 : Infinity;
+  const pts=all.filter(p=>p.t>=s0 && p.t<=s1);
+  if(pts.length<2) return {pts:all, t0:all[0].t, t1:all[all.length-1].t};      // 出庫〜帰庫の間に点が足りないときは、全部を使う
+  return {pts, t0:isFinite(s0)?Math.min(s0,pts[0].t):pts[0].t, t1:isFinite(s1)?Math.max(s1,pts[pts.length-1].t):pts[pts.length-1].t};
+}
 function tmPlayToggle(fromRec){
   if(!tm) return;
   if(tm.recording && fromRec!==true){ toast('動画を作っている間は操作できません'); return; }
@@ -5992,16 +6004,16 @@ function tmPlayToggle(fromRec){
     if(pl.playing){ pl.last=performance.now(); tmPlayLoop(); } else cancelAnimationFrame(pl.raf);
     tmPlayBtnUpdate(); return;
   }
-  const pts=tm.pts;
-  if(pts.length<2){ toast('再生できる軌跡がありません'); return; }
+  if(tm.pts.length<2){ toast('再生できる軌跡がありません'); return; }
+  const rng=tmPlayRange(), pts=rng.pts; tm.playPts=pts;
   const cum=[0];
   for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+((pts[i].t-pts[i-1].t<=TRACK_GAP_SEC)?trackDistM(pts[i-1],pts[i]):0));
-  tm.userMoved=false; tmFit();              // 全体が入る範囲に固定して、動画の画角を安定させる
-  tm.play={t0:pts[0].t, t1:pts[pts.length-1].t, cum, elapsed:0, last:performance.now(), playing:true, done:false, i:0, n:1, cur:pts[0].t, pos:{la:pts[0].la,lo:pts[0].lo}, km:0, raf:0};
+  tm.userMoved=false; tmFit(pts);              // 再生する範囲が入るように固定して、動画の画角を安定させる
+  tm.play={t0:rng.t0, t1:rng.t1, cum, elapsed:0, last:performance.now(), playing:true, done:false, i:0, n:1, cur:rng.t0, pos:{la:pts[0].la,lo:pts[0].lo}, km:0, raf:0};
   tmPlayBtnUpdate(); tmPlayLoop();
 }
 function tmPlayStep(pl){
-  const pts=tm.pts, f=Math.min(1, pl.elapsed/TM_PLAY_MS);
+  const pts=tm.playPts||tm.pts, f=Math.min(1, pl.elapsed/TM_PLAY_MS);
   pl.cur=pl.t0+(pl.t1-pl.t0)*f;
   while(pl.i<pts.length-2 && pts[pl.i+1].t<=pl.cur) pl.i++;
   const a=pts[pl.i], b=pts[Math.min(pl.i+1,pts.length-1)];
@@ -6019,7 +6031,7 @@ function tmPlayLoop(){
   tmPlayStep(pl); tmDraw(); tmPlayBtnUpdate();
   if(!pl.done) pl.raf=requestAnimationFrame(tmPlayLoop);
 }
-function tmPlayStop(){ if(tm && tm.play){ cancelAnimationFrame(tm.play.raf); tm.play=null; tmPlayBtnUpdate(); } }
+function tmPlayStop(){ if(tm && tm.play){ cancelAnimationFrame(tm.play.raf); tm.play=null; tm.playPts=null; tmPlayBtnUpdate(); } }
 function tmDrawHud(ctx,W,H,pl){
   const dayStart=new Date(tm.date+'T00:00:00').getTime()/1000;
   const hm=(sec)=>{ const m=Math.max(0,Math.floor((sec-dayStart)/60)); return Math.floor(m/60)+':'+String(m%60).padStart(2,'0'); };
@@ -6040,9 +6052,9 @@ function tmRequest(){
   if(!tm || tm.raf) return;
   tm.raf=requestAnimationFrame(()=>{ if(tm){ tm.raf=0; tmDraw(); } });
 }
-function tmFit(){
+function tmFit(src){
   const W=tm.W, H=tm.H;
-  const pts=tm.pts.slice();
+  const pts=(src||tm.pts).slice();
   if(tm.live && trackDiag.lastFix) pts.push(trackDiag.lastFix); // 記録中は現在地も範囲に含める
   if(!pts.length){ tm.z=11; const w=tmProj(35.681,139.767,11); tm.cx=w[0]; tm.cy=w[1]; return; }
   let a=90,b=-90,c=180,d=-180;
@@ -6088,7 +6100,7 @@ function tmDraw(){
     }
   }
   const pl=tm.play;
-  const pts=pl?tm.pts.slice(0,pl.n):tm.pts;   // 再生中は、再生位置までの点だけを描く
+  const pts=pl?(tm.playPts||tm.pts).slice(0,pl.n):tm.pts;   // 再生中は、再生位置までの点だけを描く
   const xy=(p)=>{ const w=tmProj(p.la,p.lo,z); return [w[0]-ox, w[1]-oy]; };
   ctx.lineJoin='round'; ctx.lineCap='round';
   if(pts.length>1){
