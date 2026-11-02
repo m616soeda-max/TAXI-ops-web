@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102856">
+<meta name="taxiops-build" content="2026102857">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app56</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app57</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1524,7 +1524,7 @@ function openHelpModal(){
     det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」をタップすると、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩ボタン', p('・完全停止したら「休憩」を押して開始、走り出すときにもう一度押して終了します。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。それより短いと、確認なしで削除されます。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
     det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」で、再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点は、「⋯」→「📍 住所未取得をまとめて取得」で取れます。灰色の区間は「🩶 グレー区間を探す」で、時刻と原因が分かります。')),
-    det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
+    det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・画像は、ギャラリーの「TAXI-OPS」アルバムに、①②③④の順に並ぶように保存されます。Xに投稿するときは、画像ボタン→「コレクション」→「TAXI-OPS」を開いて、①→④の順にタップして選びます(選んだ順が投稿の順になります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
     det('⚙ 設定', p('「⋯」→「⚙ 設定」で、自分の営業所や運用に合わせて、次の値を変えられます。\n・時間帯別の目標(締めの時刻と目標額)と、帰庫までの目標\n・距離の目標(◯kmごとに◯円)\n・時間単価の色分け(赤にする未満、緑にする以上)\n・運賃帯(ミドル・ロングの下限)\n・休憩に数える最短(分)\n・回送まで・帰庫まで・連配のコアタイム(出庫からの時間)\n・出番の目印(名前と、表示する日の下1桁)\n保存すると画面を読み込み直します。「初期値に戻す」で、元の値に戻せます。月間目標は、ホーム画面の「月間目標 ✎」から月ごとに設定します。')),
     det('TAXI INTELとの連携', p('TAXI INTELは、ExcelのデータをOPSとは別に分析します。分析だけなら、OPSとの連携は要りません。\n\n「Opsの月間目標との突き合わせ」は、同じ端末・同じブラウザでOPSの月間目標を設定しているときだけ出ます。アプリ版のOPSとブラウザで開いたINTELは、データの置き場所が別なので、その場合は出ません。')),
     det('バックアップ(いちばん大事)', p('・アプリをアンインストールすると、中のデータは消えます。入れ直す前に、必ず「⋯」→「📋 全データをコピー」→ メモなどに貼り付けて保管してください。\n・戻すとき: 出庫前の画面の「バックアップを貼り付け」に貼って「この内容で復元する」。または「⋯」→「📥 全データをファイルから取り込む」。\n・設定も、全データに含まれます。\n・「⋯」に橙の●が出たら、バックアップから1日半以上たっています。')),
@@ -1761,7 +1761,7 @@ async function captureAndShareAllSplits(parts, filenames){
       if(k<canvases.length-1) await new Promise(rs=>setTimeout(rs,1200));
     }
     if(saved===canvases.length){
-      alert('画像'+saved+'枚をピクチャの「'+PIC_ALBUM+'」に保存しました。\nXの画像ボタン →「コレクション」→「'+PIC_ALBUM+'」を開くと、①②③④の順に並びます。①→④の順にタップして選んでください(選んだ順が投稿の順になります)。');
+      toast('画像'+saved+'枚をピクチャの「'+PIC_ALBUM+'」に保存しました');
       return;
     }
     if(first!=='noplugin'){   // 失敗の理由を画面に残す(共有シートには勝手に切り替えない)
@@ -1772,7 +1772,7 @@ async function captureAndShareAllSplits(parts, filenames){
     const files=[];
     for(let i=0;i<canvases.length;i++){ const b=await canvasToBlobP(canvases[i]); if(b) files.push({name:filenames[i], blob:b}); }
     const r=files.length ? await nativeShareFiles(files) : false;
-    if(r===true){ toast('共有先で「X」などを選んでください(画像'+files.length+'枚)'); return; }
+    if(r===true){ toast('共有先を選んでください(画像'+files.length+'枚)'); return; }
     if(r==='cancel'){ toast('共有をキャンセルしました'); return; }
     toast('画像を保存できませんでした: '+(window.__lastSaveError||'不明')); return;   // アプリ版のWebViewでは、従来のダウンロードは動かないので、偽の成功表示をしない
   }
