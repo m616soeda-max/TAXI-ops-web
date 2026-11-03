@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102859">
+<meta name="taxiops-build" content="2026102861">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -778,7 +778,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app59</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app61</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1530,11 +1530,11 @@ function openHelpModal(){
     det('1日の流れ', p('1. 出庫: 出番日と出庫時刻を入れて「出庫」。走行軌跡の記録が自動で始まります(通知に「記録中」)。\n2. 営業中: お客さんごとに、迎車 → 乗車 → 降車のボタンを押します(時刻と位置が残ります)。降車したら「記録する」で、代金・距離・種別・支払いを入れます。\n3. 休憩: 「休憩」ボタン(下の「休憩ボタン」を参照)。\n4. 帰庫: 「⋯」→「乗務終了・まとめを見る」→ 帰庫時刻を入れます。\n5. まとめ画面: 日報コピー、画像の保存(①②)、「🗺 走行軌跡を見る」。最後に「✕」で次の出番へ。')),
     det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」をタップすると、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩ボタン', p('・完全停止したら「休憩」を押して開始、走り出すときにもう一度押して終了します。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。それより短いと、確認なしで削除されます。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
-    det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」で、再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点は、「⋯」→「📍 住所未取得をまとめて取得」で取れます。灰色の区間は「🩶 グレー区間を探す」で、時刻と原因が分かります。')),
+    det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」を押すと、動画にする範囲(開始・終了の時刻)を聞かれます。初期値は出庫〜帰庫の時刻で、手入力で変えられます(24時を過ぎる時刻は2510のように入れます)。その範囲の再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点は、「⋯」→「📍 住所未取得をまとめて取得」で取れます。灰色の区間は「🩶 グレー区間を探す」で、時刻と原因が分かります。')),
     det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・画像は、ギャラリーの「TAXI-OPS」アルバムに、①②③④の順に並ぶように保存されます。Xに投稿するときは、画像ボタン→「コレクション」→「TAXI-OPS」を開いて、①→④の順にタップして選びます(選んだ順が投稿の順になります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
     det('⚙ 設定', p('「⋯」→「⚙ 設定」で、自分の営業所や運用に合わせて、次の値を変えられます。\n・時間帯別の目標(締めの時刻と目標額)と、帰庫までの目標\n・距離の目標(◯kmごとに◯円)\n・時間単価の色分け(赤にする未満、緑にする以上)\n・運賃帯(ミドル・ロングの下限)\n・休憩に数える最短(分)\n・回送まで・帰庫まで・連配のコアタイム(出庫からの時間)\n・出番の目印(名前と、表示する日の下1桁)\n保存すると画面を読み込み直します。「初期値に戻す」で、元の値に戻せます。月間目標は、ホーム画面の「月間目標 ✎」から月ごとに設定します。')),
     det('TAXI INTELとの連携', p('TAXI INTELは、ExcelのデータをOPSとは別に分析します。分析だけなら、OPSとの連携は要りません。\n\n「Opsの月間目標との突き合わせ」は、同じ端末・同じブラウザでOPSの月間目標を設定しているときだけ出ます。アプリ版のOPSとブラウザで開いたINTELは、データの置き場所が別なので、その場合は出ません。')),
-    det('バックアップ(いちばん大事)', p('・アプリをアンインストールすると、中のデータは消えます。入れ直す前に、必ず「⋯」→「📦 全データ(過去の出番含む)をファイル保存」で、ファイルに残してください。共有の画面で、Googleドライブやマイファイルなどの保存先を選びます。\n・戻すとき: 「⋯」→「📥 全データをファイルから取り込む」(出庫前の画面にもあります)。・設定も、全データに含まれます。\n・「⋯」に橙の●が出たら、バックアップから1日半以上たっています。')),
+    det('バックアップ(いちばん大事)', p('・アプリをアンインストールすると、中のデータは消えます。入れ直す前に、必ず「⋯」→「📦 全データ(過去の出番含む)をファイル保存」で、ファイルに残してください。共有の画面で、Googleドライブやマイファイルなどの保存先を選びます。\n・戻すとき: 「⋯」→「📥 全データをファイルから取り込む」(出庫前の画面にもあります)。\n・設定も、全データに含まれます。\n・「⋯」に橙の●が出たら、バックアップから1日半以上たっています。')),
     det('更新', p('・新しい版は、アプリを開き直すと自動で入ります(「⋯」→「🔄 今すぐ更新を確認」でも確認できます)。\n・おかしくなったら「↩ 同梱版に戻す」。')),
     det('困ったとき', p('・保存や共有ができない: 「🩺 保存機能の診断」を押して、出た画面の写真を送ってください。\n・位置が取れない: 端末の設定 → アプリ → TAXI OPS → 権限 → 位置情報を「アプリの使用中のみ許可」+「正確な位置情報を使用」オン。\n・軌跡が途切れる: 「最近使ったアプリ」から TAXI OPS を消さない。電池の設定を「制限なし」にする。\n・動画が見つからない: ギャラリーの「TAXI-OPS」アルバムを見てください。保存できなかったときは、保存先を選ぶ画面が出ます。')),
     det('権利・免責', p('・運賃や集計は参考値です。日報や会社の記録が正です。\n・「GO」「GOPay」などの名前は、各社の商標で、このアプリは各社とは関係がありません。\n・地図は、国土地理院の地理院タイル(淡色地図)を使っています。住所は、国土地理院の逆ジオコーダーで取得しています。')),
@@ -5870,7 +5870,47 @@ function tmVidBtnUpdate(){
   b.textContent = (tm&&tm.recording) ? '⏺' : '🎬';
   b.style.color = (tm&&tm.recording) ? '#e5262b' : '';
 }
-async function tmRecordVideo(){
+function tmAskVideoRange(){      // 動画にする範囲(開始・終了)を手入力できる。初期値は出庫時刻〜帰庫時刻(帰庫前なら最後の点)。24時を過ぎる時刻は2510のように入れる
+  return new Promise((resolve)=>{
+    closeBackupModal();
+    let dep=null, ret=null;
+    try{ const st=(tm.date===state.shiftDate)?state:loadShiftByDate(tm.date); if(st){ dep=st.depTime; ret=st.returnTime; } }catch(e){}
+    const base=evDayStart(tm.date), first=(tm.pts[0].t-base)/3600, last=(tm.pts[tm.pts.length-1].t-base)/3600;
+    const d0=(typeof dep==='number')?dep:first, d1=(typeof ret==='number')?ret:last;
+    const ov=document.createElement('div'); ov.id='backupModal';
+    ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+    const fld=(id,val)=>'<input id="'+id+'" value="'+fmtTime(val)+'" inputmode="numeric" style="width:90px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card2,#1b1f27);color:var(--text);font-size:18px;text-align:center;font-family:\'PT Mono\',monospace;">';
+    ov.innerHTML='<div style="width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'
+      +'<div style="font-weight:700;font-size:15px;color:var(--text);">🎬 動画にする範囲</div>'
+      +'<div style="font-size:11px;color:var(--muted);line-height:1.5;">開始と終了の時刻を、手入力で変えられます(初期値は出庫〜帰庫)。24時を過ぎる時刻は「2510」のように入れます。</div>'
+      +'<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0;color:var(--text);">'+fld('vrS',d0)+'<span>〜</span>'+fld('vrE',d1)+'</div>'
+      +'<div id="vrErr" style="font-size:12px;color:#e5262b;min-height:16px;"></div>'
+      +'<button class="btn-ghost" id="vrOk" style="font-weight:700;">この範囲で動画を作る</button>'
+      +'<button class="btn-ghost" id="vrReset">出庫〜帰庫に戻す</button>'
+      +'<button class="btn-ghost" id="vrCancel">やめる</button></div>';
+    document.body.appendChild(ov);
+    const done=(v)=>{ closeBackupModal(); resolve(v); };
+    document.getElementById('vrCancel').onclick=()=>done(null);
+    ov.addEventListener('click',(e)=>{ if(e.target===ov) done(null); });
+    document.getElementById('vrReset').onclick=()=>{ document.getElementById('vrS').value=fmtTime(d0); document.getElementById('vrE').value=fmtTime(d1); document.getElementById('vrErr').textContent=''; };
+    document.getElementById('vrOk').onclick=()=>{
+      const a=parseTime(document.getElementById('vrS').value), b=parseTime(document.getElementById('vrE').value), err=(m)=>{ document.getElementById('vrErr').textContent=m; };
+      if(a===null||b===null) return err('時刻の形式が正しくありません(例: 0730、2510)');
+      if(b<=a) return err('終了は、開始より後の時刻にしてください');
+      const n=tm.pts.filter(p=>p.t>=base+a*3600 && p.t<=base+b*3600).length;
+      if(n<2) return err('その範囲には、記録された軌跡がほとんどありません('+fmtTime(first)+'〜'+fmtTime(last)+'に記録あり)');
+      done({dep:a, ret:b});
+    };
+  });
+}
+async function tmRecordVideo(){      // まず範囲を聞き、その範囲だけを動画にする
+  if(!tm || tm.recording) return;
+  if(tm.pts.length<2){ toast('再生できる軌跡がありません'); return; }
+  const ov=await tmAskVideoRange(); if(!ov||!tm) return;
+  tm.rangeOv=ov;
+  try{ await tmRecordVideoRun(); } finally { if(tm) tm.rangeOv=null; }
+}
+async function tmRecordVideoRun(){
   if(!tm || tm.recording) return;
   const mime=tmRecPickMime();
   if(!mime){ toast('この端末では動画を作れません。画面録画をお使いください'); return; }
@@ -5919,6 +5959,7 @@ function tmPlayRange(){      // 再生・動画に使う範囲=出庫時刻〜�
     const st=(tm.date===state.shiftDate) ? state : loadShiftByDate(tm.date);
     if(st){ dep=st.depTime; ret=st.returnTime; }
   }catch(e){}
+  if(tm.rangeOv){ dep=tm.rangeOv.dep; ret=tm.rangeOv.ret; }      // 動画を作るときに手入力した開始・終了時刻
   const base=evDayStart(tm.date);
   const s0=(typeof dep==='number') ? base+dep*3600 : -Infinity, s1=(typeof ret==='number') ? base+ret*3600 : Infinity;
   const pts=all.filter(p=>p.t>=s0 && p.t<=s1);
@@ -5938,7 +5979,7 @@ function tmPlayToggle(fromRec){
   const rng=tmPlayRange(), pts=rng.pts; tm.playPts=pts;
   const cum=[0];
   for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+((pts[i].t-pts[i-1].t<=TRACK_GAP_SEC)?trackDistM(pts[i-1],pts[i]):0));
-  tm.userMoved=false; tmFit(pts);              // 再生する範囲が入るように固定して、動画の画角を安定させる
+  tm.userMoved=false; tmFit(pts,100);              // 再生する範囲が入るように固定して、動画の画角を安定させる(左上の時刻の表示ぶんは空ける)
   tm.play={t0:rng.t0, t1:rng.t1, cum, elapsed:0, last:performance.now(), playing:true, done:false, i:0, n:1, cur:rng.t0, pos:{la:pts[0].la,lo:pts[0].lo}, km:0, raf:0};
   tmPlayBtnUpdate(); tmPlayLoop();
 }
@@ -5982,8 +6023,8 @@ function tmRequest(){
   if(!tm || tm.raf) return;
   tm.raf=requestAnimationFrame(()=>{ if(tm){ tm.raf=0; tmDraw(); } });
 }
-function tmFit(src){
-  const W=tm.W, H=tm.H;
+function tmFit(src,topPad){
+  const W=tm.W, H=tm.H, TP=topPad||0;
   const pts=(src||tm.pts).slice();
   if(tm.live && trackDiag.lastFix) pts.push(trackDiag.lastFix); // 記録中は現在地も範囲に含める
   if(!pts.length){ tm.z=11; const w=tmProj(35.681,139.767,11); tm.cx=w[0]; tm.cy=w[1]; return; }
@@ -5992,12 +6033,12 @@ function tmFit(src){
   let z=17;
   for(; z>3; z-=0.25){
     const p1=tmProj(b,c,z), p2=tmProj(a,d,z);
-    if(Math.abs(p2[0]-p1[0])<=W-70 && Math.abs(p2[1]-p1[1])<=H-70) break;
+    if(Math.abs(p2[0]-p1[0])<=W-70 && Math.abs(p2[1]-p1[1])<=H-70-TP) break;
   }
   if(pts.length===1) z=16;
   tm.z=z;
   const p1=tmProj(b,c,z), p2=tmProj(a,d,z);
-  tm.cx=(p1[0]+p2[0])/2; tm.cy=(p1[1]+p2[1])/2;
+  tm.cx=(p1[0]+p2[0])/2; tm.cy=(p1[1]+p2[1])/2 - TP/2;      // 上のTPぶんを空ける(中心を上にずらす)
 }
 function tmZoomAt(mx,my,dz){
   tm.userMoved=true;
