@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102863">
+<meta name="taxiops-build" content="2026102864">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -794,7 +794,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app63</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app64</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3038,7 +3038,7 @@ function renderSetup(){
   }
   document.getElementById('setupView').innerHTML = `
     <div class="setup-card">
-      <p>出番日と出庫時刻を入力して乗務を開始します。<br>時刻は「0730」のようにコロンなしで入力できます。<br>24時を超える場合はそのまま(例 2510)で入力してください。</p>
+      <p style="font-size:12.5px;line-height:1.55;margin-bottom:10px;">出番日と出庫時刻を入力して、乗務を開始します。<br>時刻は「0730」のように入力します(24時超は2510)。</p>
       <div class="field" style="text-align:left;">
         <label>出番日</label>
         <input type="date" id="dateInput" value="${todayLocalStr()}">
@@ -3064,11 +3064,11 @@ function renderSetup(){
     </div>
     <div class="setup-card" style="margin-top:10px;">
       <button class="btn-ghost" id="openHistoryBtn" style="width:100%;">📖 過去の出番を見る</button>
-    </div>
-    <div class="setup-card" style="margin-top:10px;">
-      <p style="margin-bottom:8px;">過去の出番・設定をまとめて移す(アプリの引っ越し用)</p>
-      <button class="btn-ghost" id="fullSaveBtn" style="width:100%;margin-bottom:6px;">💾 全データをファイル保存</button>
-      <button class="btn-ghost" id="fullImportBtn" style="width:100%;">📥 全データをファイルから取り込む</button>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn-ghost" id="fullSaveBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">💾 全データを保存</button>
+        <button class="btn-ghost" id="fullImportBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">📥 全データを取り込む</button>
+      </div>
+      <p style="font-size:10.5px;color:var(--muted);margin:8px 0 0;line-height:1.4;">全データ = 過去の出番と設定。ファイルで保存・取り込みします(バックアップ、アプリの引っ越し用)。</p>
       <input type="file" id="fullImportInput" style="display:none;">
     </div>
   `;
