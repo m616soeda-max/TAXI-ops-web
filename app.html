@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110679">
+<meta name="taxiops-build" content="2026110680">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -795,7 +795,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app79</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app80</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3086,7 +3086,8 @@ function renderSetup(){
     const dateVal = document.getElementById('dateInput').value || todayLocalStr();
     const t = parseTime(v);
     if(t===null){ toast('時刻の形式が正しくありません(例: 0730)'); return; }
-    state.depTime = t; state.shiftDate = dateVal; state.entries = []; state.returnTime = null; state.evPu = state.evBd = state.evDr = null; state.rests = []; state.restRun = Date.now();   // 出庫と同時に休憩タイマー開始(迎車が鳴らないときの鳴り待ち用。迎車・乗車を押すと終了、10分未満は自動で削除)
+    state.depTime = t; state.shiftDate = dateVal; state.entries = []; state.returnTime = null; state.evPu = state.evBd = state.evDr = null; state.rests = [];
+    state.restRun = (()=>{ const q=String(dateVal).split('-'); return new Date(+q[0],+q[1]-1,+q[2]).getTime() + Math.round(t*60)*60000; })();   // 出庫と同時に休憩タイマー開始。開始は入力した出庫時刻(迎車が鳴らないときの鳴り待ち用。迎車・乗車を押すと終了、10分未満は自動で削除)
     trackDelete(dateVal); // 同じ日付で出番をやり直す場合は旧軌跡も消す
     setupDefaultsApplied = false; // 次回の開始前画面でまた7:30を初期値にする
     state.startDist = 0; // 出庫時にトリップメーターをゼロクリアする運用のため常に0起点
@@ -3099,7 +3100,7 @@ function renderSetup(){
     await saveState();
     render();
     focusFirstInput();
-    toast('出庫。休憩タイマーも開始しました(迎車・乗車を押すと終了、'+CFG.restMin+'分未満は削除)');
+    toast('出庫。休憩タイマーは出庫時刻から数えます(迎車・乗車を押すと終了、'+CFG.restMin+'分未満は削除)');
   };
   document.getElementById('depInput').addEventListener('input', (e)=>{      // 出庫時刻を入れたら、連配開始も同じ時刻にする(あとから連配開始だけ直すのは今までどおり)
     const t = parseTime(e.target.value);
@@ -5609,7 +5610,7 @@ function restView(){
     const n=restList(state).length;
     return {col:'#2fb36b', bg:'', lbl:'休憩', sub: n ? '計'+Math.round(restTotalMs(state)/60000)+'分' : ''};
   }
-  const el=now-run, sec=Math.floor(el/1000), ok=el>=REST_MIN_MS;
+  const el=Math.max(0,now-run), sec=Math.floor(el/1000), ok=el>=REST_MIN_MS;   // 出庫時刻より前は0:00のまま待つ
   return {col: ok?'#2fb36b':'#ff8a3d', bg: ok?'rgba(47,179,107,.24)':'rgba(255,138,61,.16)', lbl: ok?'休憩✔':'休憩中', sub: Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0')};
 }
 function restBtnHTML(){
