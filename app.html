@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026102864">
+<meta name="taxiops-build" content="2026110666">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -794,7 +794,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261028-app64</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app66</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -4217,6 +4217,9 @@ function openDistKeypad(){
   bindTap(overlay.querySelector('#kpOk'), ()=>{
     input.value = val;
     closeKp();
+    // 降車ボタンで降車時刻が入力済みなら、降車時刻のテンキーを飛ばしてそのまま記録する
+    const ti = document.getElementById('timeInput');
+    if(state && state.evDr && ti && ti.value && !editingId){ onAdd(); return; }
     openTimeKeypad('timeInput', null);
   });
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
