@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110666">
+<meta name="taxiops-build" content="2026110667">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -377,6 +377,7 @@
     padding:20px 16px;text-align:center;
   }
   .setup-card p{color:var(--muted);font-size:12px;line-height:1.6;margin:0 0 14px;}
+  #setupView{flex:1 1 auto;flex-direction:column;}
   .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;text-align:left;}
   .field label{font-size:10.5px;color:var(--muted);letter-spacing:.04em;}
   input[type=text],input[type=number],input[type=date],select{
@@ -794,7 +795,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app66</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app67</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1845,7 +1846,7 @@ function renderCore(){
   }
   document.getElementById('summaryView').style.display='none';
   if(state.depTime===null){
-    document.getElementById('setupView').style.display='block';
+    document.getElementById('setupView').style.display='flex';
     document.getElementById('mainView').style.display='none';
     renderSetup();
   } else {
@@ -3038,7 +3039,7 @@ function renderSetup(){
   }
   document.getElementById('setupView').innerHTML = `
     <div class="setup-card">
-      <p style="font-size:12.5px;line-height:1.55;margin-bottom:10px;">出番日と出庫時刻を入力して、乗務を開始します。<br>時刻は「0730」のように入力します(24時超は2510)。</p>
+      <p style="font-size:12.5px;line-height:1.55;margin-bottom:10px;">出番日と出庫時刻を入力して、乗務を開始します。<br>GO順位・天気は任意です。<br>時刻は「0730」のように入力します(24時超は2510)。</p>
       <div class="field" style="text-align:left;">
         <label>出番日</label>
         <input type="date" id="dateInput" value="${todayLocalStr()}">
@@ -3062,7 +3063,8 @@ function renderSetup(){
       </div>
       <button class="btn" id="startBtn">出庫</button>
     </div>
-    <div class="setup-card" style="margin-top:10px;">
+    <div style="flex:0 0 10px;"></div>
+    <div class="setup-card" style="margin-top:auto;">
       <button class="btn-ghost" id="openHistoryBtn" style="width:100%;">📖 過去の出番を見る</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <button class="btn-ghost" id="fullSaveBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">💾 全データを保存</button>
