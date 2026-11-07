@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110782">
+<meta name="taxiops-build" content="2026110783">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -3916,6 +3916,9 @@ function renderMain(){
       <button class="btn-ghost" id="grayBtn">🩶 グレー区間を探す</button>
     </div>
     <div class="footer-row">
+      <button class="btn-ghost" id="fillDistBtn">📏 距離未入力をGPSで補う</button>
+    </div>
+    <div class="footer-row">
       <button class="btn-ghost" id="backupFileBtn">💾 バックアップをファイル保存</button>
     </div>
     <div class="footer-row">
@@ -4025,6 +4028,7 @@ function renderMain(){
   document.getElementById('distListBtn').onclick = openDistModal;
   document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
   document.getElementById('grayBtn').onclick = openGrayModal;
+  document.getElementById('fillDistBtn').onclick = openDistFillModal;
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -5837,6 +5841,97 @@ function openDistModal(){
   ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
 }
 /* ---------- グレー(乗車時刻未入力)の軌跡区間を、時刻と原因つきで一覧にする ---------- */
+/* ---------- 距離未入力を、前後のメーター値とGPSの比で補う(app83) ---------- */
+function distFillPlan(){
+  const date=state.shiftDate;
+  if(!date || state.depTime===null) return {err:'出庫前です。'};
+  const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
+  if(!pts || pts.length<2) return {err:'この出番の軌跡がありません。'};
+  const day=evDayStart(date);
+  const EX=['キャンセル','B空転','障割','定額負け'];
+  const all=state.entries.slice().sort((a,b)=>a.time-b.time);
+  // 時刻ごとにまとめる(同時刻=分割払いは1件扱い。距離は1件だけに入れる)
+  const groups=[]; 
+  for(const e of all){ const g=groups.length?groups[groups.length-1]:null; if(g && Math.abs(g.h-e.time)<1e-6) g.es.push(e); else groups.push({h:e.time, es:[e]}); }
+  const items=[{h:state.depTime, km:0, anchor:true}];
+  for(const g of groups){
+    const withD=g.es.find(e=>e.dist!=null && e.dist!=='' && e.dist>0);
+    if(withD){ items.push({h:g.h, km:withD.dist, anchor:true}); continue; }
+    const tgt=g.es.find(e=>!EX.includes(e.pay));
+    if(tgt) items.push({h:g.h, e:tgt, anchor:false});
+  }
+  // GPSの区間距離(測位が途切れて400m以上飛んだ区間があれば null)
+  const gpsBetween=(h0,h1)=>{
+    const t0=day+h0*3600, t1=day+h1*3600; if(!(t1>=t0)) return null;
+    if(pts[0].t>t0+TRACK_GAP_SEC || pts[pts.length-1].t<t1-TRACK_GAP_SEC) return null;
+    let m=0;
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue;
+      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400) return null; continue; }
+      const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; m+=trackDistM(a,b);
+    }
+    return m/1000;
+  };
+  // メーターとGPSの比(この出番の、前後ともメーター値がある区間だけで)
+  let sM=0, sG=0;
+  for(let i=1;i<items.length;i++){
+    const a=items[i-1], b=items[i]; if(!a.anchor||!b.anchor||b.km<=a.km) continue;
+    const g=gpsBetween(a.h,b.h); if(g!=null && g>0.3){ sM+=b.km-a.km; sG+=g; }
+  }
+  const ratio=(sG>=3)?Math.min(1.2,Math.max(1.0,sM/sG)):1.0;
+  const rows=[], skipped=[];
+  let i=0;
+  while(i<items.length){
+    if(items[i].anchor){ i++; continue; }
+    let j=i; while(j<items.length && !items[j].anchor) j++;      // items[i..j-1] が連続した未入力
+    const A=items[i-1], B=(j<items.length)?items[j]:null, run=items.slice(i,j);
+    const bounds=[A.h].concat(run.map(x=>x.h)).concat(B?[B.h]:[]);
+    const gs=[]; let bad=false;
+    for(let k=1;k<bounds.length;k++){ const g=gpsBetween(bounds[k-1],bounds[k]); if(g==null){ bad=true; break; } gs.push(g); }
+    const why=(msg)=>run.forEach(x=>skipped.push({e:x.e, why:msg}));
+    if(bad){ why('その時間帯の測位が途切れています'); i=j; continue; }
+    let scale;
+    if(B){
+      const M=B.km-A.km, G=gs.reduce((a,b)=>a+b,0);
+      if(!(M>0)){ why('前後のメーター値が逆転しています'); i=j; continue; }
+      if(G<0.05){ why('GPSで動いた距離がほぼありません'); i=j; continue; }
+      scale=M/G;
+    } else { scale=ratio; }
+    let cum=A.km, prev=A.km;
+    run.forEach((x,k)=>{ cum+=gs[k]*scale; const v=Math.round(cum*10)/10; rows.push({e:x.e, cum:v, leg:Math.round((v-prev)*10)/10, mode:B?'前後のメーター値で按分':('GPS×'+scale.toFixed(2)+'(最後の入力から)')}); prev=v; });
+    i=j;
+  }
+  return {rows, skipped, ratio};
+}
+function openDistFillModal(){
+  closeBackupModal();
+  const ov=document.createElement('div'); ov.id='backupModal';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
+  const box=(inner)=>'<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'+inner+'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
+  const plan=distFillPlan();
+  const title='<div style="font-weight:700;font-size:15px;color:var(--text);">距離未入力をGPSで補う</div>';
+  if(plan.err){
+    ov.innerHTML=box(title+'<div style="font-size:12px;color:var(--muted);">'+plan.err+'</div>');
+  } else if(!plan.rows.length && !plan.skipped.length){
+    ov.innerHTML=box(title+'<div style="font-size:12px;color:var(--muted);">距離が未入力の記録はありません。</div>');
+  } else {
+    const line=(e,right,sub,col)=>'<div style="padding:5px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);"><b style="font-family:\'PT Mono\',monospace;">'+fmtTime(e.time)+' ¥'+Number(e.fare||0).toLocaleString('ja-JP')+'</b><span style="color:'+(col||'var(--text)')+';">'+right+'</span></div><div style="font-size:10px;color:var(--muted2);">'+e.pay+' ・ '+sub+'</div></div>';
+    const okHtml=plan.rows.map(r=>line(r.e,'累計 '+fmtKm(r.cum)+'km(区間 '+fmtKm(r.leg)+'km)',r.mode)).join('');
+    const ngHtml=plan.skipped.map(r=>line(r.e,'入れません',r.why,'var(--muted)')).join('');
+    ov.innerHTML=box(title
+      +(plan.rows.length?'<div style="font-size:12px;color:var(--muted);">次の'+plan.rows.length+'件に距離(累計)を入れます。同時刻の分割払いは1件だけに入れます。入れたあとも、記録の編集で直せます。</div>'+okHtml
+        +'<button class="btn-ghost" id="distFillOk" style="margin-top:4px;font-weight:700;">この内容で入れる('+plan.rows.length+'件)</button>':'')
+      +(plan.skipped.length?'<div style="font-size:12px;color:var(--muted);margin-top:6px;">入れられない'+plan.skipped.length+'件(手入力が必要)</div>'+ngHtml:''));
+    const ok=document.getElementById('distFillOk');
+    if(ok) ok.onclick=async()=>{
+      plan.rows.forEach(r=>{ r.e.dist=r.cum; r.e.distGps=true; });
+      await saveState(); closeBackupModal(); render(); toast('距離を'+plan.rows.length+'件入れました');
+    };
+  }
+  document.body.appendChild(ov);
+  document.getElementById('bkClose').onclick=closeBackupModal;
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+}
 function openGrayModal(){
   closeBackupModal();
   const ov=document.createElement('div'); ov.id='backupModal';
