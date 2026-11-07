@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110680">
+<meta name="taxiops-build" content="2026110681">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -795,7 +795,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app80</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261106-app81</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5864,7 +5864,10 @@ async function evBtn(k,kind){
   if(pos){ o.la=pos.la; o.lo=pos.lo; }
   if(k==='pu'){ state.evPu=o; state.evBd=null; state.evDr=null; }       // 新しい迎車は、前の乗車・降車を消して始める
   else if(k==='bd'){ state.evBd=o; state.evDr=null; }
-  else { state.evDr=o; const ti=document.getElementById('timeInput'); if(ti) ti.value=fmtTime(h); }   // 降車は降車時刻に自動入力
+  else {
+    state.evDr=o; const ti=document.getElementById('timeInput'); if(ti) ti.value=fmtTime(h);   // 降車は降車時刻に自動入力
+    if(!state.restRun){ state.restRun=Date.now(); restDiscardAt=0; restNote='休憩タイマー開始'; }   // 降車したら、すぐ休憩タイマー開始(迎車・乗車を押すと終了。10分未満は自動で削除)
+  }
   evRefreshStat(); saveState();
   toast(({pu:'迎車',bd:'乗車',dr:'降車'})[k]+' '+fmtTime(h)+(pos?'':'(位置が取れていません)')+(restNote?' ・'+restNote:''));
   if(!pos){ setTimeout(()=>evFillMissing(false),60000); }   // 位置なしで押した分は、軌跡から後で補う
