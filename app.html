@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110681">
+<meta name="taxiops-build" content="2026110782">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -4185,19 +4185,58 @@ function openIntegerKeypad(inputId, nextFocusId, title, nextOpener){
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
 }
 
+/* ---------- 降車ボタン使用時: 距離の初期値をGPSから出す(app82) ---------- */
+let lastDistSuggest = null;     // {km:提案した累計(km), gps:GPS区間(km)}。記録に付けて、メーターとのズレを後で比べられるようにする
+function suggestCumDist(){
+  try{
+    if(!state || !state.evDr || state.evDr.t==null || !state.shiftDate || state.depTime===null) return null;
+    const date=state.shiftDate;
+    const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
+    if(!pts || pts.length<2) return null;
+    const all=state.entries.slice().sort((a,b)=>a.time-b.time);
+    let baseKm=0, baseH=state.depTime;                       // 出庫時にトリップメーターをゼロクリアする運用
+    for(const e of all){ if(e.time<=state.evDr.t && e.dist!=null && e.dist!=='' && e.dist>0){ baseKm=e.dist; baseH=e.time; } }
+    const day=evDayStart(date), t0=day+baseH*3600, t1=day+state.evDr.t*3600;
+    if(!(t1>t0)) return null;
+    let m=0;
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1], b=pts[i];
+      if(b.t-a.t>TRACK_GAP_SEC) continue;
+      const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue;
+      m+=trackDistM(a,b);
+    }
+    // 停車中は点が増えない(15m未満は記録しない)ので、点の間隔が空いていても「測位なし」とは限らない。
+    // 区間の端の点が前後3分以内にあり、途中に3分超の空きがなければ、連続して取れているとみなす
+    let gap=false;
+    for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue; if(b.t-a.t>TRACK_GAP_SEC && trackDistM(a,b)>=400){ gap=true; break; } }
+    if(gap) return null;
+    const gpsKm=m/1000;
+    if(gpsKm<0.05) return null;
+    return {km: Math.round((baseKm+gpsKm)*10)/10, gps: Math.round(gpsKm*10)/10, baseKm, baseH};
+  }catch(e){ return null; }
+}
+
 function openDistKeypad(){
   if(kpOpen) return;
   kpOpen = true;
   const input = document.getElementById('distInput');
   input.blur();
   let val = (input.value || '').toString();
+  // 降車ボタンを押した記録で距離が空なら、GPSから出した累計を初期値に入れる(確定でそのまま使え、数字を打てば置き換わる)
+  let fresh = false, sug = null;
+  lastDistSuggest = null;
+  if(val==='' && !editingId && state && state.evDr){
+    sug = suggestCumDist();
+    if(sug){ val = sug.km.toFixed(1); fresh = true; lastDistSuggest = sug; }
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'confirm-overlay';
   overlay.innerHTML = `
     <div class="kp-box">
-      <div class="kp-title">距離(km)</div>
+      <div class="kp-title">距離(km)${sug ? ' ・GPS推定' : ''}</div>
       <div class="kp-display" id="kpDisplay">${val || '0.0'}</div>
+      ${sug ? `<div style="font-size:10px;color:var(--muted2);text-align:center;margin:-2px 0 4px;">前の入力 ${fmtKm(sug.baseKm)} + GPS ${fmtKm(sug.gps)}km 。メーターと違えば打ち直し</div>` : ''}
       <div class="kp-grid">
         <div class="kp-key" data-k="1">1</div><div class="kp-key" data-k="2">2</div><div class="kp-key" data-k="3">3</div>
         <div class="kp-key" data-k="4">4</div><div class="kp-key" data-k="5">5</div><div class="kp-key" data-k="6">6</div>
@@ -4217,6 +4256,7 @@ function openDistKeypad(){
   overlay.querySelectorAll('.kp-key').forEach(btn=>{
     bindTap(btn, ()=>{
       const k = btn.dataset.k;
+      if(fresh){ fresh = false; if(k==='back'){ val=''; display.textContent='0.0'; return; } val=''; }   // GPS推定の初期値は、最初のキーで消えて打ち直しになる
       if(k==='back'){
         val = val.slice(0,-1);
       } else if(k==='.'){
@@ -4228,7 +4268,7 @@ function openDistKeypad(){
       display.textContent = val || '0.0';
     });
   });
-  bindTap(overlay.querySelector('#kpCancel'), closeKp);
+  bindTap(overlay.querySelector('#kpCancel'), ()=>{ lastDistSuggest=null; closeKp(); });
   bindTap(overlay.querySelector('#kpOk'), ()=>{
     input.value = val;
     closeKp();
@@ -4945,6 +4985,7 @@ async function onAdd(){
 
   const id = Date.now()+'-'+Math.random().toString(36).slice(2,7);
   const newEntry = {id, time:t, fare, toll, fee, dist, type:state.selType, pay:state.selPay, thanks:state.selThanks, note:'', comment:null};
+  if(lastDistSuggest){ newEntry.gpsKm = lastDistSuggest.km; lastDistSuggest = null; }   // GPS推定の累計(メーターとのズレを後で比べる用、app82)
   if(state.selPay!=='障割'){   // 地点ボタンの記録を、この記録に取り付ける(障割は別記録なので対象外)
     if(state.evPu) newEntry.pu=state.evPu;
     if(state.evBd) newEntry.bd=state.evBd;
