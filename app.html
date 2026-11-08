@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110785">
+<meta name="taxiops-build" content="2026110786">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -795,7 +795,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261107-app85</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261107-app86</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2851,11 +2851,15 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyShotAnalysisBtn">📸 ④分析のみを保存/共有</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
+      <button class="btn-ghost" id="historyFillDistBtn">📏 距離未入力をGPSで補う</button>
+    </div>
+    <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyDeleteBtn" style="color:var(--red);border-color:var(--red);">🗑 この出番を削除</button>
     </div>
   `;
   document.getElementById('historyBackBtn').onclick = ()=>{ historyDetailDate = null; render(); };
   document.getElementById('historyListToggleBtn').onclick = ()=>{ historyListExpanded = !historyListExpanded; renderHistoryDetail(date); };
+  document.getElementById('historyFillDistBtn').onclick = ()=>{ openDistFillModal(st, date); };
   document.getElementById('editReturnBtn').onclick = ()=>{
     const prefill = {
       time: (st.returnTime!==null&&st.returnTime!==undefined) ? fmtTime(st.returnTime) : '',
@@ -4028,7 +4032,7 @@ function renderMain(){
   document.getElementById('distListBtn').onclick = openDistModal;
   document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
   document.getElementById('grayBtn').onclick = openGrayModal;
-  document.getElementById('fillDistBtn').onclick = openDistFillModal;
+  document.getElementById('fillDistBtn').onclick = ()=>openDistFillModal();
   {
     const sheet=document.getElementById('moreMenu');
     const closeSheet=()=>{ moreMenuOpen=false; sheet.classList.remove('open'); };
@@ -5842,18 +5846,18 @@ function openDistModal(){
 }
 /* ---------- グレー(乗車時刻未入力)の軌跡区間を、時刻と原因つきで一覧にする ---------- */
 /* ---------- 距離未入力を、前後のメーター値とGPSの比で補う(app83) ---------- */
-function distFillPlan(){
-  const date=state.shiftDate;
-  if(!date || state.depTime===null) return {err:'出庫前です。'};
+function distFillPlan(st, date){
+  st = st || state; date = date || st.shiftDate;
+  if(!date || st.depTime===null || st.depTime===undefined) return {err:'出庫前です。'};
   const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
   if(!pts || pts.length<2) return {err:'この出番の軌跡がありません。'};
   const day=evDayStart(date);
   const EX=['キャンセル','B空転','障割','定額負け'];
-  const all=state.entries.slice().sort((a,b)=>a.time-b.time);
+  const all=st.entries.slice().sort((a,b)=>a.time-b.time);
   // 時刻ごとにまとめる(同時刻=分割払いは1件扱い。距離は1件だけに入れる)
   const groups=[]; 
   for(const e of all){ const g=groups.length?groups[groups.length-1]:null; if(g && Math.abs(g.h-e.time)<1e-6) g.es.push(e); else groups.push({h:e.time, es:[e]}); }
-  const items=[{h:state.depTime, km:0, anchor:true}];
+  const items=[{h:st.depTime, km:(st.startDist||0), anchor:true}];
   for(const g of groups){
     const withD=g.es.find(e=>e.dist!=null && e.dist!=='' && e.dist>0);
     if(withD){ items.push({h:g.h, km:withD.dist, anchor:true}); continue; }
@@ -5903,12 +5907,13 @@ function distFillPlan(){
   }
   return {rows, skipped, ratio};
 }
-function openDistFillModal(){
+function openDistFillModal(stArg, dateArg){
   closeBackupModal();
+  const isHist = !!(stArg && dateArg);
   const ov=document.createElement('div'); ov.id='backupModal';
   ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:600;display:flex;align-items:center;justify-content:center;padding:14px;';
   const box=(inner)=>'<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">'+inner+'<button class="btn-ghost" id="bkClose" style="margin-top:6px;">閉じる</button></div>';
-  const plan=distFillPlan();
+  const plan=isHist ? distFillPlan(stArg, dateArg) : distFillPlan();
   const title='<div style="font-weight:700;font-size:15px;color:var(--text);">距離未入力をGPSで補う</div>';
   if(plan.err){
     ov.innerHTML=box(title+'<div style="font-size:12px;color:var(--muted);">'+plan.err+'</div>');
@@ -5925,7 +5930,14 @@ function openDistFillModal(){
     const ok=ov.querySelector('#distFillOk');
     if(ok) ok.onclick=async()=>{
       plan.rows.forEach(r=>{ r.e.dist=r.cum; r.e.distGps=true; });
-      await saveState(); closeBackupModal(); render(); toast('距離を'+plan.rows.length+'件入れました');
+      if(isHist){
+        try{ localStorage.setItem(LS_PREFIX+'shift:'+dateArg, JSON.stringify(stArg)); }catch(e){}
+        if(state.shiftDate===dateArg && state.depTime!==null){          // 今の出番と同じ日なら、そちらにも反映
+          plan.rows.forEach(r=>{ const t=state.entries.find(x=>x.id===r.e.id); if(t){ t.dist=r.cum; t.distGps=true; } });
+          await saveState();
+        }
+      } else { await saveState(); }
+      closeBackupModal(); render(); toast('距離を'+plan.rows.length+'件入れました');
     };
   }
   document.body.appendChild(ov);
