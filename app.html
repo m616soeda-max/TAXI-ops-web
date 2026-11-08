@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110887">
+<meta name="taxiops-build" content="2026110888">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -796,7 +796,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261108-app87</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261108-app88</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1545,7 +1545,7 @@ function openHelpModal(){
   const p=(t)=>`<div style="font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap;padding:2px 0 6px;">${esc(t)}</div>`;
   const det=(title,body,open)=>`<details ${open?'open':''} style="border-top:1px solid var(--border);padding:7px 0 2px;"><summary style="font-weight:700;font-size:13px;color:var(--text);cursor:pointer;list-style:none;">▸ ${title}</summary>${body}</details>`;
   const body=[
-    det('はじめに(TAXI OPSとTAXI INTEL)', p('TAXI OPS(このアプリ)は、出庫から帰庫までの営業中に、運賃・距離・時刻・走行軌跡を記録して、その場で目標との差を見るためのアプリです。\n\nTAXI INTELは、乗務のあとに、Excelにまとめたデータを読み込んで、最新の出番を同じ曜日の過去と比べる分析アプリです。\n\n記録したデータは、この端末の中だけに保存されます。外に出る通信は、住所の取得(国土地理院)、地図の表示(地理院タイル)、更新の確認の3つだけです。'), true),
+    det('はじめに(TAXI OPSとTAXI INTEL)', p('TAXI OPS(このアプリ)は、出庫から帰庫までの営業中に、運賃・距離・時刻・走行軌跡を記録して、その場で目標との差を見るためのアプリです。\n\nTAXI INTELは、乗務のあとに、Excelにまとめたデータを読み込んで、最新の出番を同じ曜日の過去と比べる分析アプリです。\n\n記録したデータは、この端末の中だけに保存されます。外に出る通信は、住所の取得(国土地理院)、地図の表示(地理院タイル)、更新の確認、INTEL本体の取得(初回と更新時)の4つだけです。'), true),
     det('1日の流れ', p('1. 出庫: 出番日と出庫時刻を入れて、ボタン列の左端の「出庫」を押します。走行軌跡の記録が自動で始まります(通知に「記録中」)。\n2. 営業中: お客さんごとに、迎車 → 乗車 → 降車のボタンを押します(時刻と位置が残ります)。降車したら「記録する」で、代金・距離・種別・支払いを入れます。\n3. 休憩: 「休憩」ボタン(下の「休憩ボタン」を参照)。\n4. 帰庫: 「⋯」→「乗務終了・まとめを見る」→ 帰庫時刻を入れます。\n5. まとめ画面: 日報コピー、画像の保存(①②)、「🗺 走行軌跡を見る」。最後に「✕」で次の出番へ。')),
     det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」をタップすると、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩ボタン', p('・完全停止したら「休憩」を押して開始、走り出すときにもう一度押して終了します。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。それより短いと、確認なしで削除されます。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
@@ -3000,6 +3000,76 @@ function buildFullBackupText(){
   }
   return '#GYOTOU-FULL#'+JSON.stringify({v:2, exportedAt:new Date().toISOString(), items});
 }
+/* ---------- TAXI INTEL(Excel分析)をOpsの中から開く(app88〜) ----------
+   INTEL本体は別ファイル(公開リポの intel.html)のまま。初回だけ取得してアプリ内(Cache Storage)に保存し、2回目以降は通信なしで開く。
+   Opsの上に重ねて表示するだけなので、出番の記録や軌跡は止まらない。Opsと同じ保存場所で動くため、
+   INTELがOpsの月間目標・予定出番数・確定累計をそのまま読める。INTELから出す画像は、Opsの画像保存(ギャラリーのTAXI-OPS)を使う。 */
+const INTEL_URL = 'https://raw.githubusercontent.com/m616soeda-max/TAXI-ops-web/main/intel.html';
+const INTEL_CACHE = 'taxiops-intel';
+let intelEl=null, intelFrame=null, intelMounted=false, intelStale=false, intelChecked=false, intelHistPushed=false;
+function intelBuildOf(t){ const m=/name="taxiintel-build"\s+content="(\d+)"/.exec(t||''); return m?parseInt(m[1],10):0; }
+async function intelCacheGet(){ try{ if(!window.caches) return null; const c=await caches.open(INTEL_CACHE); const r=await c.match('intel.html'); return r?await r.text():null; }catch(e){ return null; } }
+async function intelCachePut(t){ try{ if(!window.caches) return; const c=await caches.open(INTEL_CACHE); await c.put('intel.html', new Response(t,{headers:{'Content-Type':'text/html; charset=utf-8'}})); }catch(e){} }
+async function intelFetchRemote(){
+  const r=await fetch(INTEL_URL+'?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const t=await r.text();
+  if(!intelBuildOf(t)) throw new Error('INTELのファイルではありませんでした');
+  return t;
+}
+window.taxiopsSaveImageFromIntel = function(canvas, filename){   // INTEL(重ね表示)からの画像保存。Opsの保存方法(ギャラリー/ブラウザ)をそのまま使う
+  shareCanvasAsPng(canvas, String(filename).replace(/\.png$/i,'')+'.png');
+};
+function intelHide(){ if(!intelEl) return; intelEl.classList.remove('show'); document.body.classList.remove('intel-open'); intelHistPushed=false; }
+function closeIntel(){ if(intelHistPushed){ try{ history.back(); return; }catch(e){} } intelHide(); }
+function intelShowMsg(text, retry){
+  const m=document.getElementById('intelMsg'); intelFrame.style.display='none'; m.style.display='flex';
+  m.innerHTML=''; const d=document.createElement('div'); d.style.whiteSpace='pre-wrap'; d.textContent=text; m.appendChild(d);
+  if(retry){ const b=document.createElement('button'); b.textContent='もう一度読み込む'; b.onclick=()=>{ intelStale=true; intelMounted=false; openIntel(true); }; m.appendChild(b); }
+}
+function intelMount(html){
+  intelFrame.srcdoc=html; intelFrame.style.display='block';
+  document.getElementById('intelMsg').style.display='none';
+  intelMounted=true; intelStale=false;
+}
+function ensureIntelOverlay(){
+  if(intelEl) return;
+  const st=document.createElement('style');
+  st.textContent='#intelOverlay{position:fixed;left:0;right:0;top:0;bottom:0;z-index:5000;background:var(--bg);display:none;flex-direction:column;}'+
+    '#intelOverlay.show{display:flex;}'+
+    '#intelBar{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;background:var(--card);border-bottom:1px solid var(--border);}'+
+    '#intelBar button,#intelMsg button{flex:none;padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:12px;font-weight:700;}'+
+    '#intelBar .t{flex:1;font-size:12px;color:var(--muted);}'+
+    '#intelFrame{flex:1;width:100%;border:0;background:#000;}'+
+    '#intelMsg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text);font-size:13px;padding:24px;text-align:center;}'+
+    'body.intel-open .toast{z-index:6000;}';
+  document.head.appendChild(st);
+  intelEl=document.createElement('div'); intelEl.id='intelOverlay';
+  intelEl.innerHTML='<div id="intelBar"><button id="intelBackBtn">← Opsに戻る</button><div class="t">TAXI INTEL</div></div><div id="intelMsg"></div><iframe id="intelFrame" style="display:none"></iframe>';
+  document.body.appendChild(intelEl);
+  intelFrame=document.getElementById('intelFrame');
+  document.getElementById('intelBackBtn').onclick=closeIntel;
+  window.addEventListener('popstate',()=>{ if(intelEl.classList.contains('show')) intelHide(); });   // 端末の戻るボタンでも閉じる
+}
+async function intelBgCheck(){      // 開くたびではなく、アプリを開いてから1回だけ、新しい版があるか確認する
+  if(intelChecked) return; intelChecked=true;
+  try{
+    const cached=await intelCacheGet(); const t=await intelFetchRemote();
+    if(intelBuildOf(t)>intelBuildOf(cached)){ await intelCachePut(t); intelStale=true; toast('INTELの新しい版を取得しました。次に開いたときに反映されます'); }
+  }catch(e){}
+}
+async function openIntel(fromRetry){
+  ensureIntelOverlay();
+  intelEl.classList.add('show'); document.body.classList.add('intel-open');
+  if(!fromRetry || !intelHistPushed){ try{ history.pushState({intel:1},''); intelHistPushed=true; }catch(e){} }
+  if(intelMounted && !intelStale){ intelBgCheck(); return; }       // 開きっぱなしの状態(読み込んだExcel)をそのまま見せる
+  intelShowMsg('INTELを読み込み中…');
+  let html=await intelCacheGet();
+  if(html){ intelMount(html); intelBgCheck(); return; }
+  try{ html=await intelFetchRemote(); await intelCachePut(html); intelMount(html); }
+  catch(e){ intelShowMsg('INTELを取得できませんでした。\n初回はネットワークが必要です。\n'+String((e&&e.message)||e), true); }
+}
+
 async function taxiopsRunCheck(manual){
   if(!window.taxiopsCheckUpdate) return;
   window.__lastUpdateCheck=Date.now();
@@ -3904,6 +3974,9 @@ function renderMain(){
       <button class="btn-ghost" id="resetBtn">乗務終了・まとめを見る</button>
     </div>
     <div class="footer-row">
+      <button class="btn-ghost" id="intelBtn">📊 INTEL(Excelで分析)</button>
+    </div>
+    <div class="footer-row">
       <button class="btn-ghost" id="exportBtn">📋 日報用テキストをコピー</button>
       <button class="btn-ghost" id="openHistoryBtn2">📖 過去の出番</button>
     </div>
@@ -4017,6 +4090,7 @@ function renderMain(){
   document.getElementById('exportBtn').onclick = handleExport;
   document.getElementById('backupFileBtn').onclick = handleBackupToFile;
   document.getElementById('fullSaveBtn2').onclick = handleFullBackupToFile;
+  document.getElementById('intelBtn').onclick = openIntel;
   document.getElementById('updateCheckBtn').onclick = ()=>taxiopsRunCheck(true);
   document.getElementById('updateDiscardBtn').onclick = taxiopsDiscardAndReload;
   document.getElementById('saveDiagBtn').onclick = taxiopsSaveDiag;
