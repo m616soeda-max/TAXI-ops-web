@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026110890">
+<meta name="taxiops-build" content="2026111091">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -796,7 +796,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261108-app90</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261110-app91</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3871,7 +3871,7 @@ function renderMain(){
       </div>
       <div class="meter-sub2">
         <div>メーター金額<b>¥${fmtYen(total)}</b></div>
-        <div id="distCell" style="cursor:pointer;">走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span><b>${fmtKm(dist)}km</b></div>
+        <div id="distCell" style="cursor:pointer;">走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span><b>${fmtKm(dist)}km</b>${(()=>{ const ar=shiftActualRate(state); return ar ? `<span style="display:block;font-size:11px;color:var(--text);">実車率<b style="display:inline;font-size:11px;">${ar.rate.toFixed(0)}%</b></span>` : ''; })()}</div>
         <div>高速代<b>¥${fmtYen(tollTotal)}</b></div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
