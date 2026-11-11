@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111092">
+<meta name="taxiops-build" content="2026111193">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -565,10 +565,11 @@
   #mainView>.add-card{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:11px 10px;margin-bottom:0;}
   .more-sheet{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.62);z-index:300;display:none;align-items:flex-end;justify-content:center;}
   .more-sheet.open{display:flex;}
-  .more-sheet-inner{width:100%;max-width:460px;background:var(--card);border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+  .more-sheet-inner{width:100%;max-width:460px;background:var(--card);border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
   .more-sheet-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text);padding:2px 2px 4px;}
   .footer-row .btn-ghost{flex:1;}
   .more-sheet-inner .footer-row .btn-ghost{padding:7px 6px;}
+  @media (max-height:640px){ .setup-hint{display:none;} }   /* 低い画面では、初期画面の説明文を隠して、枠に収める */
 
   .confirm-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,.62);
@@ -796,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261110-app92</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261111-app93</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3115,7 +3116,7 @@ function renderSetup(){
   }
   document.getElementById('setupView').innerHTML = `
     <div class="setup-card" style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;">
-      <p style="font-size:12.5px;line-height:1.55;margin-bottom:10px;">出番日と出庫時刻を入力して、下の「出庫」で乗務を開始します。<br>GO順位・天気は任意です。<br>時刻は「0730」のように入力します(24時超は2510)。</p>
+      <p class="setup-hint" style="font-size:12px;line-height:1.5;margin-bottom:8px;">出番日と出庫時刻を入れて「出庫」を押します。<br>時刻は0730の形式です(24時超は2510)。<br>GO順位・天気は任意です。</p>
       <div class="field" style="text-align:left;">
         <label>出番日</label>
         <input type="date" id="dateInput" value="${todayLocalStr()}">
@@ -3147,7 +3148,7 @@ function renderSetup(){
         <button class="btn-ghost" id="fullSaveBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">💾 全データを保存</button>
         <button class="btn-ghost" id="fullImportBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">📥 全データを取り込む</button>
       </div>
-      <p style="font-size:10.5px;color:var(--muted);margin:8px 0 0;line-height:1.4;">全データ = 過去の出番と設定。ファイルで保存・取り込みします(バックアップ、アプリの引っ越し用)。</p>
+      <p class="setup-hint" style="font-size:10px;color:var(--muted);margin:6px 0 0;line-height:1.4;">全データ = 過去の出番と設定(バックアップ・引っ越し用)</p>
       <input type="file" id="fullImportInput" style="display:none;">
     </div>
   `;
@@ -3873,7 +3874,7 @@ function renderMain(){
       </div>
       <div class="meter-sub2">
         <div>メーター金額<b>¥${fmtYen(total)}</b></div>
-        <div id="distCell" style="cursor:pointer;">走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span><b>${fmtKm(dist)}km</b>${(()=>{ const ar=shiftActualRate(state); return ar ? `<span style="display:block;font-size:11px;color:var(--text);">実車率<b style="display:inline;font-size:11px;">${ar.rate.toFixed(0)}%</b></span>` : ''; })()}</div>
+        <div id="distCell" style="cursor:pointer;white-space:nowrap;">${(()=>{ const ar=shiftActualRate(state); return (ar ? '走行距離・実車率' : '走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span>') + '<b>' + fmtKm(dist) + 'km' + (ar ? '<span style="margin-left:5px;font-size:10.5px;">' + ar.rate.toFixed(0) + '%</span>' : '') + '</b>'; })()}</div>
         <div>高速代<b>¥${fmtYen(tollTotal)}</b></div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
