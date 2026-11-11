@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111091">
+<meta name="taxiops-build" content="2026111092">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -796,7 +796,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261110-app91</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261110-app92</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1552,7 +1552,7 @@ function openHelpModal(){
     det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」を押すと、動画にする範囲(開始・終了の時刻)を聞かれます。初期値は出庫〜帰庫の時刻で、手入力で変えられます(24時を過ぎる時刻は2510のように入れます)。その範囲の再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点は、「⋯」→「📍 住所未取得をまとめて取得」で取れます。灰色の区間は「🩶 グレー区間を探す」で、時刻と原因が分かります。')),
     det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・画像は、ギャラリーの「TAXI-OPS」アルバムに、①②③④の順に並ぶように保存されます。Xに投稿するときは、画像ボタン→「コレクション」→「TAXI-OPS」を開いて、①→④の順にタップして選びます(選んだ順が投稿の順になります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
     det('⚙ 設定', p('「⋯」→「⚙ 設定」で、自分の営業所や運用に合わせて、次の値を変えられます。\n・時間帯別の目標(締めの時刻と目標額)と、帰庫までの目標\n・距離の目標(◯kmごとに◯円)\n・時間単価の色分け(赤にする未満、緑にする以上)\n・運賃帯(ミドル・ロングの下限)\n・休憩に数える最短(分)\n・回送まで・帰庫まで・連配のコアタイム(出庫からの時間)\n・出番の目印(名前と、表示する日の下1桁)\n保存すると画面を読み込み直します。「初期値に戻す」で、元の値に戻せます。月間目標は、ホーム画面の「月間目標 ✎」から月ごとに設定します。')),
-    det('TAXI INTELとの連携', p('TAXI INTELは、ExcelのデータをOPSとは別に分析します。分析だけなら、OPSとの連携は要りません。\n\n「Opsの月間目標との突き合わせ」は、同じ端末・同じブラウザでOPSの月間目標を設定しているときだけ出ます。アプリ版のOPSとブラウザで開いたINTELは、データの置き場所が別なので、その場合は出ません。')),
+    det('TAXI INTELとの連携', p('最初の画面(出庫の前)の「📊 INTEL(Excelで分析)」から開きます。出番日でなくても、出庫を押さずに開けます。\n\nOPSの上に重ねて開くので、閉じるときは左上の「← Opsに戻る」を押します(端末の戻るボタンでも閉じます)。\n\nINTELはOPSと同じ保存場所で動くので、「Opsの月間目標との突き合わせ」で、OPSの目標額・予定出番数・確定累計をそのまま読みます。初回だけ通信でINTEL本体を取得し、以降は通信なしで開きます。')),
     det('バックアップ(いちばん大事)', p('・アプリをアンインストールすると、中のデータは消えます。入れ直す前に、必ず「⋯」→「📦 全データ(過去の出番含む)をファイル保存」で、ファイルに残してください。共有の画面で、Googleドライブやマイファイルなどの保存先を選びます。\n・戻すとき: 「⋯」→「📥 全データをファイルから取り込む」(出庫前の画面にもあります)。\n・設定も、全データに含まれます。\n・「⋯」に橙の●が出たら、バックアップから1日半以上たっています。')),
     det('更新', p('・新しい版は、アプリを開き直すと自動で入ります(「⋯」→「🔄 今すぐ更新を確認」でも確認できます)。\n・おかしくなったら「↩ 同梱版に戻す」。')),
     det('困ったとき', p('・保存や共有ができない: 「🩺 保存機能の診断」を押して、出た画面の写真を送ってください。\n・位置が取れない: 端末の設定 → アプリ → TAXI OPS → 権限 → 位置情報を「アプリの使用中のみ許可」+「正確な位置情報を使用」オン。\n・軌跡が途切れる: 「最近使ったアプリ」から TAXI OPS を消さない。電池の設定を「制限なし」にする。\n・動画が見つからない: ギャラリーの「TAXI-OPS」アルバムを見てください。保存できなかったときは、保存先を選ぶ画面が出ます。')),
@@ -3142,6 +3142,7 @@ function renderSetup(){
     <div style="flex:0 0 10px;"></div>
     <div class="setup-card" style="margin-top:auto;">
       <button class="btn-ghost" id="openHistoryBtn" style="width:100%;">📖 過去の出番を見る</button>
+      <button class="btn-ghost" id="openIntelBtn" style="width:100%;margin-top:10px;">📊 INTEL(Excelで分析)</button>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <button class="btn-ghost" id="fullSaveBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">💾 全データを保存</button>
         <button class="btn-ghost" id="fullImportBtn" style="flex:1;font-size:12px;padding:10px 4px;white-space:nowrap;">📥 全データを取り込む</button>
@@ -3157,6 +3158,7 @@ function renderSetup(){
   document.getElementById('renpaiTapArea').onclick = openRenpaiModal;
   document.getElementById('weatherTapArea').onclick = openWeatherModal;
   document.getElementById('openHistoryBtn').onclick = ()=>{ historyMode = true; historyDetailDate = null; render(); };
+  document.getElementById('openIntelBtn').onclick = openIntel;
   document.getElementById('startBtn').onclick = async ()=>{
     const v = document.getElementById('depInput').value;
     const dateVal = document.getElementById('dateInput').value || todayLocalStr();
@@ -3974,9 +3976,6 @@ function renderMain(){
       <button class="btn-ghost" id="resetBtn">乗務終了・まとめを見る</button>
     </div>
     <div class="footer-row">
-      <button class="btn-ghost" id="intelBtn">📊 INTEL(Excelで分析)</button>
-    </div>
-    <div class="footer-row">
       <button class="btn-ghost" id="exportBtn">📋 日報用テキストをコピー</button>
       <button class="btn-ghost" id="openHistoryBtn2">📖 過去の出番</button>
     </div>
@@ -4090,7 +4089,6 @@ function renderMain(){
   document.getElementById('exportBtn').onclick = handleExport;
   document.getElementById('backupFileBtn').onclick = handleBackupToFile;
   document.getElementById('fullSaveBtn2').onclick = handleFullBackupToFile;
-  document.getElementById('intelBtn').onclick = openIntel;
   document.getElementById('updateCheckBtn').onclick = ()=>taxiopsRunCheck(true);
   document.getElementById('updateDiscardBtn').onclick = taxiopsDiscardAndReload;
   document.getElementById('saveDiagBtn').onclick = taxiopsSaveDiag;
