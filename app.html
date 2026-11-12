@@ -5850,8 +5850,21 @@ function restList(st){ return (st && Array.isArray(st.rests)) ? st.rests : []; }
 function restTotalMs(st){ return restList(st).reduce((a,r)=>a+Math.max(0,r.e-r.s),0); }
 function restDurText(ms){ const m=Math.round(ms/60000); return m>=60 ? Math.floor(m/60)+'時間'+(m%60)+'分' : m+'分'; }
 function restClock(ms,date){ return fmtTime((ms/1000-evDayStart(date))/3600); }   // 出番日基準(0時過ぎは24:15表記)
+const REST_PRE_SHOW_S = 30;   // 停車してから何秒で、10分前でも表示を始めるか
+function restPendingStart(){     // 自動検出の前段階: 最後の軌跡点から止まっている間の起点(ms)。条件はrestAutoTickと同じ。なければ0
+  try{
+    if(!state || !state.shiftDate || state.depTime===null || state.depTime===undefined) return 0;
+    if(state.restRun) return 0;
+    if(state.returnTime!==null && state.returnTime!==undefined) return 0;
+    if((state.evPu || state.evBd) && !state.evDr) return 0;
+    if(trackWatchId===null || trackDate!==state.shiftDate || !trackPts.length) return 0;
+    const last=trackPts[trackPts.length-1], t=last.t*1000;
+    return (Date.now()-t >= REST_PRE_SHOW_S*1000) ? t : 0;
+  }catch(e){ return 0; }
+}
 function restView(){
-  const run=state.restRun, now=Date.now();
+  let run=state.restRun; const now=Date.now();
+  if(!run) run=restPendingStart();   // 停車直後から、10分たつ前でもカウントを見せる(10分で自動的に正式な休憩になる)
   if(!run){
     const n=restList(state).length;
     return {col:'#2fb36b', bg:'', lbl:'休憩', sub: n ? '計'+Math.round(restTotalMs(state)/60000)+'分' : ''};
@@ -5872,7 +5885,7 @@ function restTickUpdate(){      // 1秒ごと。ボタンを作り直さず文�
   if(l && l.textContent!==v.lbl) l.textContent=v.lbl;
   if(u && u.textContent!==v.sub) u.textContent=v.sub;
 }
-setInterval(()=>{ if(state && state.restRun) restTickUpdate(); }, 1000);
+setInterval(()=>{ if(state && state.shiftDate) restTickUpdate(); }, 1000);
 
 /* ---------- 休憩の自動検出(app89〜) ----------
    軌跡は15m以上動かないと点が増えない。最後の点から10分以上たっても次の点が来なければ「完全停止」とみなし、
