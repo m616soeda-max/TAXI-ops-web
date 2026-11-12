@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111194">
+<meta name="taxiops-build" content="2026111295">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261111-app94</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261112-app95</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1550,7 +1550,7 @@ function openHelpModal(){
     det('1日の流れ', p('1. 出庫: 出番日と出庫時刻を入れて、ボタン列の左端の「出庫」を押します。走行軌跡の記録が自動で始まります(通知に「記録中」)。最初の画面の「⋯ その他」からも、設定・使い方・診断が開けます。\n2. 営業中: お客さんごとに、迎車 → 乗車 → 降車のボタンを押します(時刻と位置が残ります)。降車したら「記録する」で、代金・距離・種別・支払いを入れます。\n3. 休憩: 自動で数えます(下の「休憩」を参照)。\n4. 帰庫: 「⋯」→「乗務終了・まとめを見る」→ 帰庫時刻を入れます。\n5. まとめ画面: 日報コピー、画像の保存(①②)、「🗺 走行軌跡を見る」。最後に「✕」で次の出番へ。')),
     det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」をタップすると、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩', p('・休憩は自動で数えます。完全停止して10分たつと休憩が始まり、走り出すと止まって記録されます(軌跡の記録が動いているときだけ。乗車中・帰庫後は始まりません。走り出した地点が300m以上離れていたら、測位が途切れたとみなして記録しません)。\n・出庫してから走り出すまでの待ちも、10分以上なら休憩です。\n・画面の「休憩」の表示は、押すと記録の確認・修正が開きます。違っていたら、そこで削除できます。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
-    det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」を押すと、動画にする範囲(開始・終了の時刻)を聞かれます。初期値は出庫〜帰庫の時刻で、手入力で変えられます(24時を過ぎる時刻は2510のように入れます)。その範囲の再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点は、「⋯」→「📍 住所未取得をまとめて取得」で取れます。灰色の区間は「🩶 グレー区間を探す」で、時刻と原因が分かります。')),
+    det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」を押すと、動画にする範囲(開始・終了の時刻)を聞かれます。初期値は出庫〜帰庫の時刻で、手入力で変えられます(24時を過ぎる時刻は2510のように入れます)。その範囲の再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点、灰色の区間(乗車時刻のない記録)、距離が未入力の記録は、「⋯」→「🔍 記録の点検(3点)」で、1つの画面にまとめて出ます。そこで、住所の取得や、GPSでの距離の補完もできます(過去の出番は、詳細の「🔍 記録の点検」)。')),
     det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・画像は、ギャラリーの「TAXI-OPS」アルバムに、①②③④の順に並ぶように保存されます。Xに投稿するときは、画像ボタン→「コレクション」→「TAXI-OPS」を開いて、①→④の順にタップして選びます(選んだ順が投稿の順になります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
     det('⚙ 設定', p('「⋯」→「⚙ 設定」で、自分の営業所や運用に合わせて、次の値を変えられます。\n・時間帯別の目標(締めの時刻と目標額)と、帰庫までの目標\n・距離の目標(◯kmごとに◯円)\n・時間単価の色分け(赤にする未満、緑にする以上)\n・運賃帯(ミドル・ロングの下限)\n・休憩に数える最短(分)\n・回送まで・帰庫まで・連配のコアタイム(出庫からの時間)\n・出番の目印(名前と、表示する日の下1桁)\n保存すると画面を読み込み直します。「初期値に戻す」で、元の値に戻せます。月間目標は、ホーム画面の「月間目標 ✎」から月ごとに設定します。')),
     det('TAXI INTELとの連携', p('最初の画面(出庫の前)の「📊 INTEL(Excel)」から開きます。出番日でなくても、出庫を押さずに開けます。\n\nOPSの上に重ねて開くので、閉じるときは左上の「← Opsに戻る」を押します(端末の戻るボタンでも閉じます)。\n\nINTELはOPSと同じ保存場所で動くので、「Opsの月間目標との突き合わせ」で、OPSの目標額・予定出番数・確定累計をそのまま読みます。初回だけ通信でINTEL本体を取得し、以降は通信なしで開きます。')),
@@ -2854,7 +2854,7 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyShotAnalysisBtn">📸 ④分析のみを保存/共有</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
-      <button class="btn-ghost" id="historyFillDistBtn">📏 距離未入力をGPSで補う</button>
+      <button class="btn-ghost" id="historyFillDistBtn">🔍 記録の点検(グレー・住所・距離)</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyDeleteBtn" style="color:var(--red);border-color:var(--red);">🗑 この出番を削除</button>
@@ -2862,7 +2862,7 @@ function renderHistoryDetail(date){
   `;
   document.getElementById('historyBackBtn').onclick = ()=>{ historyDetailDate = null; render(); };
   document.getElementById('historyListToggleBtn').onclick = ()=>{ historyListExpanded = !historyListExpanded; renderHistoryDetail(date); };
-  document.getElementById('historyFillDistBtn').onclick = ()=>{ openDistFillModal(st, date); };
+  document.getElementById('historyFillDistBtn').onclick = ()=>{ openCheckHub(st, date); };
   document.getElementById('editReturnBtn').onclick = ()=>{
     const prefill = {
       time: (st.returnTime!==null&&st.returnTime!==undefined) ? fmtTime(st.returnTime) : '',
@@ -4018,7 +4018,7 @@ function renderMain(){
       <button class="btn-ghost" id="distListBtn">📏 降車時点の距離</button>
     </div>
     <div class="footer-row">
-      <button class="btn-ghost" id="fillDistBtn">📏 距離未入力をGPSで補う</button>
+      <button class="btn-ghost" id="checkHubBtn">🔍 記録の点検(3点)</button>
       <button class="btn-ghost" id="rankMenuBtn">🏅 GO順位の入力</button>
     </div>
     <div class="footer-row">
@@ -4033,10 +4033,6 @@ function renderMain(){
       <button class="btn-ghost" id="moreMaintToggle">${moreMaintOpen?'🔧 メンテナンス・診断 ▲':'🔧 メンテナンス・診断 ▼'}</button>
     </div>
     <div id="moreMaint" style="display:${moreMaintOpen?'flex':'none'};flex-direction:column;gap:8px;">
-      <div class="footer-row">
-        <button class="btn-ghost" id="fillAddrBtn">📍 住所未取得をまとめて取得</button>
-        <button class="btn-ghost" id="grayBtn">🩶 グレー区間を探す</button>
-      </div>
       <div class="footer-row">
         <button class="btn-ghost" id="fullImportBtn2">📥 全データをファイルから取り込む</button>
         <input type="file" id="fullImportInput2" style="display:none;">
@@ -4133,9 +4129,7 @@ function renderMain(){
   document.getElementById('rankMenuBtn').onclick = openRankModal;
   document.getElementById('distCell').onclick = openDistModal;
   document.getElementById('distListBtn').onclick = openDistModal;
-  document.getElementById('fillAddrBtn').onclick = ()=>evFillMissing(true);
-  document.getElementById('grayBtn').onclick = openGrayModal;
-  document.getElementById('fillDistBtn').onclick = ()=>openDistFillModal();
+  document.getElementById('checkHubBtn').onclick = ()=>openCheckHub();
   wireMoreSheet();
   document.getElementById('fullImportBtn2').onclick = ()=>document.getElementById('fullImportInput2').click();
   document.getElementById('fullImportInput2').onchange = (ev)=>{ const f=ev.target.files && ev.target.files[0]; ev.target.value=''; if(f) handleFullImportFile(f); };
@@ -6132,6 +6126,114 @@ function openGrayModal(){
   document.body.appendChild(ov);
   document.getElementById('bkClose').onclick=closeBackupModal;
   ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+}
+/* ---------- 記録の点検(グレー区間・住所未取得・距離未入力の3点セット、app95〜) ----------
+   3つを1つの画面で見て、そのまま処理する。住所の取得や距離の補完のあとも、この画面に戻る(メニューを開き直さない)。
+   現在の出番(⋯メニュー)と、過去の出番(履歴詳細)の両方で使う */
+let ckBusy=false;
+function ckCur(stArg,dateArg){
+  const date=dateArg||(state&&state.shiftDate)||null;
+  let st=null;
+  if(date) st=(state&&state.shiftDate===date&&state.depTime!==null&&state.depTime!==undefined)?state:loadShiftByDate(date);
+  if(!st) st=stArg||state;
+  return {st,date};
+}
+function ckGray(st,date){          // グレー区間(乗車時刻のない記録の区間)。openGrayModalと同じ判定
+  const pts=date?((trackDate===date && trackPts.length>1)?trackPts:trackLoad(date)):[];
+  if(!date || !st || st.depTime===null || st.depTime===undefined || !pts || pts.length<2) return {err:'この出番の軌跡がありません。'};
+  const m=evIntervals(date), base=evDayStart(date), rs=[]; let cur=null;
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1], b=pts[i];
+    if(b.t-a.t>TRACK_GAP_SEC){ cur=null; continue; }
+    if(evColorAt(m,(a.t+b.t)/2)!=='unk'){ cur=null; continue; }
+    const d=trackDistM(a,b)/1000;
+    if(cur && Math.abs(a.t-cur.e)<1){ cur.e=b.t; cur.km+=d; } else { cur={s:a.t,e:b.t,km:d}; rs.push(cur); }
+  }
+  const why=r=>{
+    const mid=(r.s+r.e)/2, x=(m&&m.iv||[]).find(v=>v[2]==='unk'&&v[0]<=mid&&mid<v[1]);
+    if(x){
+      const h=(x[1]-base)/3600, e=st.entries.find(q=>q.pay!=='障割'&&Math.abs(q.time-h)<1e-6);
+      if(e) return fmtTime(e.time)+'の'+e.pay+'の記録に乗車時刻がありません';
+    }
+    return '記録に属さない区間(出庫前など)';
+  };
+  return {rs, tot:rs.reduce((a,r)=>a+r.km,0), why, base};
+}
+function ckAddr(st){               // 住所が空の迎車・乗車・降車
+  const items=[];
+  for(const e of (st.entries||[])) for(const k of ['pu','bd','dr']) if(e[k]) items.push(e[k]);
+  for(const k of ['evPu','evBd','evDr']) if(st[k]) items.push(st[k]);
+  return {n:items.filter(o=>!o.ad).length, total:items.length};
+}
+function closeCheckHub(){
+  const m=document.getElementById('checkHub');
+  if(m){ if(m._mo) m._mo.disconnect(); m.remove(); }
+  document.body.classList.remove('ck-open');
+}
+function ckPaint(stArg,dateArg){
+  const hub=document.getElementById('checkHub'); if(!hub) return;
+  const {st,date}=ckCur(stArg,dateArg);
+  const box=document.getElementById('ckBox');
+  const g=ckGray(st,date), a=ckAddr(st), d=distFillPlan(st,date);
+  const sec=(ttl,status,ok,extra)=>'<div style="padding:8px 0;border-top:1px solid var(--border);"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><b style="font-size:13px;color:var(--text);">'+ttl+'</b><span style="font-size:12px;font-weight:700;color:'+(ok===null?'var(--muted)':(ok?'#2fb36b':'#f59e0b'))+';">'+status+'</span></div>'+(extra||'')+'</div>';
+  const btn=(id,label,dis)=>'<button class="btn-ghost" id="'+id+'" style="margin-top:6px;width:100%;font-size:12px;padding:9px 4px;'+(dis?'opacity:.45;':'')+'"'+(dis?' disabled':'')+'>'+label+'</button>';
+  // 1. グレー区間
+  let grayHtml;
+  if(g.err) grayHtml=sec('① グレー区間(乗車時刻未入力)','—',null,'<div style="font-size:11px;color:var(--muted);margin-top:4px;">'+g.err+'</div>');
+  else if(!g.rs.length) grayHtml=sec('① グレー区間(乗車時刻未入力)','なし ✓',true);
+  else grayHtml=sec('① グレー区間(乗車時刻未入力)',g.rs.length+'か所 / '+fmtKm(g.tot)+'km',false,
+    '<div style="font-size:10px;color:var(--muted2);margin-top:2px;">記録の編集で、乗車時刻を入れると消えます</div>'
+    +g.rs.map(r=>{ const hm=sec_=>fmtTime((sec_-g.base)/3600); return '<div style="padding:4px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><b style="font-family:\'PT Mono\',monospace;">'+hm(r.s)+'〜'+hm(r.e)+'</b><span>'+fmtKm(r.km)+'km</span></div><div style="font-size:10px;color:var(--muted);">'+g.why(r)+'</div></div>'; }).join(''));
+  // 2. 住所未取得
+  const addrHtml=sec('② 住所未取得', a.n?(a.n+'件 / '+a.total+'件中'):'なし ✓', a.n?false:true, a.n?btn('ckAddrBtn','📍 住所を取得する(通信します)'):'');
+  // 3. 距離未入力
+  let distHtml;
+  if(d.err) distHtml=sec('③ 距離未入力','—',null,'<div style="font-size:11px;color:var(--muted);margin-top:4px;">'+d.err+'</div>');
+  else if(!d.rows.length && !d.skipped.length) distHtml=sec('③ 距離未入力','なし ✓',true);
+  else distHtml=sec('③ 距離未入力',(d.rows.length+d.skipped.length)+'件',false,
+    '<div style="font-size:11px;color:var(--muted);margin-top:4px;">GPSで入れられる '+d.rows.length+'件'+(d.skipped.length?' / 入れられない '+d.skipped.length+'件(手入力)':'')+'</div>'
+    +(d.rows.length?btn('ckDistBtn','📏 内容を確認して入れる('+d.rows.length+'件)'):''));
+  const ttl=(date?('<span style="font-size:11px;color:var(--muted);font-weight:400;"> '+date+'</span>'):'');
+  box.innerHTML='<div style="font-weight:700;font-size:15px;color:var(--text);">🔍 記録の点検'+ttl+'</div>'
+    +'<div style="font-size:11px;color:var(--muted);">グレー区間・住所未取得・距離未入力を、この画面でまとめて確認して処理します。</div>'
+    +'<button class="btn-ghost" id="ckAll" style="font-weight:700;font-size:13px;padding:11px 4px;">▶ 3点をまとめて点検(住所は自動で取得)</button>'
+    +grayHtml+addrHtml+distHtml
+    +'<button class="btn-ghost" id="ckClose" style="margin-top:6px;">閉じる</button>';
+  document.getElementById('ckClose').onclick=closeCheckHub;
+  document.getElementById('ckAll').onclick=()=>ckRunAll(stArg,dateArg);
+  const ab=document.getElementById('ckAddrBtn'); if(ab) ab.onclick=async()=>{ ab.disabled=true; ab.textContent='取得中…'; try{ await evFillMissing(true); }catch(e){} ckPaint(stArg,dateArg); };
+  const db=document.getElementById('ckDistBtn'); if(db) db.onclick=()=>{ if(stArg && dateArg) openDistFillModal(stArg,dateArg); else openDistFillModal(); };
+}
+async function ckRunAll(stArg,dateArg){
+  if(ckBusy) return; ckBusy=true;
+  const b=document.getElementById('ckAll'); if(b){ b.disabled=true; b.textContent='点検中…(住所を取得しています)'; }
+  try{ await evFillMissing(true); }catch(e){}
+  ckBusy=false;
+  ckPaint(stArg,dateArg);
+  const {st,date}=ckCur(stArg,dateArg);
+  const g=ckGray(st,date), a=ckAddr(st), d=distFillPlan(st,date);
+  toast('点検しました: グレー '+(g.err?'—':g.rs.length+'か所')+' / 住所未取得 '+a.n+'件 / 距離未入力 '+(d.err?'—':(d.rows.length+d.skipped.length)+'件'));
+}
+function openCheckHub(stArg,dateArg){
+  closeCheckHub();
+  const ov=document.createElement('div'); ov.id='checkHub';
+  ov.style.cssText='position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.72);z-index:590;display:flex;align-items:center;justify-content:center;padding:14px;';
+  ov.innerHTML='<div id="ckBox" style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 40px rgba(0,0,0,.5);"></div>';
+  document.body.appendChild(ov);
+  document.body.classList.add('ck-open');
+  if(!document.getElementById('ckStyle')){ const st=document.createElement('style'); st.id='ckStyle'; st.textContent='body.ck-open .toast{z-index:7000;}'; document.head.appendChild(st); }
+  ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeCheckHub(); });
+  // 下に重ねた確認画面(距離を入れる等)が閉じたら、点検結果を更新する
+  let subOpen=false;
+  const mo=new MutationObserver(()=>{
+    if(!document.getElementById('checkHub')){ mo.disconnect(); return; }
+    const open=!!document.getElementById('backupModal');
+    if(subOpen && !open) ckPaint(stArg,dateArg);
+    subOpen=open;
+  });
+  mo.observe(document.body,{childList:true});
+  ov._mo=mo;
+  ckPaint(stArg,dateArg);
 }
 function restGridCells(st){     // まとめ・履歴詳細の1行(sum-gridの中に入れる)
   return '<div class="gt">休憩</div><div class="gc">合計<b>'+restDurText(restTotalMs(st))+'</b></div><div class="gc">回数<b>'+restList(st).length+'回</b></div>';
