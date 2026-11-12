@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111295">
+<meta name="taxiops-build" content="2026111396">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261112-app95</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app96</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2588,7 +2588,7 @@ function openHistoryEntryModal(st, date, entryId){
     entry.pay = selPay;
     entry.thanks = selThanks;
     st.entries.sort((a,b)=>a.time-b.time);
-    try{ localStorage.setItem(LS_PREFIX+'shift:'+date, JSON.stringify(st)); }catch(e){}
+    if(st!==state){ try{ localStorage.setItem(LS_PREFIX+'shift:'+date, JSON.stringify(st)); }catch(e){} }
     if(state.shiftDate===date && state.depTime!==null){
       const idx = state.entries.findIndex(e=>e.id===entryId);
       if(idx>-1){
@@ -2604,7 +2604,7 @@ function openHistoryEntryModal(st, date, entryId){
   overlay.querySelector('#hemDelete').onclick = ()=>{
     showConfirm('この記録を削除しますか?元に戻せません。', async ()=>{
       st.entries = st.entries.filter(e=>e.id!==entryId);
-      try{ localStorage.setItem(LS_PREFIX+'shift:'+date, JSON.stringify(st)); }catch(e){}
+      if(st!==state){ try{ localStorage.setItem(LS_PREFIX+'shift:'+date, JSON.stringify(st)); }catch(e){} }
       if(state.shiftDate===date && state.depTime!==null){
         state.entries = state.entries.filter(e=>e.id!==entryId);
         await saveState();
@@ -3655,6 +3655,72 @@ function openRankModal(){
   };
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
 }
+
+// ===== 今日のデータを修正(出動中画面から、その日の全データを直せる入口) =====
+function openDayEditHub(){
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  const tm = (v)=> (v!==null && v!==undefined) ? fmtTime(v) : '未設定';
+  const items = [
+    ['rec','📋 記録(全項目)','タップして1件ずつ'],
+    ['dep','🚕 出庫時刻',tm(state.depTime)],
+    ['renpai','🔁 連配開始',tm(state.renpaiStart)],
+    ['weather','☀ 天気',state.weather||'未設定'],
+    ['rank','🏅 GO順位',''],
+    ['rest','☕ 休憩',''],
+    ['dist','📏 降車時点の距離',''],
+    ['actual','🛣 実車距離をまとめて',''],
+    ['check','🔍 記録の点検',''],
+  ];
+  if(state.returnTime!==null && state.returnTime!==undefined) items.push(['ret','🏁 帰庫・終了距離',tm(state.returnTime)]);
+  if(state.careerNo!=null) items.push(['no','🔢 出番回数','']);
+  ov.innerHTML = `
+    <div class="confirm-box" style="max-width:340px;max-height:85vh;overflow-y:auto;">
+      <div class="confirm-msg">今日のデータを修正</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        ${items.map(([k,l,v])=>`<button class="btn-ghost" data-k="${k}" style="padding:9px 4px;font-size:12px;line-height:1.3;">${l}${v?`<span style="display:block;font-size:10px;color:var(--muted2);">${v}</span>`:''}</button>`).join('')}
+      </div>
+      <button class="btn-ghost" id="dayEditClose" style="width:100%;">閉じる</button>
+    </div>`;
+  document.body.appendChild(ov);
+  const close = ()=>ov.remove();
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) close(); });
+  ov.querySelector('#dayEditClose').onclick = close;
+  const act = {
+    rec: ()=>{ mainViewMode='records'; render(); },
+    dep: openEditDepModal,
+    renpai: openRenpaiModal,
+    weather: openWeatherModal,
+    rank: openRankModal,
+    rest: openRestModal,
+    dist: openDistModal,
+    actual: ()=>openBulkActualDistModal(state.entries, async()=>{ await saveState(); render(); }),
+    check: ()=>openCheckHub(),
+    ret: ()=>{
+      const prefill = {
+        time: (state.returnTime!==null&&state.returnTime!==undefined) ? fmtTime(state.returnTime) : '',
+        dist: (state.endDist!==null&&state.endDist!==undefined) ? state.endDist : '',
+        handle: (state.handleTime!==null&&state.handleTime!==undefined) ? fmtTime(state.handleTime) : ''
+      };
+      showTimeInputModal('帰庫時刻を修正してください(例: 2130)', async (val, distVal, handleVal)=>{
+        if(val===null) return;
+        if(val!==''){
+          const t = parseTime(val);
+          if(t===null){ toast('時刻の形式が正しくありません(例: 2130)'); return; }
+          state.returnTime = t;
+        }
+        if(distVal){ const dv = parseFloat(distVal); if(!isNaN(dv) && dv>=0) state.endDist = dv; }
+        if(handleVal){ const hv = parseTime(handleVal); if(hv!==null && hv>=0) state.handleTime = hv; }
+        await saveState(); render(); toast('帰庫時刻を修正しました');
+      }, prefill);
+    },
+    no: ()=>openEditShiftNoModal(state, async()=>{ await saveState(); render(); })
+  };
+  ov.querySelectorAll('button[data-k]').forEach(b=>{
+    b.onclick = ()=>{ close(); const f = act[b.dataset.k]; if(f) f(); };
+  });
+}
+
 function openEditDepModal(){
   showTimeInputModal2('出庫時刻を修正してください(例: 0730)', state.depTime, async (val)=>{
     if(val===null) return;
@@ -4008,6 +4074,7 @@ function renderMain(){
         <div class="more-sheet-title"><span>その他のメニュー</span><button class="btn-ghost" id="moreCloseBtn" style="padding:4px 12px;">✕</button></div>
     <div class="footer-row">
       <button class="btn-ghost" id="resetBtn">乗務終了・まとめを見る</button>
+      <button class="btn-ghost" id="dayEditBtn">✏️ 今日のデータを修正</button>
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="exportBtn">📋 日報用テキストをコピー</button>
@@ -4072,7 +4139,7 @@ function renderMain(){
   document.querySelectorAll('.entry-row-tap').forEach(row=>{
     row.addEventListener('click', (ev)=>{
       if(ev.target.closest('.entry-del')) return;
-      startEditEntry(row.dataset.id);
+      openHistoryEntryModal(state, state.shiftDate, row.dataset.id);
     });
   });
   document.querySelectorAll('.entry-del').forEach(btn=>{
@@ -4125,6 +4192,7 @@ function renderMain(){
   document.getElementById('helpBtn').onclick = openHelpModal;
   document.getElementById('healthBtn').onclick = taxiopsTrackHealth;
   document.getElementById('restListBtn').onclick = openRestModal;
+  document.getElementById('dayEditBtn').onclick = openDayEditHub;
   document.getElementById('settingsBtn').onclick = openSettingsModal;
   document.getElementById('rankMenuBtn').onclick = openRankModal;
   document.getElementById('distCell').onclick = openDistModal;
