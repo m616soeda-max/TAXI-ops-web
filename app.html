@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111398">
+<meta name="taxiops-build" content="2026111399">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app98</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app99</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3944,18 +3944,18 @@ function renderMain(){
   }).join('');
   if(!entryHTML){ entryHTML = `<div class="empty">まだ記録がありません</div>`; }
 
-  // 直前の降車の「区間・実車・実車率」を、記録フォームの上に薄い1行で出す(タップでその記録を開く)
+  // 直前の降車の実車率を、高速代の右の空きに薄く出す(タップでその記録の編集画面)
   let lastRateHTML = '';
-  if(mainViewMode==='form' && entries.length){
+  if(entries.length){
     const li = entries.length - 1, le = entries[li], lleg = legDist(entries, li);
-    let txt = '';
+    let lab = '直前の実車', val = '';
     if(le.actualDist!=null){
-      if(lleg!==null && lleg>0){ const r = Math.min(100, le.actualDist/lleg*100); txt = '区間'+fmtKm(lleg)+'km ・ 実車'+le.actualDist+'km(実車率'+r.toFixed(0)+'%)'; }
-      else txt = '実車'+le.actualDist+'km';
+      if(lleg!==null && lleg>0){ const r = Math.min(100, le.actualDist/lleg*100); lab = '直前の実車率'; val = '<b style="display:inline;font-size:11px;">'+r.toFixed(0)+'%</b> '+le.actualDist+'km'; }
+      else val = le.actualDist+'km';
     } else if(lleg!==null && lleg>0 && !DIST_EXEMPT_PAYS.includes(le.pay)){
-      txt = '区間'+fmtKm(lleg)+'km ・ 実車距離 未入力 ✎';
+      val = '未入力 ✎';
     }
-    if(txt) lastRateHTML = `<div id="lastRateLine" data-id="${le.id}" style="font-size:10px;line-height:12px;height:12px;margin-bottom:-2px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;cursor:pointer;">直前${li+1} ・ ${txt}</div>`;
+    if(val) lastRateHTML = `<span id="lastRateLine" data-id="${le.id}" style="position:absolute;right:0;top:0;max-width:84px;text-align:right;font-size:8.5px;line-height:12px;color:var(--muted2);white-space:nowrap;overflow:hidden;cursor:pointer;">${lab}<br><span style="font-size:9px;">${val}</span></span>`;
   }
   document.getElementById('mainView').innerHTML = `
 
@@ -3995,7 +3995,7 @@ function renderMain(){
       <div class="meter-sub2">
         <div>メーター金額<b>¥${fmtYen(total)}</b></div>
         <div id="distCell" style="cursor:pointer;white-space:nowrap;">${(()=>{ const ar=shiftActualRate(state); return (ar ? '走行距離・実車率' : '走行距離<span style="color:var(--muted2);font-size:8px;"> ▸降車時点</span>') + '<b>' + fmtKm(dist) + 'km' + (ar ? '<span style="margin-left:5px;font-size:10.5px;">' + ar.rate.toFixed(0) + '%</span>' : '') + '</b>'; })()}</div>
-        <div>高速代<b>¥${fmtYen(tollTotal)}</b></div>
+        <div style="position:relative;">高速代<b>¥${fmtYen(tollTotal)}</b>${lastRateHTML}</div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
         <div style="display:flex;gap:4px;align-items:flex-end;">
@@ -4008,7 +4008,6 @@ function renderMain(){
 
     ${mainViewMode==='form' ? `
     ${evBarHTML()}
-    ${lastRateHTML}
     <div class="add-card ${editingId?'editing':''}">
       ${editingId ? `<div class="edit-banner"><span>記録を編集中です</span><span id="cancelEditBtn">キャンセル</span></div>` : ''}
       <div class="add-row">
