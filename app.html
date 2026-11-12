@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="2026111397">
+<meta name="taxiops-build" content="2026111398">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app97</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app98</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3944,6 +3944,19 @@ function renderMain(){
   }).join('');
   if(!entryHTML){ entryHTML = `<div class="empty">まだ記録がありません</div>`; }
 
+  // 直前の降車の「区間・実車・実車率」を、記録フォームの上に薄い1行で出す(タップでその記録を開く)
+  let lastRateHTML = '';
+  if(mainViewMode==='form' && entries.length){
+    const li = entries.length - 1, le = entries[li], lleg = legDist(entries, li);
+    let txt = '';
+    if(le.actualDist!=null){
+      if(lleg!==null && lleg>0){ const r = Math.min(100, le.actualDist/lleg*100); txt = '区間'+fmtKm(lleg)+'km ・ 実車'+le.actualDist+'km(実車率'+r.toFixed(0)+'%)'; }
+      else txt = '実車'+le.actualDist+'km';
+    } else if(lleg!==null && lleg>0 && !DIST_EXEMPT_PAYS.includes(le.pay)){
+      txt = '区間'+fmtKm(lleg)+'km ・ 実車距離 未入力 ✎';
+    }
+    if(txt) lastRateHTML = `<div id="lastRateLine" data-id="${le.id}" style="font-size:10px;line-height:12px;height:12px;margin-bottom:-2px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;cursor:pointer;">直前${li+1} ・ ${txt}</div>`;
+  }
   document.getElementById('mainView').innerHTML = `
 
     <div class="meter">
@@ -3995,6 +4008,7 @@ function renderMain(){
 
     ${mainViewMode==='form' ? `
     ${evBarHTML()}
+    ${lastRateHTML}
     <div class="add-card ${editingId?'editing':''}">
       ${editingId ? `<div class="edit-banner"><span>記録を編集中です</span><span id="cancelEditBtn">キャンセル</span></div>` : ''}
       <div class="add-row">
@@ -4162,6 +4176,8 @@ function renderMain(){
       });
     };
   });
+  const lastRateEl = document.getElementById('lastRateLine');
+  if(lastRateEl) lastRateEl.onclick = ()=>openHistoryEntryModal(state, state.shiftDate, lastRateEl.dataset.id);
   const cancelBtn = document.getElementById('cancelEditBtn');
   if(cancelBtn){
     cancelBtn.onclick = ()=>{ editingId = null; render(); };
