@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114106">
+<meta name="taxiops-build" content="20261114107">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app106</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app107</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -6310,6 +6310,21 @@ function openGrayModal(){
    3つを1つの画面で見て、そのまま処理する。住所の取得や距離の補完のあとも、この画面に戻る(メニューを開き直さない)。
    現在の出番(⋯メニュー)と、過去の出番(履歴詳細)の両方で使う */
 let ckBusy=false;
+function actualFillPlan(st,date){      // 実車距離が空の記録を、乗車ボタン〜降車のGPS距離で補う計画(app107)
+  const EX=['キャンセル','B空転','障割','定額負け'];
+  const all=(st.entries||[]).filter(e=>!EX.includes(e.pay)).sort((a,b)=>a.time-b.time);
+  const groups=[];
+  for(const e of all){ const g=groups.length?groups[groups.length-1]:null; if(g && Math.abs(g.h-e.time)<1e-6) g.es.push(e); else groups.push({h:e.time,es:[e]}); }
+  const rows=[], skipped=[]; let noBd=0;
+  for(const g of groups){
+    if(g.es.some(e=>e.actualDist!=null)) continue;
+    const tg=g.es.find(e=>e.bd&&e.bd.t!=null);
+    if(!tg){ noBd++; continue; }
+    const r=gpsKmBetween(date,tg.bd.t,tg.time);
+    if(r.km!=null) rows.push({e:tg,km:r.km}); else skipped.push({e:tg,why:r.why});
+  }
+  return {rows,skipped,noBd};
+}
 function ckCur(stArg,dateArg){
   const date=dateArg||(state&&state.shiftDate)||null;
   let st=null;
@@ -6372,16 +6387,30 @@ function ckPaint(stArg,dateArg){
   else distHtml=sec('③ 距離未入力',(d.rows.length+d.skipped.length)+'件',false,
     '<div style="font-size:11px;color:var(--muted);margin-top:4px;">GPSで入れられる '+d.rows.length+'件'+(d.skipped.length?' / 入れられない '+d.skipped.length+'件(手入力)':'')+'</div>'
     +(d.rows.length?btn('ckDistBtn','📏 内容を確認して入れる('+d.rows.length+'件)'):''));
+  const ap=actualFillPlan(st,date), apN=ap.rows.length+ap.skipped.length+ap.noBd;
+  const actHtml=apN===0 ? sec('④ 実車距離未入力','なし ✓',true)
+    : sec('④ 実車距離未入力',apN+'件',false,'<div style="font-size:11px;color:var(--muted);margin-top:4px;">GPSで入れられる '+ap.rows.length+'件'+(ap.skipped.length?' / 測位の都合で入れられない '+ap.skipped.length+'件':'')+(ap.noBd?' / 乗車ボタン未使用 '+ap.noBd+'件(手入力)':'')+'</div>'
+      +ap.rows.map(r=>'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border);"><b style="font-family:\'PT Mono\',monospace;">'+fmtTime(r.e.time)+' ¥'+Number(r.e.fare||0).toLocaleString('ja-JP')+'</b><span>実車 '+fmtKm(r.km)+'km</span></div>').join('')
+      +(ap.rows.length?btn('ckActBtn','🚕 実車距離を入れる('+ap.rows.length+'件)'):''));
   const ttl=(date?('<span style="font-size:11px;color:var(--muted);font-weight:400;"> '+date+'</span>'):'');
   box.innerHTML='<div style="font-weight:700;font-size:15px;color:var(--text);">🔍 記録の点検'+ttl+'</div>'
     +'<div style="font-size:11px;color:var(--muted);">グレー区間・住所未取得・距離未入力を、この画面でまとめて確認して処理します。</div>'
     +'<button class="btn-ghost" id="ckAll" style="font-weight:700;font-size:13px;padding:11px 4px;">▶ 3点をまとめて点検(住所は自動で取得)</button>'
-    +grayHtml+addrHtml+distHtml
+    +grayHtml+addrHtml+distHtml+actHtml
     +'<button class="btn-ghost" id="ckClose" style="margin-top:6px;">閉じる</button>';
   document.getElementById('ckClose').onclick=closeCheckHub;
   document.getElementById('ckAll').onclick=()=>ckRunAll(stArg,dateArg);
   const ab=document.getElementById('ckAddrBtn'); if(ab) ab.onclick=async()=>{ ab.disabled=true; ab.textContent='取得中…'; try{ await evFillMissing(true); }catch(e){} ckPaint(stArg,dateArg); };
   const db=document.getElementById('ckDistBtn'); if(db) db.onclick=()=>{ if(stArg && dateArg) openDistFillModal(stArg,dateArg); else openDistFillModal(); };
+  const actb=document.getElementById('ckActBtn');
+  if(actb) actb.onclick=async()=>{
+    ap.rows.forEach(r=>{ r.e.actualDist=r.km; r.e.actualGps=true; });
+    if(st!==state){
+      try{ localStorage.setItem(LS_PREFIX+'shift:'+date, JSON.stringify(st)); }catch(e){}
+      if(state.shiftDate===date && state.depTime!==null){ ap.rows.forEach(r=>{ const t=state.entries.find(x=>x.id===r.e.id); if(t){ t.actualDist=r.km; t.actualGps=true; } }); await saveState(); }
+    } else { await saveState(); }
+    render(); ckPaint(stArg,dateArg); toast('実車距離を'+ap.rows.length+'件入れました');
+  };
 }
 async function ckRunAll(stArg,dateArg){
   if(ckBusy) return; ckBusy=true;
