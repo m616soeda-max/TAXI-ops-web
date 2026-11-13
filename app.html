@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261113102">
+<meta name="taxiops-build" content="20261113103">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app102</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app103</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -851,6 +851,7 @@ let setupDefaultsApplied = false; // 開始前画面の初期値(連配開始7:3
 let summaryMode = false;
 let editingId = null;
 let pendingElsePayConfirm = false; // 「それ以外」誤タップ防止用のダブルタップ確認状態
+let autoTimeVal = null;   // 支払い種別チップで自動入力した降車時刻(app103)
 let listExpanded = false;
 let moreMaintOpen = false; // 「🔧 メンテナンス・診断」の折りたたみ(開いているか)
 let moreMenuOpen = false; // 「⋯」メニュー(日報コピー・バックアップ・過去の出番・乗務終了など)の開閉
@@ -3841,6 +3842,25 @@ function renderChips(){
           // 通常の支払い種別同士の切り替え(押し間違えての押し直し等)では入力済みの金額・距離はそのまま保持する。
           if(fareEl) fareEl.value = '';
           if(distEl) distEl.value = '';
+        }
+        // 降車時刻の自動入力(app103): キャンセル/B空転=押した時刻、定額負け/障割=直前の記録の降車時刻。新規入力時のみ(記録の編集中は触らない)
+        if(!editingId){
+          const tiEl = document.getElementById('timeInput');
+          if(tiEl){
+            let autoT = null;
+            if((state.selPay==='キャンセル' || state.selPay==='B空転') && state.shiftDate && state.depTime!==null){
+              autoT = fmtTime(evNowH());
+            } else if(state.selPay==='障割' || state.selPay==='定額負け'){
+              const lastE = state.entries.length ? state.entries[state.entries.length-1] : null;
+              if(lastE) autoT = fmtTime(lastE.time);
+            }
+            if(autoT!==null){ tiEl.value = autoT; autoTimeVal = autoT; }
+            else if(autoTimeVal!==null && tiEl.value===autoTimeVal){
+              // 自動入力した時刻のまま通常の支払い種別に戻した場合は、時刻を元に戻す(降車ボタンの時刻があればそれ、なければ空)
+              tiEl.value = state.evDr ? fmtTime(state.evDr.t) : '';
+              autoTimeVal = null;
+            }
+          }
         }
         renderChips();
       };
