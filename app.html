@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114107">
+<meta name="taxiops-build" content="20261114109">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app107</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app109</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1256,6 +1256,7 @@ function openEditMonthTargetModal(monthKeyArg){
     </div>
   `;
   document.body.appendChild(overlay);
+  kpBind(overlay,[['monthTargetInput','int','月間目標(円・税込)',8]]);
   document.getElementById('monthTargetInput').focus();
   document.getElementById('monthTargetCancel').onclick = ()=>overlay.remove();
   document.getElementById('monthTargetOk').onclick = ()=>{
@@ -1298,6 +1299,7 @@ function openEditMonthRevenueModal(){
     </div>
   `;
   document.body.appendChild(overlay);
+  kpBind(overlay,[['monthCumInclInput','int','税込累計(円)',8],['monthCumExclInput','int','税抜累計(円)',8]]);
   document.getElementById('monthCumCancel').onclick = ()=>overlay.remove();
   document.getElementById('monthCumOk').onclick = ()=>{
     const incl = parseInt(document.getElementById('monthCumInclInput').value.replace(/[^0-9]/g,''),10);
@@ -1337,6 +1339,7 @@ function openEditShiftNoModal(target, onSaved){
     </div>
   `;
   document.body.appendChild(overlay);
+  kpBind(overlay,[['monthTotalInput','int','今月度の予定出番数'],['baseOffsetInput','int','基準日時点の通算出番数']]);
   overlay.querySelector('#monthTotalInput').focus();
   overlay.querySelector('#shiftNoCancel').onclick = ()=> overlay.remove();
   overlay.querySelector('#shiftNoOk').onclick = async ()=>{
@@ -2492,6 +2495,7 @@ function openHistoryEntryModal(st, date, entryId){
     </div>
   `;
   document.body.appendChild(overlay);
+  kpBind(overlay,[['hemFare','int','代金(円)'],['hemDist','dec','距離(km・累計)'],['hemActualDist','dec','実車距離(km)']]);
   const hemTimeEl = overlay.querySelector('#hemTime');
   if(hemTimeEl){
     hemTimeEl.addEventListener('click', ()=>openTimeKeypad('hemTime','hemFare'));
@@ -3180,6 +3184,7 @@ function renderSetup(){
       </div>
     </div>
   `;
+  kpBind(document.getElementById('setupView'),[['depInput','time','出庫時刻']]);
   document.getElementById('fullSaveBtn').onclick = handleFullBackupToFile;
   document.getElementById('fullImportBtn').onclick = ()=>document.getElementById('fullImportInput').click();
   document.getElementById('fullImportInput').onchange = (ev)=>{ const f=ev.target.files && ev.target.files[0]; ev.target.value=''; if(f) handleFullImportFile(f); };
@@ -3656,6 +3661,7 @@ function openRankModal(){
     </div>
   `;
   document.body.appendChild(overlay);
+  kpBind(overlay,[['rankInput','int','順位'],['rankTotalInput','int','総人数'],['rankAcceptInput','int','了解数'],['rankRateInput','dec','了解率(%)']]);
   overlay.querySelector('#rankInput').focus();
   overlay.querySelector('#rankCancel').onclick = ()=> overlay.remove();
   overlay.querySelector('#rankOk').onclick = async ()=>{
@@ -3784,6 +3790,7 @@ function showTimeInputModal2(message, currentVal, onConfirm){
   `;
   document.body.appendChild(overlay);
   const input = overlay.querySelector('#modalTimeInput2');
+  kpBind(overlay,[['modalTimeInput2','time','時刻']]);
   input.focus();
   overlay.querySelector('#modalSkip2').onclick = ()=>{ overlay.remove(); onConfirm(''); };
   overlay.querySelector('#modalOk2').onclick = ()=>{ const v = input.value; overlay.remove(); onConfirm(v); };
@@ -4302,7 +4309,7 @@ function bindTap(el, handler){
     handler(e);
   });
 }
-function openTimeKeypad(inputId, nextFocusId, nextOpener){
+function openTimeKeypad(inputId, nextFocusId, nextOpener, title){
   if(kpOpen) return;
   kpOpen = true;
   const input = document.getElementById(inputId || 'timeInput');
@@ -4313,7 +4320,7 @@ function openTimeKeypad(inputId, nextFocusId, nextOpener){
   overlay.className = 'confirm-overlay';
   overlay.innerHTML = `
     <div class="kp-box">
-      <div class="kp-title">降車時刻</div>
+      <div class="kp-title">${title||'降車時刻'}</div>
       <div class="kp-display" id="kpDisplay3">${val || '0'}</div>
       <div class="kp-grid">
         <div class="kp-key" data-k="1">1</div><div class="kp-key" data-k="2">2</div><div class="kp-key" data-k="3">3</div>
@@ -4356,6 +4363,7 @@ function openTimeKeypad(inputId, nextFocusId, nextOpener){
   bindTap(overlay.querySelector('#kpCancel3'), closeKp);
   bindTap(overlay.querySelector('#kpOk3'), ()=>{
     input.value = val;
+    input.dispatchEvent(new Event('input',{bubbles:true}));   // 初期画面の出庫時刻→連配開始の連動用
     closeKp();
     if(nextOpener){
       nextOpener();
@@ -4367,6 +4375,60 @@ function openTimeKeypad(inputId, nextFocusId, nextOpener){
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
 }
 
+function openDecimalKeypad(inputId,title){
+  if(kpOpen) return;
+  kpOpen = true;
+  const input = document.getElementById(inputId);
+  input.blur();
+  let val = (input.value || '').toString();
+  let fresh = val!=='';   // 既存値の訂正: ⌫で1文字ずつ消せる、数字キーなら打ち直し
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="kp-box">
+      <div class="kp-title">${title}</div>
+      <div class="kp-display" id="kpDisplayD">${val || '0.0'}</div>
+      <div class="kp-grid">
+        <div class="kp-key" data-k="1">1</div><div class="kp-key" data-k="2">2</div><div class="kp-key" data-k="3">3</div>
+        <div class="kp-key" data-k="4">4</div><div class="kp-key" data-k="5">5</div><div class="kp-key" data-k="6">6</div>
+        <div class="kp-key" data-k="7">7</div><div class="kp-key" data-k="8">8</div><div class="kp-key" data-k="9">9</div>
+        <div class="kp-key kp-func" data-k="back">⌫</div><div class="kp-key" data-k="0">0</div><div class="kp-key" data-k=".">.</div>
+      </div>
+      <div class="kp-actions">
+        <button class="kp-cancel" id="kpCancelD">キャンセル</button>
+        <button class="kp-ok" id="kpOkD">確定</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const display = overlay.querySelector('#kpDisplayD');
+  const closeKp = ()=>{ overlay.remove(); kpOpen = false; };
+  overlay.querySelectorAll('.kp-key').forEach(btn=>{
+    bindTap(btn, ()=>{
+      const k = btn.dataset.k;
+      if(fresh){ fresh = false; if(k!=='back') val=''; }
+      if(k==='back'){ val = val.slice(0,-1); }
+      else if(k==='.'){ if(!val.includes('.')) val += (val===''?'0.':'.'); }
+      else { if(val.length>=6) return; val += k; }
+      display.textContent = val || '0.0';
+    });
+  });
+  bindTap(overlay.querySelector('#kpCancelD'), closeKp);
+  bindTap(overlay.querySelector('#kpOkD'), ()=>{ input.value = val; closeKp(); });
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
+}
+// 数字の入力欄をテンキーにする。specs: [[欄のID,'int'|'dec'|'time',題名,最大桁(intのみ)],...]
+function kpBind(root, specs){
+  specs.forEach(sp=>{
+    const id=sp[0], kind=sp[1], title=sp[2], max=sp[3];
+    const el=root.querySelector('#'+id); if(!el) return;
+    el.setAttribute('inputmode','none'); el.readOnly=true;
+    el.addEventListener('click',()=>{
+      if(kind==='int') openIntegerKeypad(id,null,title,null,max);
+      else if(kind==='dec') openDecimalKeypad(id,title);
+      else openTimeKeypad(id,null,null,title);
+    });
+  });
+}
 function openFareKeypad(){
   openIntegerKeypad('fareInput', 'distInput', '代金(円)', openDistKeypad);
 }
@@ -4381,7 +4443,7 @@ function openTollKeypad(inputId, nextFocusId){
   }
   openIntegerKeypad(id, nextFocusId, '高速代(円)', nextOpener);
 }
-function openIntegerKeypad(inputId, nextFocusId, title, nextOpener){
+function openIntegerKeypad(inputId, nextFocusId, title, nextOpener, maxLen){
   if(kpOpen) return;
   kpOpen = true;
   const input = document.getElementById(inputId);
@@ -4416,10 +4478,10 @@ function openIntegerKeypad(inputId, nextFocusId, title, nextOpener){
       if(k==='back'){
         val = val.slice(0,-1);
       } else if(k==='00'){
-        if(val==='' || val.length>=6) return;
+        if(val==='' || val.length>=(maxLen||6)) return;
         val += '00';
       } else {
-        if(val.length>=6) return;
+        if(val.length>=(maxLen||6)) return;
         val += k;
       }
       display.textContent = val || '0';
@@ -4581,6 +4643,7 @@ function showTimeInputModal(message, onConfirm, prefill){
   const input = overlay.querySelector('#modalTimeInput');
   const distInput = overlay.querySelector('#modalDistInput');
   const handleInput = overlay.querySelector('#modalHandleInput');
+  kpBind(overlay,[['modalTimeInput','time','帰庫時刻'],['modalDistInput','dec','帰庫時の累計走行距離(km)'],['modalHandleInput','time','ハンドル時間']]);
   input.focus();
   overlay.querySelector('#modalSkip').onclick = ()=>{ overlay.remove(); onConfirm('', '', ''); };
   overlay.querySelector('#modalOk').onclick = ()=>{ const v = input.value; const dv = distInput.value; const hv = handleInput.value; overlay.remove(); onConfirm(v, dv, hv); };
@@ -6061,6 +6124,7 @@ function openSettingsModal(){
   document.body.appendChild(ov);
   document.getElementById('bkClose').onclick=closeBackupModal;
   ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeBackupModal(); });
+  kpBind(ov,[['cfCut0','int','目標1の時刻'],['cfCut1','int','目標2の時刻'],['cfCut2','int','目標3の時刻'],['cfCut3','int','目標4の時刻'],['cfTgt0','int','目標1の金額'],['cfTgt1','int','目標2の金額'],['cfTgt2','int','目標3の金額'],['cfTgt3','int','目標4の金額'],['cfFinal','int','帰庫までの目標'],['cfKmStep','dec','◯kmごと'],['cfKmPay','int','◯円'],['cfRateLow','int','赤にする(未満)'],['cfRateGood','int','緑にする(以上)'],['cfMid','int','ミドルの下限'],['cfLong','int','ロングの下限'],['cfRest','int','休憩の最短(分)'],['cfKaiso','dec','回送まで(時間)'],['cfReturn','dec','帰庫まで(時間)'],['cfCore','dec','コアタイム(時間)']]);
   const g=(id)=>document.getElementById(id).value.trim();
   const num=(id)=>{ const v=g(id).replace(/[,，]/g,'').replace(/[０-９．]/g,(c)=>c==='．'?'.':String.fromCharCode(c.charCodeAt(0)-65248)); return v===''?NaN:Number(v); };
   document.getElementById('cfSave').onclick=()=>{
