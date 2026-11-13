@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261113103">
+<meta name="taxiops-build" content="20261113104">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app103</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app104</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -873,11 +873,11 @@ function initHistoryExpand(dates){
   }
 }
 
-function toast(msg){
+function toast(msg,ms){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(toast._h);
-  toast._h=setTimeout(()=>t.classList.remove('show'),1600);
+  toast._h=setTimeout(()=>t.classList.remove('show'),ms||1600);
 }
 
 // "0730" / "2510" (or "7:30" / "25:10") -> decimal hours
@@ -3073,12 +3073,14 @@ async function openIntel(fromRetry){
 
 async function taxiopsRunCheck(manual){
   if(!window.taxiopsCheckUpdate) return;
+  const boot=(manual==='boot');   // 起動時の確認: 最新・取得・失敗のどれでも結果を出す
   window.__lastUpdateCheck=Date.now();
-  const r=await window.taxiopsCheckUpdate();
-  if(r.status==='new' || r.status==='pending') toast('新しい版(build '+r.remote+')を取得しました。アプリを閉じて開き直すと反映されます');
+  let r;
+  try{ r=await window.taxiopsCheckUpdate(); }catch(e){ r={status:'error', message:String((e&&e.message)||e)}; }
+  if(r.status==='new' || r.status==='pending') toast('新しい版(build '+r.remote+')を取得しました。アプリを閉じて開き直すと反映されます', 6000);
   else if(manual){
-    if(r.status==='latest') toast('最新版です(build '+(window.__TAXIOPS?window.__TAXIOPS.build:'?')+')');
-    else toast('確認できませんでした(ネット接続を確認してください)'+(r.message?': '+r.message:''));
+    if(r.status==='latest') toast('最新版です(build '+(window.__TAXIOPS?window.__TAXIOPS.build:'?')+')', boot?3500:1600);
+    else toast('最新版か確認できませんでした(ネット接続を確認してください)'+(r.message?': '+r.message:''), boot?4500:1600);
   }
 }
 function taxiopsDiscardAndReload(){
@@ -7028,7 +7030,7 @@ function trackButtonRowHTML(btnId){
   try{ window.taxiopsBootOk && window.taxiopsBootOk(); }catch(e){}
   diagLog('boot',(window.__TAXIOPS?('build '+window.__TAXIOPS.build):''));
   document.addEventListener('visibilitychange', ()=>{ diagLog(document.hidden?'hid':'vis'); });
-  setTimeout(()=>{ taxiopsRunCheck(false); }, 4000);
+  setTimeout(()=>{ taxiopsRunCheck('boot'); }, 4000);
   document.addEventListener('visibilitychange', ()=>{
     if(!document.hidden && Date.now()-(window.__lastUpdateCheck||0) > 3600*1000) taxiopsRunCheck(false);
   });
