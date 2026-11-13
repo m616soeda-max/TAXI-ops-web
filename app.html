@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114105">
+<meta name="taxiops-build" content="20261114106">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app105</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app106</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5201,24 +5201,25 @@ function startEditEntry(id){
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-/* 実車距離の自動入力(app105): 乗車ボタン〜降車の間にGPSで走った距離。測位が途切れた区間・乗車時刻なしは入れない */
+/* 実車距離の自動入力(app105/106): 乗車ボタン〜降車の間にGPSで走った距離。入れられないときは理由を返す */
 function gpsKmBetween(date,h0,h1){
   try{
     const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
-    if(!pts || pts.length<2) return null;
+    if(!pts || pts.length<2) return {why:'軌跡がありません'};
     const day=evDayStart(date), t0=day+h0*3600, t1=day+h1*3600;
-    if(!(t1>t0)) return null;
-    if(pts[0].t>t0+TRACK_GAP_SEC || pts[pts.length-1].t<t1-TRACK_GAP_SEC) return null;
+    if(!(t1>t0)) return {why:'乗車が降車より後です'};
+    if(pts[0].t>t0+600) return {why:'乗車の時刻に測位がありません'};
+    if(pts[pts.length-1].t<t1-600) return {why:'降車の時刻に測位がありません'};
     let m=0;
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue;
-      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400) return null; continue; }
+      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400) return {why:'測位が途切れています'}; continue; }
       const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue;
       m+=trackDistM(a,b);
     }
     const km=m/1000;
-    return km>=0.05 ? Math.round(km*10)/10 : null;
-  }catch(e){ return null; }
+    return km>=0.05 ? {km:Math.round(km*10)/10} : {why:'GPSの走行がほぼありません'};
+  }catch(e){ return {why:'計算エラー'}; }
 }
 async function onAdd(){
   pendingElsePayConfirm = false;
@@ -5262,9 +5263,13 @@ async function onAdd(){
     if(state.evDr) newEntry.dr=state.evDr;
     state.evPu = state.evBd = state.evDr = null;
   }
-  if(newEntry.actualDist==null && newEntry.bd && newEntry.bd.t!=null && !['キャンセル','B空転','障割','定額負け'].includes(newEntry.pay)){
-    const ak=gpsKmBetween(state.shiftDate, newEntry.bd.t, t);
-    if(ak!=null){ newEntry.actualDist=ak; newEntry.actualGps=true; }
+  let autoNote='';
+  if(newEntry.actualDist==null && !['キャンセル','B空転','障割','定額負け'].includes(newEntry.pay)){
+    if(newEntry.bd && newEntry.bd.t!=null){
+      const r=gpsKmBetween(state.shiftDate, newEntry.bd.t, t);
+      if(r.km!=null){ newEntry.actualDist=r.km; newEntry.actualGps=true; autoNote=' ・実車'+r.km.toFixed(1)+'km(GPS)'; }
+      else autoNote=' ・実車距離は自動入力できません('+r.why+')';
+    } else autoNote=' ・乗車ボタン未使用のため実車距離は空です';
   }
   state.entries.push(newEntry);
   state.entries.sort((a,b)=>a.time-b.time);
@@ -5279,7 +5284,7 @@ async function onAdd(){
   state.selPay = 'GOPay';
   await saveState();
   render();
-  toast('記録しました');
+  toast('記録しました'+autoNote, autoNote?4500:1600);
   focusFirstInput();
 }
 
