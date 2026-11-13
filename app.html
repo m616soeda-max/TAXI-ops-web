@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114109">
+<meta name="taxiops-build" content="20261114110">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app109</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app110</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2442,6 +2442,7 @@ function openHistoryEntryModal(st, date, entryId){
         <label style="font-size:10.5px;color:var(--muted);display:block;margin-bottom:4px;">支払い種別</label>
         <div id="hemPayRow">${payChips}</div>
       </div>
+      <div class="chip ${entry.thanks?'active':''}" id="hemThanks" style="flex:none;width:100%;margin:0 0 10px;">🎫 サンキュー消費</div>
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <div class="field" style="flex:1;text-align:left;">
           <label style="font-size:10.5px;color:var(--muted);display:block;margin-bottom:4px;">降車時刻</label>
@@ -2483,9 +2484,6 @@ function openHistoryEntryModal(st, date, entryId){
         </div>
         <div id="hemPlaces" style="font-size:11px;line-height:1.7;color:var(--text);">${evPlaceLines({pu:entry.pu,bd:entry.bd,dr:entry.dr})}</div>
         <button class="btn-ghost" id="hemPlaceBtn" style="width:100%;margin-top:6px;">📍 軌跡から場所・住所を取得</button>
-      </div>
-      <div class="field" style="margin-bottom:14px;text-align:left;">
-        <div class="chip ${entry.thanks?'active':''}" id="hemThanks">🎫 サンキュー消費</div>
       </div>
       <div class="confirm-actions" style="margin-bottom:8px;">
         <button class="confirm-cancel" id="hemCancel">キャンセル</button>
