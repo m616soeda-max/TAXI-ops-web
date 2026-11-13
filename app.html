@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261113101">
+<meta name="taxiops-build" content="20261113102">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app101</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261113-app102</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -4349,7 +4349,15 @@ function openFareKeypad(){
   openIntegerKeypad('fareInput', 'distInput', '代金(円)', openDistKeypad);
 }
 function openTollKeypad(inputId, nextFocusId){
-  openIntegerKeypad(inputId || 'tollInput', nextFocusId, '高速代(円)');
+  const id = inputId || 'tollInput';
+  let nextOpener = null;
+  if(id==='tollInput'){   // 高速案件: 最初に高速代を入れたら、出動中画面に戻らず代金のテンキーへ進む(代金が入力済みなら戻るだけ)
+    nextOpener = ()=>{
+      const t=document.getElementById('tollInput'), f=document.getElementById('fareInput');
+      if(t && f && !f.value && parseFloat(t.value)>0) openFareKeypad();
+    };
+  }
+  openIntegerKeypad(id, nextFocusId, '高速代(円)', nextOpener);
 }
 function openIntegerKeypad(inputId, nextFocusId, title, nextOpener){
   if(kpOpen) return;
