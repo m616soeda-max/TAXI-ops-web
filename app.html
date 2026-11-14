@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114114">
+<meta name="taxiops-build" content="20261114115">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -562,7 +562,8 @@
   #mainView>.meter{padding:8px 12px 7px;margin-bottom:5px;}
   #mainView>.meter .meter-sub2{gap:7px 8px;margin-top:6px;padding-top:6px;}
   #mainView>.meter .meter-row3{margin-top:2px;}
-  #mainView>.add-card{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:11px 10px;margin-bottom:0;}
+  #mainView>.add-card{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:8px 10px;margin-bottom:0;}
+  #mainView>.add-card .chip-row .chip{height:33px;}
   .more-sheet{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.62);z-index:300;display:none;align-items:flex-end;justify-content:center;}
   .more-sheet.open{display:flex;}
   .more-sheet-inner{width:100%;max-width:460px;background:var(--card);border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
@@ -797,7 +798,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app114</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app115</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1552,7 +1553,7 @@ function openHelpModal(){
   const body=[
     det('はじめに(TAXI OPSとTAXI INTEL)', p('TAXI OPS(このアプリ)は、出庫から帰庫までの営業中に、運賃・距離・時刻・走行軌跡を記録して、その場で目標との差を見るためのアプリです。\n\nTAXI INTELは、乗務のあとに、Excelにまとめたデータを読み込んで、最新の出番を同じ曜日の過去と比べる分析アプリです。\n\n記録したデータは、この端末の中だけに保存されます。外に出る通信は、住所の取得(国土地理院)、地図の表示(地理院タイル)、更新の確認、INTEL本体の取得(初回と更新時)の4つだけです。'), true),
     det('1日の流れ', p('1. 出庫: 出番日と出庫時刻を入れて、ボタン列の左端の「出庫」を押します。走行軌跡の記録が自動で始まります(通知に「記録中」)。最初の画面の「⋯ その他」からも、設定・使い方・診断が開けます。\n2. 営業中: お客さんごとに、迎車 → 乗車 → 降車のボタンを押します(時刻と位置が残ります)。降車したら「記録する」で、代金・距離・種別・支払いを入れます。\n3. 休憩: 自動で数えます(下の「休憩」を参照)。\n4. 帰庫: 「⋯」→「乗務終了・まとめを見る」→ 帰庫時刻を入れます。\n5. まとめ画面: 日報コピー、画像の保存(①②)、「🗺 走行軌跡を見る」。最後に「✕」で次の出番へ。')),
-    det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」をタップすると、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
+    det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」または「📏 距離確認」ボタンを押すと、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩', p('・休憩は自動で数えます。完全停止して10分たつと休憩が始まり、走り出すと止まって記録されます(軌跡の記録が動いているときだけ。乗車中・帰庫後は始まりません。走り出した地点が300m以上離れていたら、測位が途切れたとみなして記録しません)。\n・出庫してから走り出すまでの待ちも、10分以上なら休憩です。\n・画面の「休憩」の表示は、押すと記録の確認・修正が開きます。違っていたら、そこで削除できます。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
     det('地図・軌跡・動画', p('・「📍」で、1日の走行軌跡の地図が開きます。線の色は、赤=実車、黄=迎車、青=空車、灰=乗車時刻が未入力です。\n・矢印は、迎車ボタン(黄)・乗車(赤)・降車(青)を押した地点で、向きは進行方向です。タップすると住所が出ます。タクシーの絵は、現在地と終点です(上から見た形で、進行方向に向きます。曲がり角ではなめらかに回ります)。\n・「▶」で、1日の走行を約30秒に縮めて再生します。\n・「🎬」を押すと、動画にする範囲(開始・終了の時刻)を聞かれます。初期値は出庫〜帰庫の時刻で、手入力で変えられます(24時を過ぎる時刻は2510のように入れます)。その範囲の再生を約30秒の小さい動画にして、ギャラリーの「TAXI-OPS」アルバムに保存します(名前は TAXI_OPS_日付)。録っている間は、画面を閉じないでください。\n・「📸 保存」で、地図を画像にします。\n・住所が空の地点、灰色の区間(乗車時刻のない記録)、距離が未入力の記録は、「⋯」→「🔍 記録の点検」で、1つの画面にまとめて出ます。そこで、住所の取得や、GPSでの距離の補完もできます(過去の出番は、詳細の「🔍 記録の点検」)。')),
     det('まとめ画面と画像', p('・出番のまとめ(売上・組数・時間単価・月間累計・目標との差・無線関連・運賃帯)が出ます。\n・「📸 ①ミドル・ロングまで」と「②」で、スマホの画面にそのまま収まる縦横比の画像を作れます(上のステータスバーと下のボタン欄の分は、余白として空けてあります)。\n・画像は、ギャラリーの「TAXI-OPS」アルバムに、①②③④の順に並ぶように保存されます。Xに投稿するときは、画像ボタン→「コレクション」→「TAXI-OPS」を開いて、①→④の順にタップして選びます(選んだ順が投稿の順になります)。\n・過去の出番は「履歴」から開けます。記録や時刻は、あとから直せます。')),
@@ -3693,7 +3694,7 @@ function openDayEditHub(){
     ['weather','☀ 天気',state.weather||'未設定'],
     ['rank','🏅 GO順位',''],
     ['rest','☕ 休憩',''],
-    ['dist','📏 降車時点の距離',''],
+    ['dist','📏 距離確認',''],
     ['actual','🛣 実車距離をまとめて',''],
     ['check','🔍 記録の点検',''],
   ];
@@ -4086,9 +4087,12 @@ function renderMain(){
       <div id="typeChips"></div>
       <div id="payChips" style="margin-top:6px;"></div>
       <div class="add-row add-row2" style="margin-top:6px;">
-        <button class="btn" id="addBtn" style="flex:1 1 0;min-width:0;width:auto;height:40px;font-size:13px;padding:0 4px;">${editingId?'更新する':'記録する'}</button>
-        <div class="chip" id="thanksToggle" style="flex:1 1 0;height:40px;font-size:11px;margin:0;">🎫 サンキュー消費</div>
-        <div class="chip" id="checkHubBtn2" style="flex:1 1 0;height:40px;font-size:11px;margin:0;">🔍 記録の点検</div>
+        <button class="btn" id="addBtn" style="flex:1 1 0;min-width:0;width:auto;height:36px;font-size:13px;padding:0 4px;">${editingId?'更新する':'記録する'}</button>
+        <div class="chip" id="thanksToggle" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">🎫 サンキュー消費</div>
+      </div>
+      <div class="add-row add-row2" style="margin-top:7px;">
+        <div class="chip" id="checkHubBtn2" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">🔍 記録の点検</div>
+        <div class="chip" id="distCheckBtn2" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">📏 距離確認</div>
       </div>
     </div>
     ` : ''}
@@ -4149,7 +4153,7 @@ function renderMain(){
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="restListBtn">☕ 休憩の記録・修正</button>
-      <button class="btn-ghost" id="distListBtn">📏 降車時点の距離</button>
+      <button class="btn-ghost" id="distListBtn">📏 距離確認</button>
     </div>
     <div class="footer-row">
       <button class="btn-ghost" id="checkHubBtn">🔍 記録の点検</button>
@@ -4202,6 +4206,7 @@ function renderMain(){
     document.getElementById('tollInput').addEventListener('click', ()=>openTollKeypad('tollInput', null));
     document.getElementById('addBtn').onclick = onAdd;
     document.getElementById('checkHubBtn2').onclick = ()=>openCheckHub();
+    document.getElementById('distCheckBtn2').onclick = openDistModal;
     document.getElementById('timeInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') onAdd(); });
   }
   document.querySelectorAll('.entry-row-tap').forEach(row=>{
@@ -6193,7 +6198,7 @@ function openDistModal(){
   const all=state.entries.slice().sort((a,b)=>a.time-b.time);
   const drops=all.filter(e=>e.pay!=='障割');
   if(!drops.length){
-    ov.innerHTML=box('<div style="font-weight:700;font-size:15px;color:var(--text);">降車時点の距離</div><div style="font-size:12px;color:var(--muted);">まだ記録がありません。</div>');
+    ov.innerHTML=box('<div style="font-weight:700;font-size:15px;color:var(--text);">距離確認</div><div style="font-size:12px;color:var(--muted);">まだ記録がありません。</div>');
   } else {
     const last=drops[drops.length-1];
     const prevT=drops.length>1 ? drops[drops.length-2].time : state.depTime;
