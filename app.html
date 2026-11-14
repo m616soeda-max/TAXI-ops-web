@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114110">
+<meta name="taxiops-build" content="20261114112">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -797,7 +797,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app110</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app112</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1494,7 +1494,7 @@ async function captureAndShareMulti(elementIds, filename){
    ・ファイル保存が使えないときのために、全データを画面に出して「コピー」できるモーダルを用意する
    ・「保存機能の診断」で、どこが使えないかを画面に出す */
 const LAST_BACKUP_KEY = LS_PREFIX+'last-backup';
-function markBackupDone(){ try{ localStorage.setItem(LAST_BACKUP_KEY, String(Date.now())); }catch(e){} const b=document.getElementById('moreMenuBtn'); if(b) b.innerHTML='⋯'; }
+function markBackupDone(){ try{ localStorage.setItem(LAST_BACKUP_KEY, String(Date.now())); }catch(e){} const b=document.getElementById('moreMenuBtn'); if(b) b.innerHTML='⋯その他'; }
 function backupAgeDays(){ const v=parseInt(localStorage.getItem(LAST_BACKUP_KEY)||'0',10); return v?(Date.now()-v)/86400000:null; }
 function hasAnyShiftData(){ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf(LS_PREFIX+'shift:')===0) return true; } return false; }
 function backupStale(){ const a=backupAgeDays(); return hasAnyShiftData() && (a===null || a>1.5); }
@@ -4043,10 +4043,10 @@ function renderMain(){
         <div style="position:relative;">高速代<b>¥${fmtYen(tollTotal)}</b>${lastRateHTML}</div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
-        <div style="display:flex;gap:4px;align-items:flex-end;">
-          <button id="mainGraphsToggleBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📊${mainViewMode==='graphs'?'閉じる':'グラフ'}</button>
-          <button id="mainRecordsToggleBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📋${mainViewMode==='records'?'閉じる':'記録'}</button>
-          <button id="moreMenuBtn" class="btn-ghost" style="padding:3px 6px;font-size:10px;flex:0 0 auto;white-space:nowrap;">⋯${backupStale()?'<span style="color:#ff8a3d;">●</span>':''}</button>
+        <div style="display:flex;gap:3px;align-items:flex-end;margin-left:-16px;">
+          <button id="mainGraphsToggleBtn" class="btn-ghost" style="padding:3px 2px;font-size:8px;flex:1 1 auto;white-space:nowrap;">📊${mainViewMode==='graphs'?'閉じる':'グラフ'}</button>
+          <button id="mainRecordsToggleBtn" class="btn-ghost" style="padding:3px 2px;font-size:8px;flex:1 1 auto;white-space:nowrap;">📋${mainViewMode==='records'?'閉じる':'記録'}</button>
+          <button id="moreMenuBtn" class="btn-ghost" style="padding:3px 2px;font-size:8px;flex:0 0 auto;white-space:nowrap;">⋯その他${backupStale()?'<span style="color:#ff8a3d;">●</span>':''}</button>
         </div>
       </div>
     </div>
