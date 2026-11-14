@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114115">
+<meta name="taxiops-build" content="20261114116">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -798,7 +798,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app115</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app116</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5994,14 +5994,25 @@ function restTotalMs(st){ return restList(st).reduce((a,r)=>a+Math.max(0,r.e-r.s
 function restDurText(ms){ const m=Math.round(ms/60000); return m>=60 ? Math.floor(m/60)+'時間'+(m%60)+'分' : m+'分'; }
 function restClock(ms,date){ return fmtTime((ms/1000-evDayStart(date))/3600); }   // 出番日基準(0時過ぎは24:15表記)
 const REST_PRE_SHOW_S = 30;   // 停車してから何秒で、10分前でも表示を始めるか
-function restPendingStart(){     // 自動検出の前段階: 最後の軌跡点から止まっている間の起点(ms)。条件はrestAutoTickと同じ。なければ0
+const REST_STILL_M = 60;     // この半径内の動きは、GPSのゆれとみなして止まっている扱い(app116)
+function restStopStart(){     // 最後の点から半径REST_STILL_M以内に居続けている区間の始まり(ms)。ゆれで点が増えても、止まっている間はひとつの停車として数える
+  const n=trackPts.length; if(!n) return 0;
+  const L=trackPts[n-1]; let i=n-1;
+  while(i>0 && trackDistM(trackPts[i-1],L)<=REST_STILL_M) i--;
+  return trackPts[i].t*1000;
+}
+function restAnchorFor(runMs){   // 休憩タイマーの開始時点の位置(開始時刻以前の最後の点。なければ最初の点)
+  for(let i=trackPts.length-1;i>=0;i--){ if(trackPts[i].t*1000<=runMs) return trackPts[i]; }
+  return trackPts[0]||null;
+}
+function restPendingStart(){     // 自動検出の前段階: 止まっている間の起点(ms)。条件はrestAutoTickと同じ。なければ0
   try{
     if(!state || !state.shiftDate || state.depTime===null || state.depTime===undefined) return 0;
     if(state.restRun) return 0;
     if(state.returnTime!==null && state.returnTime!==undefined) return 0;
     if((state.evPu || state.evBd) && !state.evDr) return 0;
     if(trackWatchId===null || trackDate!==state.shiftDate || !trackPts.length) return 0;
-    const last=trackPts[trackPts.length-1], t=last.t*1000;
+    const t=restStopStart();
     return (Date.now()-t >= REST_PRE_SHOW_S*1000) ? t : 0;
   }catch(e){ return 0; }
 }
@@ -6045,22 +6056,24 @@ function restAutoTick(){
     if(state.returnTime!==null && state.returnTime!==undefined) return;     // 帰庫後
     if((state.evPu || state.evBd) && !state.evDr) return;                    // 乗車中(降車を押すまで)
     if(trackWatchId===null || trackDate!==state.shiftDate || !trackPts.length) return;
+    const st=restStopStart();
+    if(Date.now()-st < REST_MIN_MS) return;
     const last=trackPts[trackPts.length-1];
-    if(Date.now()-last.t*1000 < REST_MIN_MS) return;
-    state.restRun=last.t*1000; state.restAuto={la:last.la, lo:last.lo, s:state.restRun};
+    state.restRun=st; state.restAuto={la:last.la, lo:last.lo, s:st};
     toast('停車'+CFG.restMin+'分以上を検出。休憩として数えます');
     evRefreshStat(); saveState();
   }catch(e){}
 }
-function restAutoOnMove(prev, p){     // 軌跡に新しい点が増えた(=15m以上動いた)とき。動いているので、走っている間は休憩に数えない
+function restAutoOnMove(prev, p){     // 軌跡に新しい点が増えたとき。止まった位置から半径REST_STILL_M以上離れたら、走り出したとみなす(GPSのゆれでは終わらせない)
   try{
     if(!state || !state.restRun) return;
-    const a=state.restAuto;
-    const auto=!!(a && a.s===state.restRun);
-    const ref = auto ? a : prev;     // 自動検出は止まった点から、出庫時の待ちは直前の点から測る
-    if(!ref) return;                 // 出庫直後の最初の点は、まだ動いたとは言えない(前の点がない)
+    const a=state.restAuto, auto=!!(a && a.s===state.restRun);
+    const ref = auto ? a : restAnchorFor(state.restRun);
+    if(!ref) return;
+    const d=trackDistM(ref,p);
+    if(d<REST_STILL_M) return;
     state.restAuto=null;
-    if(trackDistM(ref,p)>=REST_AUTO_JUMP_M){ state.restRun=null; restDiscardAt=0; saveState(); evRefreshStat(); return; }   // 測位が途切れていた
+    if(d>=REST_AUTO_JUMP_M){ state.restRun=null; restDiscardAt=0; saveState(); evRefreshStat(); return; }   // 測位が途切れていた
     const el=p.t*1000-state.restRun;
     if(restFinish(p.t*1000)) toast('休憩を自動で記録 '+restDurText(el)+'(合計 '+restDurText(restTotalMs(state))+' / '+restList(state).length+'回)');
     saveState(); evRefreshStat();
