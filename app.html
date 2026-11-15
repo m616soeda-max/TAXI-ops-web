@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114118">
+<meta name="taxiops-build" content="20261114119">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -798,7 +798,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app118</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app119</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2707,6 +2707,7 @@ function renderHistoryDetail(date){
         subParts.push(`実車${e.actualDist}km`);
       }
     }
+    { const pn=paperNote(e); if(pn) subParts.push(pn); }
     const commentHTMLH = e.comment ? `<div class="entry-comment">${e.comment}</div>` : '';
     return `
     <div class="entry ${distWarn?'entry-warn':''}" data-id="${e.id}">
@@ -2839,7 +2840,7 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyExportBtn">📋 日報用テキストをコピー</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
-      <button class="btn-ghost" id="historyBulkActualBtn">🚕 実車距離を一括貼り付け</button>
+      <button class="btn-ghost" id="historyBulkActualBtn">🚕 紙の実車距離を貼り付け</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
@@ -2939,7 +2940,7 @@ function renderHistoryDetail(date){
       if(state.shiftDate===date && state.depTime!==null){
         st.entries.forEach(se=>{
           const idx = state.entries.findIndex(e=>e.id===se.id);
-          if(idx>-1) state.entries[idx].actualDist = se.actualDist;
+          if(idx>-1){ state.entries[idx].actualDist = se.actualDist; state.entries[idx].paperDist = se.paperDist; }
         });
         await saveState();
       }
@@ -3660,7 +3661,8 @@ function openRankModal(){
     </div>
   `;
   document.body.appendChild(overlay);
-  kpBind(overlay,[['rankInput','int','順位'],['rankTotalInput','int','総人数'],['rankAcceptInput','int','了解数'],['rankRateInput','dec','了解率(%)']]);
+  const rkStart = kpBind(overlay,[['rankInput','int','順位'],['rankTotalInput','int','総人数'],['rankAcceptInput','int','了解数'],['rankRateInput','dec','了解率(%)']], ()=>overlay.querySelector('#rankOk').click());
+  setTimeout(rkStart,0);
   overlay.querySelector('#rankInput').focus();
   overlay.querySelector('#rankCancel').onclick = ()=> overlay.remove();
   overlay.querySelector('#rankOk').onclick = async ()=>{
@@ -3695,7 +3697,7 @@ function openDayEditHub(){
     ['rank','🏅 GO順位',''],
     ['rest','☕ 休憩',''],
     ['dist','📏 距離確認',''],
-    ['actual','🛣 実車距離をまとめて',''],
+    ['actual','🛣 紙の実車距離を貼り付け',''],
     ['check','🔍 記録の点検',''],
   ];
   if(state.returnTime!==null && state.returnTime!==undefined) items.push(['ret','🏁 帰庫・終了距離',tm(state.returnTime)]);
@@ -3789,7 +3791,8 @@ function showTimeInputModal2(message, currentVal, onConfirm){
   `;
   document.body.appendChild(overlay);
   const input = overlay.querySelector('#modalTimeInput2');
-  kpBind(overlay,[['modalTimeInput2','time','時刻']]);
+  const t2Start = kpBind(overlay,[['modalTimeInput2','time','時刻']], ()=>overlay.querySelector('#modalOk2').click());
+  setTimeout(t2Start,0);
   input.focus();
   overlay.querySelector('#modalSkip2').onclick = ()=>{ overlay.remove(); onConfirm(''); };
   overlay.querySelector('#modalOk2').onclick = ()=>{ const v = input.value; overlay.remove(); onConfirm(v); };
@@ -3973,6 +3976,7 @@ function renderMain(){
         subParts.push(`実車${e.actualDist}km`);
       }
     }
+    { const pn=paperNote(e); if(pn) subParts.push(pn); }
     return `
     <div class="entry ${distWarn?'entry-warn':''}" data-id="${e.id}">
       <div class="entry-row entry-row-tap" data-id="${e.id}">
@@ -4380,7 +4384,7 @@ function openTimeKeypad(inputId, nextFocusId, nextOpener, title){
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
 }
 
-function openDecimalKeypad(inputId,title){
+function openDecimalKeypad(inputId,title,nextOpener){
   if(kpOpen) return;
   kpOpen = true;
   const input = document.getElementById(inputId);
@@ -4418,21 +4422,27 @@ function openDecimalKeypad(inputId,title){
     });
   });
   bindTap(overlay.querySelector('#kpCancelD'), closeKp);
-  bindTap(overlay.querySelector('#kpOkD'), ()=>{ input.value = val; closeKp(); });
+  bindTap(overlay.querySelector('#kpOkD'), ()=>{ input.value = val; closeKp(); if(nextOpener) nextOpener(); });
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeKp(); });
 }
 // 数字の入力欄をテンキーにする。specs: [[欄のID,'int'|'dec'|'time',題名,最大桁(intのみ)],...]
-function kpBind(root, specs){
-  specs.forEach(sp=>{
-    const id=sp[0], kind=sp[1], title=sp[2], max=sp[3];
-    const el=root.querySelector('#'+id); if(!el) return;
+// onDoneを渡すと、確定するたびに次の欄のテンキーへ進み、最後の欄を確定したらonDone(登録)を呼ぶ(キャンセルで中断)。戻り値は最初の欄から始める関数
+function kpOpenSpec(specs,i,onDone,chain){
+  if(i>=specs.length){ if(onDone) onDone(); return; }
+  const sp=specs[i], id=sp[0], kind=sp[1], title=sp[2], max=sp[3];
+  const next = chain ? ()=>kpOpenSpec(specs,i+1,onDone,chain) : null;
+  if(kind==='int') openIntegerKeypad(id,null,title,next,max);
+  else if(kind==='dec') openDecimalKeypad(id,title,next);
+  else openTimeKeypad(id,null,next,title);
+}
+function kpBind(root, specs, onDone){
+  const chain = (typeof onDone==='function');
+  specs.forEach((sp,idx)=>{
+    const el=root.querySelector('#'+sp[0]); if(!el) return;
     el.setAttribute('inputmode','none'); el.readOnly=true;
-    el.addEventListener('click',()=>{
-      if(kind==='int') openIntegerKeypad(id,null,title,null,max);
-      else if(kind==='dec') openDecimalKeypad(id,title);
-      else openTimeKeypad(id,null,null,title);
-    });
+    el.addEventListener('click',()=>kpOpenSpec(specs,idx,onDone,chain));
   });
+  return ()=>kpOpenSpec(specs,0,onDone,chain);
 }
 function openFareKeypad(){
   openIntegerKeypad('fareInput', 'distInput', '代金(円)', openDistKeypad);
@@ -4648,7 +4658,8 @@ function showTimeInputModal(message, onConfirm, prefill){
   const input = overlay.querySelector('#modalTimeInput');
   const distInput = overlay.querySelector('#modalDistInput');
   const handleInput = overlay.querySelector('#modalHandleInput');
-  kpBind(overlay,[['modalTimeInput','time','帰庫時刻'],['modalDistInput','dec','帰庫時の累計走行距離(km)'],['modalHandleInput','time','ハンドル時間']]);
+  const rtStart = kpBind(overlay,[['modalTimeInput','time','帰庫時刻'],['modalDistInput','dec','帰庫時の累計走行距離(km)'],['modalHandleInput','time','ハンドル時間']], ()=>overlay.querySelector('#modalOk').click());
+  setTimeout(rtStart,0);
   input.focus();
   overlay.querySelector('#modalSkip').onclick = ()=>{ overlay.remove(); onConfirm('', '', ''); };
   overlay.querySelector('#modalOk').onclick = ()=>{ const v = input.value; const dv = distInput.value; const hv = handleInput.value; overlay.remove(); onConfirm(v, dv, hv); };
@@ -4678,54 +4689,85 @@ function shiftTotalDist(st){
   return total;
 }
 
+function paperNote(e){      // 紙の日報の実車距離(比較用)と、実車距離(自動入力など)との差
+  if(e.paperDist==null) return '';
+  const d = (e.actualDist!=null) ? (e.actualDist - e.paperDist) : null;
+  return '紙'+e.paperDist+'km'+(d!==null ? '(差'+(d>=0?'+':'')+d.toFixed(1)+'km)' : '');
+}
 function openBulkActualDistModal(entriesRef, persistAndRerender){
-  const DIST_EXEMPT_PAYS = ['キャンセル','B空転','障割','定額負け'];
+  const EX = ['キャンセル','B空転','障割','定額負け'];
   const sortedAll = [...entriesRef].sort((a,b)=>a.time-b.time);
-  const filteredAll = sortedAll.filter(e=>!DIST_EXEMPT_PAYS.includes(e.pay));
+  const filteredAll = sortedAll.filter(e=>!EX.includes(e.pay));
   const excludedCount = sortedAll.length - filteredAll.length;
   const rideGroups = [];   // 1乗車=1行(同時刻の分割払いは1件にまとめる)
   filteredAll.forEach(e=>{ const g=rideGroups.length?rideGroups[rideGroups.length-1]:null; if(g && Math.abs(g[0].time-e.time)<1e-6) g.push(e); else rideGroups.push([e]); });
-  const sortedEntries = rideGroups.map(g=>g[0]);
+  const N = rideGroups.length, LH = 22;
+  const targetOf = g => g.find(e=>e.actualDist!=null) || g[0];
+  const autoOf = g => { const t=targetOf(g); return t.actualDist!=null ? t.actualDist : null; };
+  const rowS = 'height:'+LH+'px;line-height:'+LH+'px;white-space:nowrap;overflow:hidden;font-size:11px;font-family:\'PT Mono\',monospace;';
+  const leftHtml = rideGroups.map(g=>{
+    const t=targetOf(g), fare=g.reduce((a,e)=>a+netFare(e),0), av=t.actualDist;
+    return '<div style="'+rowS+'">'+fmtTime(g[0].time)+' ¥'+fmtYen(fare)+' <span style="color:var(--muted2);">'+(t.actualGps?'自動':'入力')+'</span> <b>'+(av!=null?av:'—')+'</b></div>';
+  }).join('');
+  const initPaper = rideGroups.map(g=>{ const p=g.find(e=>e.paperDist!=null); return p?String(p.paperDist):''; }).join('\n');
   const overlay = document.createElement('div');
   overlay.className = 'confirm-overlay';
   overlay.innerHTML = `
-    <div class="confirm-box" style="max-width:340px;">
-      <div class="confirm-msg">実車距離を一括貼り付け</div>
+    <div class="confirm-box" style="max-width:360px;max-height:88vh;overflow-y:auto;">
+      <div class="confirm-msg">紙の日報の実車距離を貼り付け</div>
       <div style="font-size:10.5px;color:var(--muted);text-align:left;margin-bottom:8px;line-height:1.5;">
-        古い順(降車時刻順)に1行1件で貼り付けてください。キャンセル・B空転・障割(${excludedCount}件)は対象外なので、紙の日報の並びと同じになります。今の出番は${sortedEntries.length}件が対象です(同時刻の分割払い=現金+チケット等は1件として数えます)。空行はスキップされます。
+        右の列に、紙の日報の実車距離を古い順に1行1件で貼り付けます。左の自動入力の値と並べて、差を見られます(紙の値は比較用に別に保存され、実車距離は変わりません)。キャンセル・B空転・障割・定額負け(${excludedCount}件)は対象外、同時刻の分割払いは1件です。今の出番は${N}件。空行はそのままです。
       </div>
-      <textarea id="bulkAdInput" rows="8" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;padding:8px 9px;font-family:'PT Mono',monospace;resize:vertical;margin-bottom:12px;" placeholder="7.1
-3.5
-0.8
-1.9
-..."></textarea>
+      <div style="display:grid;grid-template-columns:1fr 64px 46px;gap:4px;align-items:start;">
+        <div style="font-size:9.5px;color:var(--muted2);">降車・運賃・自動入力</div><div style="font-size:9.5px;color:var(--muted2);text-align:right;padding-right:4px;">紙</div><div style="font-size:9.5px;color:var(--muted2);text-align:right;">差</div>
+        <div>${leftHtml}</div>
+        <textarea id="bkPaper" wrap="off" style="display:block;box-sizing:content-box;width:calc(100% - 8px);height:${N*LH}px;line-height:${LH}px;padding:0 4px;margin:0;border:0;border-radius:4px;resize:none;overflow:hidden;background:var(--card2);color:var(--text);font-size:12px;text-align:right;font-family:'PT Mono',monospace;"></textarea>
+        <div id="bkDiff"></div>
+      </div>
+      <div id="bkSum" style="font-size:10.5px;color:var(--muted);text-align:left;margin:8px 0 10px;min-height:14px;"></div>
       <div class="confirm-actions">
         <button class="confirm-cancel" id="bulkAdCancel">キャンセル</button>
-        <button class="confirm-ok-amber" id="bulkAdOk" style="background:var(--amber);color:#1b1200;">反映する</button>
+        <button class="confirm-ok-amber" id="bulkAdOk" style="background:var(--amber);color:#1b1200;">保存(比較用)</button>
       </div>
+      <button class="btn-ghost" id="bulkAdAdopt" style="width:100%;margin-top:8px;font-size:11px;">保存して、紙の値を実車距離に採用する</button>
     </div>
   `;
   document.body.appendChild(overlay);
-  overlay.querySelector('#bulkAdInput').focus();
+  const ta = overlay.querySelector('#bkPaper'), diff = overlay.querySelector('#bkDiff'), sum = overlay.querySelector('#bkSum');
+  ta.value = initPaper;
+  const upd = ()=>{
+    const lines = ta.value.split(/\r?\n/); let tot=0, cnt=0, big=0;
+    diff.innerHTML = rideGroups.map((g,i)=>{
+      const v = parseFloat((lines[i]||'').trim()), a = autoOf(g);
+      if(isNaN(v) || a==null) return '<div style="'+rowS+'">&nbsp;</div>';
+      const d = a - v; tot += d; cnt++; const isBig = Math.abs(d)>=0.5; if(isBig) big++;
+      return '<div style="'+rowS+'text-align:right;color:'+(isBig?'var(--red)':'var(--muted)')+';">'+(d>=0?'+':'')+d.toFixed(1)+'</div>';
+    }).join('');
+    sum.textContent = cnt ? ('比較'+cnt+'件 ・ 差の平均 '+(tot/cnt>=0?'+':'')+(tot/cnt).toFixed(2)+'km ・ 0.5km以上のずれ '+big+'件') : '';
+  };
+  ta.addEventListener('input', upd); upd();
+  ta.focus();
   overlay.querySelector('#bulkAdCancel').onclick = ()=> overlay.remove();
-  overlay.querySelector('#bulkAdOk').onclick = async ()=>{
-    const raw = overlay.querySelector('#bulkAdInput').value;
-    const lines = raw.split(/\r?\n/);
-    let applied = 0, skipped = 0, badLines = 0;
-    for(let i=0; i<sortedEntries.length; i++){
-      if(i>=lines.length) break;
-      const line = lines[i].trim();
-      if(line===''){ skipped++; continue; }
+  const save = async (adopt)=>{
+    const lines = ta.value.split(/\r?\n/);
+    let applied = 0, badLines = 0;
+    for(let i=0; i<N; i++){
+      const line = (lines[i]||'').trim();
+      if(line===''){ continue; }
       const v = parseFloat(line);
       if(isNaN(v) || v<0){ badLines++; continue; }
-      sortedEntries[i].actualDist = v; delete sortedEntries[i].actualGps;
-      rideGroups[i].slice(1).forEach(x=>{ x.actualDist = null; });   // 分割払いの2件目以降には入れない(二重計上を防ぐ)
+      const g = rideGroups[i], t = targetOf(g);
+      g.forEach(x=>{ if(x!==t) delete x.paperDist; });
+      t.paperDist = v;
+      if(adopt){ t.actualDist = v; delete t.actualGps; g.forEach(x=>{ if(x!==t) x.actualDist = null; }); }
       applied++;
     }
     overlay.remove();
     await persistAndRerender();
-    toast(`実車距離を${applied}件反映しました${badLines>0?`(読み取れなかった行${badLines}件)`:''}`);
+    toast('紙の実車距離を'+applied+'件'+(adopt?'反映(実車距離に採用)':'保存')+'しました'+(badLines>0?'(読み取れなかった行'+badLines+'件)':''));
   };
+  overlay.querySelector('#bulkAdOk').onclick = ()=>save(false);
+  overlay.querySelector('#bulkAdAdopt').onclick = ()=>save(true);
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
 }
 
@@ -4829,6 +4871,7 @@ function renderSummary(){
         subParts.push(`実車${e.actualDist}km`);
       }
     }
+    { const pn=paperNote(e); if(pn) subParts.push(pn); }
     return `
     <div class="entry ${distWarn?'entry-warn':''}" data-id="${e.id}">
       <div class="entry-row entry-row-tap" data-id="${e.id}">
@@ -4962,7 +5005,7 @@ function renderSummary(){
           <button class="btn-ghost" id="summaryBackupFileBtn">💾 バックアップをファイル保存</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
-          <button class="btn-ghost" id="summaryBulkActualBtn">🚕 実車距離を一括貼り付け</button>
+          <button class="btn-ghost" id="summaryBulkActualBtn">🚕 紙の実車距離を貼り付け</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
           <button class="btn-ghost" id="summaryCheckBtn">🔍 記録の点検</button>
