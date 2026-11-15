@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114116">
+<meta name="taxiops-build" content="20261114118">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -798,7 +798,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app116</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app118</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2857,7 +2857,7 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyShotAnalysisBtn">📸 ④分析のみを保存/共有</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
-      <button class="btn-ghost" id="historyFillDistBtn">🔍 記録の点検(グレー・住所・距離)</button>
+      <button class="btn-ghost" id="historyFillDistBtn">🔍 記録の点検</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyDeleteBtn" style="color:var(--red);border-color:var(--red);">🗑 この出番を削除</button>
@@ -4681,15 +4681,18 @@ function shiftTotalDist(st){
 function openBulkActualDistModal(entriesRef, persistAndRerender){
   const DIST_EXEMPT_PAYS = ['キャンセル','B空転','障割','定額負け'];
   const sortedAll = [...entriesRef].sort((a,b)=>a.time-b.time);
-  const sortedEntries = sortedAll.filter(e=>!DIST_EXEMPT_PAYS.includes(e.pay));
-  const excludedCount = sortedAll.length - sortedEntries.length;
+  const filteredAll = sortedAll.filter(e=>!DIST_EXEMPT_PAYS.includes(e.pay));
+  const excludedCount = sortedAll.length - filteredAll.length;
+  const rideGroups = [];   // 1乗車=1行(同時刻の分割払いは1件にまとめる)
+  filteredAll.forEach(e=>{ const g=rideGroups.length?rideGroups[rideGroups.length-1]:null; if(g && Math.abs(g[0].time-e.time)<1e-6) g.push(e); else rideGroups.push([e]); });
+  const sortedEntries = rideGroups.map(g=>g[0]);
   const overlay = document.createElement('div');
   overlay.className = 'confirm-overlay';
   overlay.innerHTML = `
     <div class="confirm-box" style="max-width:340px;">
       <div class="confirm-msg">実車距離を一括貼り付け</div>
       <div style="font-size:10.5px;color:var(--muted);text-align:left;margin-bottom:8px;line-height:1.5;">
-        古い順(降車時刻順)に1行1件で貼り付けてください。キャンセル・B空転・障割(${excludedCount}件)は対象外なので、紙の日報の並びと同じになります。今の出番は${sortedEntries.length}件が対象です。空行はスキップされます。
+        古い順(降車時刻順)に1行1件で貼り付けてください。キャンセル・B空転・障割(${excludedCount}件)は対象外なので、紙の日報の並びと同じになります。今の出番は${sortedEntries.length}件が対象です(同時刻の分割払い=現金+チケット等は1件として数えます)。空行はスキップされます。
       </div>
       <textarea id="bulkAdInput" rows="8" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;padding:8px 9px;font-family:'PT Mono',monospace;resize:vertical;margin-bottom:12px;" placeholder="7.1
 3.5
@@ -4715,7 +4718,8 @@ function openBulkActualDistModal(entriesRef, persistAndRerender){
       if(line===''){ skipped++; continue; }
       const v = parseFloat(line);
       if(isNaN(v) || v<0){ badLines++; continue; }
-      sortedEntries[i].actualDist = v;
+      sortedEntries[i].actualDist = v; delete sortedEntries[i].actualGps;
+      rideGroups[i].slice(1).forEach(x=>{ x.actualDist = null; });   // 分割払いの2件目以降には入れない(二重計上を防ぐ)
       applied++;
     }
     overlay.remove();
@@ -4827,7 +4831,7 @@ function renderSummary(){
     }
     return `
     <div class="entry ${distWarn?'entry-warn':''}" data-id="${e.id}">
-      <div class="entry-row" data-id="${e.id}">
+      <div class="entry-row entry-row-tap" data-id="${e.id}">
         <div class="entry-no">${idx+1}</div>
         <div class="entry-time">${fmtTime(e.time)}</div>
         <div class="entry-mid">
@@ -4961,6 +4965,9 @@ function renderSummary(){
           <button class="btn-ghost" id="summaryBulkActualBtn">🚕 実車距離を一括貼り付け</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
+          <button class="btn-ghost" id="summaryCheckBtn">🔍 記録の点検</button>
+        </div>
+        <div class="summary-actions" style="margin-top:6px;">
           <button class="btn-ghost" id="summaryShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
@@ -4984,6 +4991,8 @@ function renderSummary(){
   const editMonthTargetBtnEl = document.getElementById('editMonthTargetBtn');
   if(editMonthTargetBtnEl) editMonthTargetBtnEl.onclick = ()=>openEditMonthTargetModal();
   document.getElementById('summaryTrackBtn').onclick = ()=>openTrackViewer(state.shiftDate);
+  document.querySelectorAll('#summaryView .entry-row-tap').forEach(el=>{ el.onclick = ()=>openHistoryEntryModal(state, state.shiftDate, el.dataset.id); });
+  document.getElementById('summaryCheckBtn').onclick = ()=>openCheckHub();
   document.getElementById('summaryListToggleBtn').onclick = ()=>{ summaryListExpanded = !summaryListExpanded; renderSummary(); };
   document.getElementById('summaryCloseBtn').onclick = async ()=>{
     commitMonthRevenue(state.shiftDate, s.pureTotal, s.pureTotal/TAX_RATE);
@@ -5424,7 +5433,7 @@ async function handleExport(){
   const locAd = o => !o ? '' : (o.ad || (o.la!=null ? '座標'+o.la.toFixed(4)+','+o.lo.toFixed(4) : ''));
   const hasTimes = sorted.some(e=>(e.pu&&e.pu.t!=null)||(e.bd&&e.bd.t!=null));   // 迎車・乗車の時刻が1件でもあれば、降車時刻の左に2列を足す
   const ptm = o => (o && o.t!=null) ? fmtTime(o.t) : '';
-  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n`+(hasTimes?'迎車時刻\t乗車時刻\t降車時刻':'時刻')+`\t種別\t運賃\t高速代\t手数料\t距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地\t迎車ボタン地リンク\t迎車地リンク\t降車地リンク':'');
+  const header = `【${fmtDateLabel(state.shiftDate)||state.shiftDate} 日報データ 出庫${fmtTime(state.depTime)}${returnPart}】\n`+(hasTimes?'迎車時刻\t乗車時刻\t降車時刻':'時刻')+`\t種別\t運賃\t高速代\t手数料\t距離(km)\t実車距離(km)\t支払い\t備考`+(hasLoc?'\t迎車ボタン地\t迎車地\t降車地\t迎車ボタン地リンク\t迎車地リンク\t降車地リンク':'');
 
   const EXPORT_SKIP = ['キャンセル','定額負け','B空転']; // リストに載せない(運賃として集計しないもの)
   const listEntries = sorted.filter(e=>!EXPORT_SKIP.includes(e.pay));
@@ -5465,19 +5474,22 @@ async function handleExport(){
       pay: uniqJoin(g.map(x=>x.pay), '+'),
       note: uniqJoin(g.map(x=>x.note), ' '),
       thanks: g.some(x=>x.thanks),
+      actualDist: (g.find(x=>x.actualDist!=null)||{}).actualDist,
       type: firstOf('type'), pu: firstOf('pu'), bd: firstOf('bd'), dr: firstOf('dr')
     });
   });
 
   const rows = exportRows.map(e =>
-    (hasTimes?[ptm(e.pu), ptm(e.bd)]:[]).concat([fmtTime(e.time), e.type||'', (e.__fare!==undefined?e.__fare:displayFare(e)), e.toll||0, e.fee||0, e.dist||0, e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')]).concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr), locLink(e.pu), locLink(e.bd), locLink(e.dr)]:[]).join('\t')
+    (hasTimes?[ptm(e.pu), ptm(e.bd)]:[]).concat([fmtTime(e.time), e.type||'', (e.__fare!==undefined?e.__fare:displayFare(e)), e.toll||0, e.fee||0, e.dist||0, (e.actualDist!=null?e.actualDist:''), e.pay||'', [e.note, e.thanks?'サンキュー消費':''].filter(Boolean).join(' ')]).concat(hasLoc?[locAd(e.pu), locAd(e.bd), locAd(e.dr), locLink(e.pu), locLink(e.bd), locLink(e.dr)]:[]).join('\t')
   );
   const countForFooter = dedupeByTime(finalEntries.filter(e=>e.pay!=='障割')).length; // 障割は運賃に合算するが組数には数えない(合算できず単独で残った場合のみここで除外)。チケット/現金分割等、同時刻の複数記録も同一案件として1件で数える
   const total = finalEntries.reduce((s,e)=>s+displayFare(e),0);
   const toll = finalEntries.reduce((s,e)=>s+(e.toll||0),0);
   const fee = finalEntries.reduce((s,e)=>s+(e.fee||0),0);
   const dist = totalLegDist(sorted); // 走行距離合計は実際の走行分(全記録の連鎖から算出)
-  const footer = `\n${hasTimes?'\t\t':''}合計\t${countForFooter}件\t¥${total}\t¥${toll}\t¥${fee}\t${dist.toFixed(1)}km`;
+  const actList = exportRows.filter(e=>e.actualDist!=null);
+  const actSum = actList.reduce((a,e)=>a+e.actualDist,0);
+  const footer = `\n${hasTimes?'\t\t':''}合計\t${countForFooter}件\t¥${total}\t¥${toll}\t¥${fee}\t${dist.toFixed(1)}km\t${actList.length?actSum.toFixed(1)+'km':''}`;
   const rl = restList(state);
   const restLine = rl.length ? '\n休憩\t'+rl.length+'回\t合計'+restDurText(restTotalMs(state))+'\t'+rl.map(r=>restClock(r.s,state.shiftDate)+'〜'+restClock(r.e,state.shiftDate)+'('+restDurText(r.e-r.s)+')').join(' / ') : '';
   const text = [header, ...rows, footer+restLine].join('\n');
@@ -6425,15 +6437,13 @@ function ckGray(st,date){          // グレー区間(乗車時刻のない記�
     const d=trackDistM(a,b)/1000;
     if(cur && Math.abs(a.t-cur.e)<1){ cur.e=b.t; cur.km+=d; } else { cur={s:a.t,e:b.t,km:d}; rs.push(cur); }
   }
-  const why=r=>{
+  const entOf=r=>{
     const mid=(r.s+r.e)/2, x=(m&&m.iv||[]).find(v=>v[2]==='unk'&&v[0]<=mid&&mid<v[1]);
-    if(x){
-      const h=(x[1]-base)/3600, e=st.entries.find(q=>q.pay!=='障割'&&Math.abs(q.time-h)<1e-6);
-      if(e) return fmtTime(e.time)+'の'+e.pay+'の記録に乗車時刻がありません';
-    }
-    return '記録に属さない区間(出庫前など)';
+    if(x){ const h=(x[1]-base)/3600; return st.entries.find(q=>q.pay!=='障割'&&Math.abs(q.time-h)<1e-6)||null; }
+    return null;
   };
-  return {rs, tot:rs.reduce((a,r)=>a+r.km,0), why, base};
+  const why=r=>{ const e=entOf(r); return e ? (fmtTime(e.time)+'の'+e.pay+'の記録に乗車時刻がありません') : '記録に属さない区間(出庫前など)'; };
+  return {rs, tot:rs.reduce((a,r)=>a+r.km,0), why, entOf, base};
 }
 function ckAddr(st){               // 住所が空の迎車・乗車・降車
   const items=[];
@@ -6459,7 +6469,7 @@ function ckPaint(stArg,dateArg){
   else if(!g.rs.length) grayHtml=sec('① グレー区間(乗車時刻未入力)','なし ✓',true);
   else grayHtml=sec('① グレー区間(乗車時刻未入力)',g.rs.length+'か所 / '+fmtKm(g.tot)+'km',false,
     '<div style="font-size:10px;color:var(--muted2);margin-top:2px;">記録の編集で、乗車時刻を入れると消えます</div>'
-    +g.rs.map(r=>{ const hm=sec_=>fmtTime((sec_-g.base)/3600); return '<div style="padding:4px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><b style="font-family:\'PT Mono\',monospace;">'+hm(r.s)+'〜'+hm(r.e)+'</b><span>'+fmtKm(r.km)+'km</span></div><div style="font-size:10px;color:var(--muted);">'+g.why(r)+'</div></div>'; }).join(''));
+    +g.rs.map(r=>{ const hm=sec_=>fmtTime((sec_-g.base)/3600); return '<div style="padding:4px 0;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><b style="font-family:\'PT Mono\',monospace;">'+hm(r.s)+'〜'+hm(r.e)+'</b><span>'+fmtKm(r.km)+'km</span></div><div style="font-size:10px;color:var(--muted);">'+g.why(r)+'</div>'+(g.entOf(r)?'<button class="btn-ghost ck-edit" data-id="'+g.entOf(r).id+'" style="margin-top:4px;padding:6px 10px;font-size:11px;">✎ この記録を開いて、乗車時刻を入れる</button>':'')+'</div>'; }).join(''));
   // 2. 住所未取得
   const addrHtml=sec('② 住所未取得', a.n?(a.n+'件 / '+a.total+'件中'):'なし ✓', a.n?false:true, a.n?btn('ckAddrBtn','📍 住所を取得する(通信します)'):'');
   // 3. 距離未入力
@@ -6484,6 +6494,7 @@ function ckPaint(stArg,dateArg){
   document.getElementById('ckAll').onclick=()=>ckRunAll(stArg,dateArg);
   const ab=document.getElementById('ckAddrBtn'); if(ab) ab.onclick=async()=>{ ab.disabled=true; ab.textContent='取得中…'; try{ await evFillMissing(true); }catch(e){} ckPaint(stArg,dateArg); };
   const db=document.getElementById('ckDistBtn'); if(db) db.onclick=()=>{ if(stArg && dateArg) openDistFillModal(stArg,dateArg); else openDistFillModal(); };
+  box.querySelectorAll('.ck-edit').forEach(b=>{ b.onclick=()=>openHistoryEntryModal(st,date,b.dataset.id); });
   const actb=document.getElementById('ckActBtn');
   if(actb) actb.onclick=async()=>{
     ap.rows.forEach(r=>{ r.e.actualDist=r.km; r.e.actualGps=true; });
@@ -6511,13 +6522,13 @@ function openCheckHub(stArg,dateArg){
   ov.innerHTML='<div id="ckBox" style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 40px rgba(0,0,0,.5);"></div>';
   document.body.appendChild(ov);
   document.body.classList.add('ck-open');
-  if(!document.getElementById('ckStyle')){ const st=document.createElement('style'); st.id='ckStyle'; st.textContent='body.ck-open .toast{z-index:7000;}'; document.head.appendChild(st); }
+  if(!document.getElementById('ckStyle')){ const st=document.createElement('style'); st.id='ckStyle'; st.textContent='body.ck-open .toast{z-index:7000;} body.ck-open .confirm-overlay{z-index:700;}'; document.head.appendChild(st); }
   ov.addEventListener('click',(ev)=>{ if(ev.target===ov) closeCheckHub(); });
   // 下に重ねた確認画面(距離を入れる等)が閉じたら、点検結果を更新する
   let subOpen=false;
   const mo=new MutationObserver(()=>{
     if(!document.getElementById('checkHub')){ mo.disconnect(); return; }
-    const open=!!document.getElementById('backupModal');
+    const open=!!document.getElementById('backupModal') || !!document.querySelector('.confirm-overlay');
     if(subOpen && !open) ckPaint(stArg,dateArg);
     subOpen=open;
   });
