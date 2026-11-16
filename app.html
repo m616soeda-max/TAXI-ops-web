@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114119">
+<meta name="taxiops-build" content="20261114120">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -791,6 +791,28 @@
   transform:translateY(3px);
   box-shadow:0 0 0 rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05), inset 0 2px 3px rgba(0,0,0,.22) !important;
 }
+/* ---------- 白系テーマの共通の土台(app120): 生成りの紙+やわらかい暖色の影+濃い補助文字。差し色(--amberなど)は各テーマのまま ---------- */
+body.light-base{ --bg:#f4efe6; --card:#fffdf8; --card2:#ede6d8; --border:#d9cfbd; --text:#2b2620; --muted:#5c5448; --muted2:#7a705f; --green:#1f8a4c; }
+body.theme-blue{ --red:#d03a2a; }
+body.theme-valkyrie{ --amber:#a87800; --amber-dim:#8a6a00; }
+body.light-base .meter{ background:linear-gradient(180deg,#fffdf8,#f5eddd); box-shadow:0 6px 16px -8px rgba(120,95,50,.38); }
+body.light-base .meter-digit, body.light-base .summary-big{ text-shadow:none; }
+body.light-base .add-card, body.light-base .section-card, body.light-base .list-card, body.light-base .setup-card{ box-shadow:0 1px 3px rgba(120,95,50,.14); }
+body.light-base .confirm-box, body.light-base .kp-box{ box-shadow:0 10px 30px -8px rgba(120,95,50,.45); }
+body.light-base .btn, body.light-base .btn-ghost, body.light-base .chip, body.light-base .chip.active, body.light-base .tm-btn,
+body.light-base #themeToggleBtn, body.light-base #trackBtn, body.light-base .summary-close, body.light-base .entry-del, body.light-base .list-toggle,
+body.light-base .confirm-actions button, body.light-base .kp-actions button, body.light-base .summary-actions button, body.light-base .theme-dot{
+  box-shadow:0 2px 0 rgba(120,95,50,.26), 0 4px 8px -2px rgba(120,95,50,.20), inset 0 1px 0 rgba(255,255,255,.75), inset 0 -2px 3px rgba(120,95,50,.10) !important;
+}
+body.light-base .btn:active, body.light-base .btn-ghost:active, body.light-base .chip:active, body.light-base .tm-btn:active,
+body.light-base #themeToggleBtn:active, body.light-base #trackBtn:active, body.light-base .summary-close:active, body.light-base .entry-del:active, body.light-base .list-toggle:active,
+body.light-base .confirm-actions button:active, body.light-base .kp-actions button:active, body.light-base .summary-actions button:active, body.light-base .theme-dot:active{
+  transform:translateY(2px);
+  box-shadow:0 0 0 rgba(0,0,0,0), 0 1px 2px rgba(120,95,50,.22), inset 0 2px 4px rgba(120,95,50,.22) !important;
+}
+body.light-base .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 50%), #dff1e1; border-color:#8cc79a; color:#1c6b36; }
+body.light-base .chip.pay.cash-chip.active{ background:linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,0) 50%), #2f8f4b; border-color:#2f8f4b; color:#ffffff; }
+body.light-base .analysis-body b{ color:#c0392b; }
 </style>
 </head>
 <body>
@@ -798,7 +820,7 @@
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app119</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app120</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5551,18 +5573,18 @@ async function handleExport(){
 
 const THEME_LIST = [
   {id:'amber', cls:null, icon:'🟠', label:'ジャイアンツ', bg:'#12151b', swatch:'#e8a33d'},
-  {id:'blue', cls:'theme-blue', icon:'🔵', label:'ドジャース', bg:'#f2f6fb', swatch:'#1e5fc4'},
+  {id:'blue', cls:'theme-blue', icon:'🔵', label:'ドジャース', bg:'#f4efe6', light:true, swatch:'#1e5fc4'},
   {id:'japan', cls:'theme-japan', icon:'⚽', label:'日本代表', bg:'#0a1730', swatch:'#1c5fc9'},
   {id:'eva', cls:'theme-eva', icon:'🟢', label:'エヴァ初号機', bg:'#1a1025', swatch:'#7fdc00'},
-  {id:'gundam', cls:'theme-gundam', icon:'🤖', label:'ガンダム', bg:'#eef0f2', swatch:'#1e50a2'},
+  {id:'gundam', cls:'theme-gundam', icon:'🤖', label:'ガンダム', bg:'#f4efe6', light:true, swatch:'#1e50a2'},
   {id:'ginei', cls:'theme-ginei', icon:'🎖️', label:'銀河英雄伝説(帝国軍)', bg:'#0d0d0f', swatch:'#a8adb5'},
   {id:'shinkamen', cls:'theme-shinkamen', icon:'🦗', label:'シン仮面ライダー', bg:'#0a0a0a', swatch:'#b8bcc0'},
-  {id:'ultraman', cls:'theme-ultraman', icon:'🥈', label:'シンウルトラマン', bg:'#e3e6e9', swatch:'#d92b1c'},
+  {id:'ultraman', cls:'theme-ultraman', icon:'🥈', label:'シンウルトラマン', bg:'#f4efe6', light:true, swatch:'#d92b1c'},
   {id:'godzilla', cls:'theme-godzilla', icon:'🦖', label:'シン・ゴジラ', bg:'#0e0e0e', swatch:'#ff4b1f'},
-  {id:'patlabor', cls:'theme-patlabor', icon:'🚔', label:'パトレイバー', bg:'#eef1f2', swatch:'#d3222a'},
-  {id:'unicorn', cls:'theme-unicorn', icon:'🦄', label:'ユニコーンガンダム', bg:'#eef0f2', swatch:'#e8382a'},
+  {id:'patlabor', cls:'theme-patlabor', icon:'🚔', label:'パトレイバー', bg:'#f4efe6', light:true, swatch:'#d3222a'},
+  {id:'unicorn', cls:'theme-unicorn', icon:'🦄', label:'ユニコーンガンダム', bg:'#f4efe6', light:true, swatch:'#e8382a'},
   {id:'nugundam', cls:'theme-nugundam', icon:'🛡️', label:'νガンダム', bg:'#ffffff', swatch:'#f4c430'},
-  {id:'valkyrie', cls:'theme-valkyrie', icon:'💀', label:'バルキリー', bg:'#eef0f1', swatch:'#f4c430'},
+  {id:'valkyrie', cls:'theme-valkyrie', icon:'💀', label:'バルキリー', bg:'#f4efe6', light:true, swatch:'#f4c430'},
   {id:'yamato', cls:'theme-yamato', icon:'⚓', label:'宇宙戦艦ヤマト', bg:'#0d1420', swatch:'#c8102e'},
   {id:'mazinger', cls:'theme-mazinger', icon:'🔥', label:'マジンガーZ', bg:'#0d0d0d', swatch:'#c8102e'},
 ];
@@ -5571,6 +5593,7 @@ function applyTheme(theme){
   document.body.classList.remove(...THEME_CLASSES);
   const t = THEME_LIST.find(x=>x.id===theme) || THEME_LIST[0];
   if(t.cls) document.body.classList.add(t.cls);
+  document.body.classList.toggle('light-base', !!t.light);
   const btn = document.getElementById('themeToggleBtn');
   if(btn) btn.textContent = t.icon;
   currentThemeId = t.id;
