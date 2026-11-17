@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114120">
+<meta name="taxiops-build" content="20261114121">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -820,7 +820,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app120</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app121</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1573,7 +1573,7 @@ function openHelpModal(){
   const p=(t)=>`<div style="font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap;padding:2px 0 6px;">${esc(t)}</div>`;
   const det=(title,body,open)=>`<details ${open?'open':''} style="border-top:1px solid var(--border);padding:7px 0 2px;"><summary style="font-weight:700;font-size:13px;color:var(--text);cursor:pointer;list-style:none;">▸ ${title}</summary>${body}</details>`;
   const body=[
-    det('はじめに(TAXI OPSとTAXI INTEL)', p('TAXI OPS(このアプリ)は、出庫から帰庫までの営業中に、運賃・距離・時刻・走行軌跡を記録して、その場で目標との差を見るためのアプリです。\n\nTAXI INTELは、乗務のあとに、Excelにまとめたデータを読み込んで、最新の出番を同じ曜日の過去と比べる分析アプリです。\n\n記録したデータは、この端末の中だけに保存されます。外に出る通信は、住所の取得(国土地理院)、地図の表示(地理院タイル)、更新の確認、INTEL本体の取得(初回と更新時)の4つだけです。'), true),
+    det('はじめに(TAXI OPSとTAXI INTEL)', p('TAXI OPS(このアプリ)は、出庫から帰庫までの営業中に、運賃・距離・時刻・走行軌跡を記録して、その場で目標との差を見るためのアプリです。\n\nTAXI INTELは、乗務のあとに、Excelにまとめたデータを読み込んで、最新の出番を同じ曜日の過去と比べる分析アプリです。\n\n記録したデータは、この端末の中だけに保存されます。外に出る通信は、住所の取得(国土地理院)、地図の表示(地理院タイル)、更新の確認、INTEL本体の取得(初回と更新時)、トンネルなど測位のない区間を補う経路の検索(OSRM。区間の両端の位置だけを送ります)の5つだけです。'), true),
     det('1日の流れ', p('1. 出庫: 出番日と出庫時刻を入れて、ボタン列の左端の「出庫」を押します。走行軌跡の記録が自動で始まります(通知に「記録中」)。最初の画面の「⋯ その他」からも、設定・使い方・診断が開けます。\n2. 営業中: お客さんごとに、迎車 → 乗車 → 降車のボタンを押します(時刻と位置が残ります)。降車したら「記録する」で、代金・距離・種別・支払いを入れます。\n3. 休憩: 自動で数えます(下の「休憩」を参照)。\n4. 帰庫: 「⋯」→「乗務終了・まとめを見る」→ 帰庫時刻を入れます。\n5. まとめ画面: 日報コピー、画像の保存(①②)、「🗺 走行軌跡を見る」。最後に「✕」で次の出番へ。')),
     det('営業中の画面の見方', p('・時間帯別の目標: 「◯時迄に¥◯」が、いまの時間帯の目標です。\n・距離の目標: ◯kmごとに¥◯のペースに対する差です。\n・「走行距離 ▸降車時点」または「📏 距離確認」ボタンを押すと、直近の降車時点の距離(メーター系と、GPSの実車・迎車・空車別)が出ます。\n・乗車ボタンを押し忘れても、あとから記録の編集で「迎車・乗車の時刻」を入れられます。\n・記録一覧に「⚠乗車時刻なし」が出た記録は、地図の線が灰色になります。時刻を入れると色が付きます。')),
     det('休憩', p('・休憩は自動で数えます。完全停止して10分たつと休憩が始まり、走り出すと止まって記録されます(軌跡の記録が動いているときだけ。乗車中・帰庫後は始まりません。走り出した地点が300m以上離れていたら、測位が途切れたとみなして記録しません)。\n・出庫してから走り出すまでの待ちも、10分以上なら休憩です。\n・画面の「休憩」の表示は、押すと記録の確認・修正が開きます。違っていたら、そこで削除できます。\n・休憩として数えるのは、設定した最短時間(初期値10分)以上のときだけです。\n・休憩中に迎車・乗車のボタンを押すと、休憩は自動で止まります(降車では止まりません)。\n・記録の確認・修正は「⋯」→「☕ 休憩の記録・修正」。日報コピーの末尾に、休憩の行が付きます。')),
@@ -1584,7 +1584,7 @@ function openHelpModal(){
     det('バックアップ(いちばん大事)', p('・アプリをアンインストールすると、中のデータは消えます。入れ直す前に、必ず「⋯」→「📦 全データ(過去の出番含む)をファイル保存」で、ファイルに残してください。共有の画面で、Googleドライブやマイファイルなどの保存先を選びます。\n・戻すとき: 「⋯」→「📥 全データをファイルから取り込む」(出庫前の画面にもあります)。\n・設定も、全データに含まれます。\n・「⋯」に橙の●が出たら、バックアップから1日半以上たっています。')),
     det('更新', p('・新しい版は、アプリを開き直すと自動で入ります(「⋯」→「🔄 今すぐ更新を確認」でも確認できます)。\n・おかしくなったら「↩ 同梱版に戻す」。')),
     det('困ったとき', p('・保存や共有ができない: 「🩺 保存機能の診断」を押して、出た画面の写真を送ってください。\n・位置が取れない: 端末の設定 → アプリ → TAXI OPS → 権限 → 位置情報を「アプリの使用中のみ許可」+「正確な位置情報を使用」オン。\n・軌跡が途切れる: 「最近使ったアプリ」から TAXI OPS を消さない。電池の設定を「制限なし」にする。\n・動画が見つからない: ギャラリーの「TAXI-OPS」アルバムを見てください。保存できなかったときは、保存先を選ぶ画面が出ます。')),
-    det('権利・免責', p('・運賃や集計は参考値です。日報や会社の記録が正です。\n・「GO」「GOPay」などの名前は、各社の商標で、このアプリは各社とは関係がありません。\n・地図は、国土地理院の地理院タイル(淡色地図)を使っています。住所は、国土地理院の逆ジオコーダーで取得しています。')),
+    det('権利・免責', p('・運賃や集計は参考値です。日報や会社の記録が正です。\n・「GO」「GOPay」などの名前は、各社の商標で、このアプリは各社とは関係がありません。\n・トンネルなどの補完は、OSRM(OpenStreetMapのデータによる経路検索 © OpenStreetMap contributors)で道路に沿った経路を取得しています。結果は推定で、実際の走行と少し違うことがあります。\n・地図は、国土地理院の地理院タイル(淡色地図)を使っています。住所は、国土地理院の逆ジオコーダーで取得しています。')),
   ].join('');
   ov.innerHTML=`<div style="width:100%;max-width:440px;max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
     <div style="font-weight:700;font-size:15px;color:var(--text);">📘 使い方・困ったとき</div>
@@ -1609,7 +1609,7 @@ function taxiopsTrackHealth(){
   const L=[];
   if(!D){ openBackupModal('軌跡のデータがありません。','🛰 記録の健康診断','',false); return; }
   const pts=(D===trackDate)?trackPts:trackLoad(D);
-  const st=trackStats(pts);
+  const st=trackStats(pts,D);
   L.push('対象: '+D+'('+pts.length+'点・GPS走行 '+st.km.toFixed(1)+'km)');
   L.push('状態: '+(NATIVE_BG?'アプリ版':'ブラウザ版')+' / 記録='+(trackWatchId!==null?'動作中':'停止中')+' / 試行'+(typeof nativeTries!=='undefined'?nativeTries:'-')+'回'+(nativeErrText?' / 最新エラー: '+nativeErrText:''));
   // 時間帯別の点数
@@ -4554,14 +4554,14 @@ function suggestCumDist(){
     let m=0;
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1], b=pts[i];
-      if(b.t-a.t>TRACK_GAP_SEC) continue;
+      if(b.t-a.t>TRACK_GAP_SEC){ const f=(trackDistM(a,b)>=400)?gapFillAt(date,a.t):null; if(f) m+=f.km*1000*gapFillFrac(f,t0,t1); continue; }
       const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue;
       m+=trackDistM(a,b);
     }
     // 停車中は点が増えない(15m未満は記録しない)ので、点の間隔が空いていても「測位なし」とは限らない。
     // 区間の端の点が前後3分以内にあり、途中に3分超の空きがなければ、連続して取れているとみなす
     let gap=false;
-    for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue; if(b.t-a.t>TRACK_GAP_SEC && trackDistM(a,b)>=400){ gap=true; break; } }
+    for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue; if(b.t-a.t>TRACK_GAP_SEC && trackDistM(a,b)>=400 && !gapFillAt(date,a.t)){ gap=true; break; } }
     if(gap) return null;
     const gpsKm=m/1000;
     if(gpsKm<0.05) return null;
@@ -5355,7 +5355,7 @@ function gpsKmBetween(date,h0,h1){
     let m=0;
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue;
-      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400) return {why:'測位が途切れています'}; continue; }
+      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400){ const f=gapFillAt(date,a.t); if(!f) return {why:'測位が途切れています(トンネル等。記録の点検で補えます)'}; m+=f.km*1000*gapFillFrac(f,t0,t1); } continue; }
       const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue;
       m+=trackDistM(a,b);
     }
@@ -5701,6 +5701,7 @@ function trackSave(force){
   catch(e){ if(!trackSave._warned){ trackSave._warned=true; toast('軌跡を保存できません(容量不足?)'); } }
 }
 function trackDelete(date){
+  gapFillDelete(date);
   try{ localStorage.removeItem(TRACK_PREFIX+date); }catch(e){}
   if(trackDate===date){ trackPts=[]; trackDirty=false; }
 }
@@ -5709,10 +5710,94 @@ function trackDistM(a,b){
   const x=Math.sin(dla/2)**2+Math.cos(a.la*r)*Math.cos(b.la*r)*Math.sin(dlo/2)**2;
   return 12742000*Math.asin(Math.sqrt(x));
 }
-function trackStats(pts){
-  let m=0;
-  for(let i=1;i<pts.length;i++){ if(pts[i].t-pts[i-1].t<=TRACK_GAP_SEC) m+=trackDistM(pts[i-1],pts[i]); }
-  return {n:pts.length, km:m/1000, t0:pts.length?pts[0].t:null, t1:pts.length?pts[pts.length-1].t:null};
+/* ---------- 測位なし区間(トンネル等)を、道路に沿った経路で補う(app121) ----------
+   軌跡の点が3分以上空き、400m以上離れた区間の両端を、OSRM(OpenStreetMapの経路検索)に送って、道路に沿った経路を取得する。
+   元の軌跡は変えず、補った区間は別に保存(andon-meter:gapfill:日付)。距離・実車距離・地図の線に使う。通信できないときは、点線のまま */
+const GAPFILL_PREFIX = LS_PREFIX+'gapfill:';
+const GAPFILL_MIN_M = 400, GAPFILL_MAX_SEC = 45*60, GAPFILL_MAX_KM = 40;
+const gapFillCache = {};
+function gapFillEnc(pts){ const a=[]; let pl=0,po=0; for(const q of pts){ const la=Math.round(q[0]*1e5), lo=Math.round(q[1]*1e5); a.push(la-pl,lo-po); pl=la; po=lo; } return a; }
+function gapFillDec(a){ const pts=[]; let la=0,lo=0; for(let i=0;i+1<a.length;i+=2){ la+=a[i]; lo+=a[i+1]; pts.push([la/1e5,lo/1e5]); } return pts; }
+function gapFillLoad(date){
+  if(!date) return new Map();
+  if(gapFillCache[date]) return gapFillCache[date];
+  const m=new Map();
+  try{ const raw=localStorage.getItem(GAPFILL_PREFIX+date); if(raw){ for(const g of (JSON.parse(raw).g||[])) m.set(g[0],{t0:g[0],t1:g[1],km:g[2]/100,src:g[3],pts:gapFillDec(g[4])}); } }catch(e){}
+  gapFillCache[date]=m; return m;
+}
+function gapFillSave(date,m){ try{ localStorage.setItem(GAPFILL_PREFIX+date, JSON.stringify({v:1,g:[...m.values()].map(f=>[f.t0,f.t1,Math.round(f.km*100),f.src,gapFillEnc(f.pts)])})); }catch(e){} }
+function gapFillAt(date,t0){ return gapFillLoad(date).get(t0)||null; }
+function gapFillDelete(date){ try{ localStorage.removeItem(GAPFILL_PREFIX+date); }catch(e){} delete gapFillCache[date]; }
+function gapFillFrac(f,wa,wb){ const a=Math.max(f.t0,wa), b=Math.min(f.t1,wb); return b>a ? (b-a)/(f.t1-f.t0) : 0; }   // 区間[wa,wb]と重なる割合
+function gapFillGaps(pts){      // 補う対象の区間 [前の点, 次の点, 直線距離m]
+  const out=[];
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1], b=pts[i], dt=b.t-a.t;
+    if(dt<=TRACK_GAP_SEC || dt>GAPFILL_MAX_SEC) continue;
+    const d=trackDistM(a,b); if(d<GAPFILL_MIN_M || d>GAPFILL_MAX_KM*1000) continue;
+    out.push([a,b,d]);
+  }
+  return out;
+}
+function gapFillSimplify(pts,tolM){
+  if(pts.length<=2) return pts;
+  const R=111000, c=Math.cos(pts[0][0]*Math.PI/180), P=pts.map(q=>[q[1]*R*c, q[0]*R]);
+  const keep=new Array(pts.length).fill(false); keep[0]=keep[pts.length-1]=true;
+  const st=[[0,pts.length-1]];
+  while(st.length){
+    const [i,j]=st.pop(), A=P[i], B=P[j], dx=B[0]-A[0], dy=B[1]-A[1], L=Math.hypot(dx,dy)||1;
+    let md=0, mi=-1;
+    for(let k=i+1;k<j;k++){ const d=Math.abs(dy*(P[k][0]-A[0])-dx*(P[k][1]-A[1]))/L; if(d>md){ md=d; mi=k; } }
+    if(md>tolM && mi>0){ keep[mi]=true; st.push([i,mi],[mi,j]); }
+  }
+  return pts.filter((_,k)=>keep[k]);
+}
+async function gapFillFetch(a,b,d){
+  const url='https://router.project-osrm.org/route/v1/driving/'+a.lo.toFixed(5)+','+a.la.toFixed(5)+';'+b.lo.toFixed(5)+','+b.la.toFixed(5)+'?overview=full&geometries=geojson';
+  const ac=new AbortController(), tid=setTimeout(()=>ac.abort(),12000);
+  try{
+    const r=await fetch(url,{signal:ac.signal}); clearTimeout(tid);
+    const j=await r.json();
+    const rt=(j && j.code==='Ok' && j.routes && j.routes[0]) || null;
+    if(!rt) return {fail:'noroute'};
+    const km=rt.distance/1000;
+    if(km*1000<d*0.95 || km*1000>d*2.5) return {fail:'implausible'};
+    const co=(rt.geometry && rt.geometry.coordinates) || [];
+    return {km, pts:[[a.la,a.lo]].concat(gapFillSimplify(co.map(c=>[c[1],c[0]]),8),[[b.la,b.lo]]), src:'osrm'};
+  }catch(e){ clearTimeout(tid); return {fail:'net'}; }
+}
+let gapFillBusy=false;
+async function gapFillRun(date,manual){      // 戻り値 {done:補った数, left:補えなかった数}
+  if(!date || gapFillBusy) return {done:0,left:0};
+  gapFillBusy=true;
+  let done=0,left=0;
+  try{
+    const pts=(date===trackDate)?trackPts:trackLoad(date);
+    const m=gapFillLoad(date); let budget=manual?30:10, changed=false;
+    const todo=gapFillGaps(pts).filter(x=>!m.has(x[0].t));
+    for(let k=0;k<todo.length;k++){
+      const [a,b,d]=todo[k];
+      if(budget<=0){ left+=todo.length-k; break; }
+      budget--;
+      const r=await gapFillFetch(a,b,d);
+      if(r.fail==='net'){ left+=todo.length-k; break; }       // 通信できない: 残りもあとで
+      const f = r.fail ? {t0:a.t,t1:b.t,km:d*1.1/1000,src:'line',pts:[[a.la,a.lo],[b.la,b.lo]]}      // 経路が出ない・不自然: 直線で結ぶ(曲がりを見込んで1.1倍)
+                       : {t0:a.t,t1:b.t,km:r.km,src:r.src,pts:r.pts};
+      m.set(a.t,f); done++; changed=true;
+    }
+    if(changed) gapFillSave(date,m);
+  }catch(e){} finally{ gapFillBusy=false; }
+  return {done,left};
+}
+function gapFillAfter(date,r){ if(r && r.done && tm && tm.date===date){ tm.fills=gapFillLoad(date); tmRefreshInfo(); tmRequest(); } }
+window.addEventListener('online',()=>{ if(trackDate) gapFillRun(trackDate,false).then(r=>gapFillAfter(trackDate,r)); });
+function trackStats(pts,date){
+  let m=0, nf=0; const fm=date?gapFillLoad(date):null;
+  for(let i=1;i<pts.length;i++){
+    if(pts[i].t-pts[i-1].t<=TRACK_GAP_SEC) m+=trackDistM(pts[i-1],pts[i]);
+    else if(fm){ const f=fm.get(pts[i-1].t); if(f){ m+=f.km*1000; nf++; } }
+  }
+  return {n:pts.length, km:m/1000, t0:pts.length?pts[0].t:null, t1:pts.length?pts[pts.length-1].t:null, nf};
 }
 function trackHM(sec){
   const d=new Date(sec*1000);
@@ -5735,6 +5820,7 @@ function trackOnPos(pos){
   }
   trackPts.push(p); trackDirty=true;
   restAutoOnMove(last,p);
+  if(last && p.t-last.t>TRACK_GAP_SEC && trackDate){ const gd=trackDate; gapFillRun(gd,false).then(r=>gapFillAfter(gd,r)); }
   trackSave(false); updateTrackBtn(); trackLiveUpdate();
 }
 // ビューアを開いている間は、測位のたびに途中経過(現在地・点数・走行距離)を更新する
@@ -6276,9 +6362,9 @@ function grayWarn(e,withBd){      // 軌跡がグレーになる記録の注意�
   if(e.pay==='キャンセル'||e.pay==='B空転') return '';   // 迎車時刻なしでもグレーにならない(種別から色を決める)
   return withBd.has(e.time) ? '' : '⚠乗車時刻なし(軌跡がグレー)';
 }
-function evKmByStateRange(pts,m,t0,t1){     // 区間の中点が[t0,t1]に入る線分だけ集計(測位なし区間は含めない)
+function evKmByStateRange(pts,m,t0,t1,date){     // 区間の中点が[t0,t1]に入る線分だけ集計(測位なし区間は含めない)
   const r={red:0,yel:0,blue:0,unk:0};
-  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC) continue; const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; r[evColorAt(m,mid)]+=trackDistM(a,b)/1000; }
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC){ const f=(date && trackDistM(a,b)>=400)?gapFillAt(date,a.t):null; if(f){ const mid=(a.t+b.t)/2; if(mid>=t0&&mid<=t1) r[evColorAt(m,mid)]+=f.km; } continue; } const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; r[evColorAt(m,mid)]+=trackDistM(a,b)/1000; }
   return r;
 }
 function openDistModal(){
@@ -6304,7 +6390,7 @@ function openDistModal(){
     const pts=(trackDate===date && trackPts.length>1) ? trackPts : trackLoad(date);
     if(pts.length>1){
       const m=evIntervals(date), base=evDayStart(date), S=base+last.time*3600, S0=base+prevT*3600;
-      const c=evKmByStateRange(pts,m,-Infinity,S), g=evKmByStateRange(pts,m,S0,S);
+      const c=evKmByStateRange(pts,m,-Infinity,S,date), g=evKmByStateRange(pts,m,S0,S,date);
       const sum=o=>o.red+o.yel+o.blue+o.unk;
       const gr=(n,col,k)=>(c[k]>0||g[k]>0)?'<tr><td style="color:'+col+';padding:4px 0;border-bottom:1px solid var(--border);">'+n+'</td><td style="text-align:right;font-family:\'PT Mono\',monospace;border-bottom:1px solid var(--border);">'+fmtKm(g[k])+'</td><td style="text-align:right;font-family:\'PT Mono\',monospace;border-bottom:1px solid var(--border);"><b>'+fmtKm(c[k])+'</b></td></tr>':'';
       gps='<div style="font-weight:700;font-size:13px;color:var(--text);margin-top:8px;">GPS軌跡の状態別(km)</div>'
@@ -6354,7 +6440,7 @@ function distFillPlan(st, date){
     let m=0;
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1], b=pts[i]; if(b.t<t0||a.t>t1) continue;
-      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400) return null; continue; }
+      if(b.t-a.t>TRACK_GAP_SEC){ if(trackDistM(a,b)>=400){ const f=gapFillAt(date,a.t); if(!f) return null; m+=f.km*1000*gapFillFrac(f,t0,t1); } continue; }
       const mid=(a.t+b.t)/2; if(mid<t0||mid>t1) continue; m+=trackDistM(a,b);
     }
     return m/1000;
@@ -6550,17 +6636,24 @@ function ckPaint(stArg,dateArg){
     : sec('④ 実車距離未入力',apN+'件',false,'<div style="font-size:11px;color:var(--muted);margin-top:4px;">GPSで入れられる '+ap.rows.length+'件'+(ap.skipped.length?' / 測位の都合で入れられない '+ap.skipped.length+'件':'')+(ap.noBd?' / 乗車ボタン未使用 '+ap.noBd+'件(手入力)':'')+'</div>'
       +ap.rows.map(r=>'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border);"><b style="font-family:\'PT Mono\',monospace;">'+fmtTime(r.e.time)+' ¥'+Number(r.e.fare||0).toLocaleString('ja-JP')+'</b><span>実車 '+fmtKm(r.km)+'km</span></div>').join('')
       +(ap.rows.length?btn('ckActBtn','🚕 実車距離を入れる('+ap.rows.length+'件)'):''));
+  const gpts=date?((trackDate===date&&trackPts.length>1)?trackPts:trackLoad(date)):[];
+  const gg=gapFillGaps(gpts), gm=gapFillLoad(date), gtodo=gg.filter(x=>!gm.has(x[0].t)).length, gdone=gg.length-gtodo;
+  const gapHtml=gg.length===0 ? sec('⑤ 測位なし区間(トンネル等)','なし ✓',true)
+    : sec('⑤ 測位なし区間(トンネル等)', gtodo?(gtodo+'か所 未補完'):(gdone+'か所 補完済み ✓'), gtodo?false:true,
+        '<div style="font-size:11px;color:var(--muted);margin-top:4px;">道路に沿った経路で補います。補った区間は、距離と実車距離の自動入力に含まれます(推定)'+(gdone&&gtodo?' ・ 補完済み '+gdone+'か所':'')+'</div>'+(gtodo?btn('ckGapBtn','🛣 道路に沿って補う(通信します)'):''));
   const ttl=(date?('<span style="font-size:11px;color:var(--muted);font-weight:400;"> '+date+'</span>'):'');
   box.innerHTML='<div style="font-weight:700;font-size:15px;color:var(--text);">🔍 記録の点検'+ttl+'</div>'
-    +'<div style="font-size:11px;color:var(--muted);">グレー区間・住所未取得・距離未入力・実車距離未入力を、この画面でまとめて確認して処理します。</div>'
+    +'<div style="font-size:11px;color:var(--muted);">グレー区間・住所未取得・距離未入力・実車距離未入力・測位なし区間を、この画面でまとめて確認して処理します。</div>'
     +'<button class="btn-ghost" id="ckAll" style="font-weight:700;font-size:13px;padding:11px 4px;">▶ まとめて点検(住所は自動で取得)</button>'
-    +grayHtml+addrHtml+distHtml+actHtml
+    +grayHtml+addrHtml+distHtml+actHtml+gapHtml
     +'<button class="btn-ghost" id="ckClose" style="margin-top:6px;">閉じる</button>';
   document.getElementById('ckClose').onclick=closeCheckHub;
   document.getElementById('ckAll').onclick=()=>ckRunAll(stArg,dateArg);
   const ab=document.getElementById('ckAddrBtn'); if(ab) ab.onclick=async()=>{ ab.disabled=true; ab.textContent='取得中…'; try{ await evFillMissing(true); }catch(e){} ckPaint(stArg,dateArg); };
   const db=document.getElementById('ckDistBtn'); if(db) db.onclick=()=>{ if(stArg && dateArg) openDistFillModal(stArg,dateArg); else openDistFillModal(); };
   box.querySelectorAll('.ck-edit').forEach(b=>{ b.onclick=()=>openHistoryEntryModal(st,date,b.dataset.id); });
+  const gapb=document.getElementById('ckGapBtn');
+  if(gapb) gapb.onclick=async()=>{ gapb.disabled=true; gapb.textContent='経路を検索中…'; const r=await gapFillRun(date,true); gapFillAfter(date,r); toast(r.done?('道路に沿って'+r.done+'か所を補いました'+(r.left?('(残り'+r.left+'か所。電波のあるところでもう一度)'):'')):'補えませんでした(電波を確認してください)'); ckPaint(stArg,dateArg); };
   const actb=document.getElementById('ckActBtn');
   if(actb) actb.onclick=async()=>{
     ap.rows.forEach(r=>{ r.e.actualDist=r.km; r.e.actualGps=true; });
@@ -6575,6 +6668,7 @@ async function ckRunAll(stArg,dateArg){
   if(ckBusy) return; ckBusy=true;
   const b=document.getElementById('ckAll'); if(b){ b.disabled=true; b.textContent='点検中…(住所を取得しています)'; }
   try{ await evFillMissing(true); }catch(e){}
+  try{ const cc=ckCur(stArg,dateArg); const r=await gapFillRun(cc.date,true); gapFillAfter(cc.date,r); }catch(e){}
   ckBusy=false;
   ckPaint(stArg,dateArg);
   const {st,date}=ckCur(stArg,dateArg);
@@ -6645,9 +6739,9 @@ async function evBtn(k,kind){
   }
 }
 
-function evKmByState(pts,m){          // 状態別の走行距離(km)。GPS走行の合計と同じく、測位なし区間は含めない
+function evKmByState(pts,m,date){          // 状態別の走行距離(km)。GPS走行の合計と同じく、測位なし区間は含めない
   const r={red:0,yel:0,blue:0,unk:0};
-  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC) continue; r[evColorAt(m,(a.t+b.t)/2)]+=trackDistM(a,b)/1000; }
+  for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.t-a.t>TRACK_GAP_SEC){ const f=(date && trackDistM(a,b)>=400)?gapFillAt(date,a.t):null; if(f) r[evColorAt(m,(a.t+b.t)/2)]+=f.km; continue; } r[evColorAt(m,(a.t+b.t)/2)]+=trackDistM(a,b)/1000; }
   return r;
 }
 
@@ -6926,7 +7020,11 @@ function tmDraw(){
     flush();
     if(gaps.length){
       ctx.lineWidth=2.5; ctx.setLineDash([6,6]);
-      for(const g of gaps){ ctx.strokeStyle=ST_COL[evColorAt(tm.iv,(g[0].t+g[1].t)/2)]; ctx.beginPath(); ctx.moveTo(g[2][0],g[2][1]); ctx.lineTo(g[3][0],g[3][1]); ctx.stroke(); }
+      for(const g of gaps){
+        const col=ST_COL[evColorAt(tm.iv,(g[0].t+g[1].t)/2)], f=tm.fills&&tm.fills.get(g[0].t);
+        if(f && f.pts.length>1){ ctx.save(); ctx.setLineDash([]); ctx.globalAlpha=.55; ctx.lineWidth=3.5; ctx.strokeStyle=col; ctx.beginPath(); f.pts.forEach((q,k)=>{ const sp=xy({la:q[0],lo:q[1]}); if(k) ctx.lineTo(sp[0],sp[1]); else ctx.moveTo(sp[0],sp[1]); }); ctx.stroke(); ctx.restore(); continue; }
+        ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(g[2][0],g[2][1]); ctx.lineTo(g[3][0],g[3][1]); ctx.stroke();
+      }
       ctx.setLineDash([]);
     }
   }
@@ -7037,7 +7135,7 @@ function tmPinTap(x,y){
   el.style.display='block';
 }
 function tmInfoText(){
-  const s=trackStats(tm.pts);
+  const s=trackStats(tm.pts,tm.date);
   const live = tm.live && tm.date===trackDate;
   const f = live ? trackDiag.lastFix : null;
   const accTxt = f ? ' ・ 現在の精度'+Math.round(f.acc)+'m' : '';
@@ -7046,7 +7144,7 @@ function tmInfoText(){
     if(!f) return '記録中 ・ 測位待ち(まだ1回も受信していません)'+(NATIVE_BG?' ['+(nativeErrText||'エラーなし')+' / 試行'+nativeTries+'回]':'');
     return '記録中 ・ 軌跡0点(受信'+trackDiag.recv+'回/精度不足'+trackDiag.rejAcc+'回/モード'+TRACK_MODE_NAME[trackMode]+'・切替'+trackDiag.sw+'回/最終受信'+(trackDiag.lastRecvMs?Math.round((Date.now()-trackDiag.lastRecvMs)/1000)+'秒前':'なし')+')'+accTxt+(f.acc>TRACK_MAX_ACC_M?' ※精度が悪く記録できません(自動で測位方法を切替中)':'');
   }
-  return s.n+'点 ・ GPS走行 '+s.km.toFixed(1)+'km ・ '+trackHM(s.t0)+'〜'+trackHM(s.t1)+accTxt;
+  return s.n+'点 ・ GPS走行 '+s.km.toFixed(1)+'km'+(s.nf?'(道路で補った'+s.nf+'区間を含む)':'')+' ・ '+trackHM(s.t0)+'〜'+trackHM(s.t1)+accTxt;
 }
 function tmRefreshInfo(){
   const el=document.getElementById('tmInfo'); if(el) el.textContent=tmInfoText();
@@ -7056,12 +7154,13 @@ function tmRefreshInfo(){
 }
 function tmSetDate(date){
   tmPlayStop();
-  tm.date=date; tm.userMoved=false;
+  tm.date=date; tm.userMoved=false; tm.fills=gapFillLoad(date);
   tm.live = (date===trackDate && trackWatchId!==null);
   tm.pts = (date===trackDate) ? trackPts : trackLoad(date);
   try{ tm.iv = date ? evIntervals(date) : null; }catch(e){ tm.iv=null; }
   try{ tm.pins = date ? evPinsFor(date) : []; }catch(e){ tm.pins=[]; }
   tmFit(); tmRefreshInfo(); tmRequest();
+  if(date) gapFillRun(date,false).then(r=>gapFillAfter(date,r));
 }
 function tmResize(){
   if(!tm) return;
@@ -7091,7 +7190,7 @@ function tmExport(){
     x.font=(9*s)+'px sans-serif'; x.fillStyle='rgba(0,0,0,.6)';
     if(tm.tiles) x.fillText('地理院タイル(淡色地図)',6*s,band+src.height-8*s);
     // 凡例(線の意味)と、状態別の走行距離
-    const km=evKmByState(tm.pts,tm.iv), tot=km.red+km.yel+km.blue+km.unk, y0=band+src.height;
+    const km=evKmByState(tm.pts,tm.iv,tm.date), tot=km.red+km.yel+km.blue+km.unk, y0=band+src.height;
     x.strokeStyle='#ccc'; x.lineWidth=1*s; x.beginPath(); x.moveTo(0,y0); x.lineTo(c.width,y0); x.stroke();
     x.textBaseline='middle'; x.textAlign='left'; x.font='bold '+(12*s)+'px sans-serif';
     [['red','実車'],['yel','迎車'],['blue','空車'],['unk','乗車時刻未入力']].forEach((it,i)=>{
@@ -7101,7 +7200,7 @@ function tmExport(){
       x.fillText(it[1]+' '+km[it[0]].toFixed(1)+'km'+(tot>0?'('+Math.round(km[it[0]]/tot*100)+'%)':''),cx+28*s,cy);
     });
     x.font=(10*s)+'px sans-serif'; x.fillStyle='#555';
-    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・破線=測位なし区間(距離に含めません)・矢印=迎車(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)',8*s,y0+55*s);
+    x.fillText('合計 '+tot.toFixed(1)+'km(GPS走行)・薄い線=道路に沿って補った区間(推定)・破線=補えていない測位なし区間(距離に含めません)・矢印=迎車(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)',8*s,y0+55*s);
     return c;
   };
   const fname='軌跡_'+String(tm.date||'').replace(/-/g,'')+'.png';
@@ -7156,7 +7255,7 @@ function openTrackViewer(date){
         <button id="tmRecBtn" class="tm-btn"></button>
         <button id="tmDelBtn" class="tm-btn" style="color:var(--red);">🗑</button>
       </div>
-      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 破線=測位なし区間 ・ 🚕 現在地・終点 ・ 矢印=迎車ボタン(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)、緑=出庫、タップで住所<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
+      <div class="tm-legend"><span style="color:#e5262b;">━</span> 実車 <span style="color:#f0b400;">━</span> 迎車 <span style="color:#1f78ff;">━</span> 空車 <span style="color:#8a93a3;">━</span> 乗車時刻が未入力 ・ 薄い線=道路に沿って補った区間(トンネル等、経路検索OSRM/© OpenStreetMap contributors) ・ 破線=補えていない測位なし区間 ・ 🚕 現在地・終点 ・ 矢印=迎車ボタン(黄)・乗車(赤)・降車(青)の地点(向きは進行方向)、緑=出庫、タップで住所<br>色分けは、出動中の「迎車・乗車・降車」ボタン、または履歴詳細の記録編集で「迎車・乗車の時刻」を入れると付きます(画面ロック/アプリ切替中も記録されるのはアプリ版のみ)</div>
     </div>`;
   document.body.appendChild(ov);
   tm={ov, userMoved:false, date:null, pts:[], z:11, cx:0, cy:0, W:300, H:300, dpr:1, tiles:true, tileCache:new Map(), raf:0, live:false,
