@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261114121">
+<meta name="taxiops-build" content="20261114123">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -562,15 +562,17 @@
   #mainView>.meter{padding:8px 12px 7px;margin-bottom:5px;}
   #mainView>.meter .meter-sub2{gap:7px 8px;margin-top:6px;padding-top:6px;}
   #mainView>.meter .meter-row3{margin-top:2px;}
-  #mainView>.add-card{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:8px 10px;margin-bottom:0;}
+  #mainView>.add-card{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:6px 10px;margin-bottom:0;}
   #mainView>.add-card .chip-row .chip{height:33px;}
+  #mainView>.add-card .chip{margin-bottom:0;}
+  #mainView>.add-card #typeChips .chip-row, #mainView>.add-card #payChips .chip-row{margin-bottom:5px !important;}
   .more-sheet{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.62);z-index:300;display:none;align-items:flex-end;justify-content:center;}
   .more-sheet.open{display:flex;}
   .more-sheet-inner{width:100%;max-width:460px;background:var(--card);border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
   .more-sheet-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text);padding:2px 2px 4px;}
   .footer-row .btn-ghost{flex:1;}
   .more-sheet-inner .footer-row .btn-ghost{padding:7px 6px;}
-  @media (max-height:640px){ .setup-hint{display:none;} }   /* 低い画面では、初期画面の説明文を隠して、枠に収める */
+  @media (max-height:740px){ .setup-hint{display:none;} }   /* 低い画面では、初期画面の説明文を隠して、枠に収める */
 
   .confirm-overlay{
     position:fixed;inset:0;background:rgba(0,0,0,.62);
@@ -820,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app121</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261114-app123</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -3598,7 +3600,8 @@ function renderRankHTML(){
   if(r.acceptCount!=null) extra.push(`了解${fmtNum(r.acceptCount)}件`);
   if(r.acceptRate!=null) extra.push(`了解率${r.acceptRate}%`);
   return `<div style="font-size:9.5px;color:var(--muted2);">GO順位</div>
-    <div style="font-family:'PT Mono',monospace;font-size:16px;font-weight:700;color:var(--amber);margin-top:2px;">${fmtNum(r.rank)}位<span style="font-size:10px;color:var(--muted);font-weight:400;"> / ${totalPart}</span>${pctPart}</div>
+    <div style="font-family:'PT Mono',monospace;font-size:16px;font-weight:700;color:var(--amber);margin-top:2px;white-space:nowrap;">${fmtNum(r.rank)}位</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;">${r.total!=null?fmtNum(r.total)+'人中':'(総人数未反映)'}${(r.total!=null && r.total>0)?' (上位'+(r.rank/r.total*100).toFixed(1)+'%)':''}</div>
     <div style="font-size:9px;color:var(--muted);margin-top:2px;">${extra.join(' ・ ')}</div>
     <div style="font-size:9.5px;margin-top:2px;">${cmpHTML}</div>`;
 }
@@ -4116,7 +4119,7 @@ function renderMain(){
         <button class="btn" id="addBtn" style="flex:1 1 0;min-width:0;width:auto;height:36px;font-size:13px;padding:0 4px;">${editingId?'更新する':'記録する'}</button>
         <div class="chip" id="thanksToggle" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">🎫 サンキュー消費</div>
       </div>
-      <div class="add-row add-row2" style="margin-top:7px;">
+      <div class="add-row add-row2" style="margin-top:5px;">
         <div class="chip" id="checkHubBtn2" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">🔍 記録の点検</div>
         <div class="chip" id="distCheckBtn2" style="flex:1 1 0;height:36px;font-size:12px;margin:0;">📏 距離確認</div>
       </div>
