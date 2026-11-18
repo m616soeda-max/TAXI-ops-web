@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261118128">
+<meta name="taxiops-build" content="20261118129">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -822,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app128</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app129</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -878,6 +878,7 @@ let editingId = null;
 let pendingElsePayConfirm = false; // 「それ以外」誤タップ防止用のダブルタップ確認状態
 let autoTimeVal = null;   // 支払い種別チップで自動入力した降車時刻(app103)
 let listExpanded = false;
+let compareExpanded = false; // 実車距離の比較表の拡大/縮小
 let moreMaintOpen = false; // 「🔧 メンテナンス・診断」の折りたたみ(開いているか)
 let moreMenuOpen = false; // 「⋯」メニュー(日報コピー・バックアップ・過去の出番・乗務終了など)の開閉
 let mainViewMode = 'form'; // 'form'(記録フォーム) | 'graphs'(グラフ・サマリー) | 'records'(記録一覧) を排他的に切り替える
@@ -5162,9 +5163,9 @@ function actualCompareHTML(entries){
     ? `<div style="font-size:10px;color:var(--text);line-height:1.5;margin:2px 0 6px;">両方ある${n}件: 自動 <b>${fmtKm(sa)}km</b> / 紙 <b>${fmtKm(sp)}km</b> / 差 <b class="${Math.abs(dsum)>=1?'neg':''}">${dsum>=0?'+':''}${dsum.toFixed(1)}km</b>(平均${(dsum/n)>=0?'+':''}${(dsum/n).toFixed(2)}km)・0.5km以上のずれ <b class="${big?'neg':''}">${big}件</b>${(onlyA||onlyP)?`<br><span class="dim">片方だけ: 自動のみ${onlyA}件・紙のみ${onlyP}件</span>`:''}</div>`
     : '';
   return `<div class="list-card" style="margin-top:8px;">
-    <div class="card-title"><span>実車距離の比較(自動と紙)</span><span style="font-weight:400;color:var(--muted2);">km</span></div>
+    <div class="card-title"><span>実車距離の比較(自動と紙)<span style="font-weight:400;color:var(--muted2);"> km</span></span><span class="list-toggle" onclick="compareExpanded=!compareExpanded;render();">${compareExpanded?'縮小':'拡大'}</span></div>
     ${sum}
-    <table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table>
+    <div class="entry-scroll ${compareExpanded?'expanded':''}"><table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table></div>
   </div>`;
 }
 const ANALYSIS_ICON = {good:'✅', warn:'⚠️', info:'🩺', trend:'📈'};
