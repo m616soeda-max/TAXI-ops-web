@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261118127">
+<meta name="taxiops-build" content="20261118128">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -822,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app127</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app128</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2851,6 +2851,7 @@ function renderHistoryDetail(date){
     <div class="analysis-list">${analysisHTMLH}</div>
     </div>
     </div>
+    ${actualCompareHTML(entries)}
     <div class="list-card" style="margin-top:10px;">
       <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
         <span>記録一覧<span style="font-weight:400;color:var(--muted2);">${entries.length}件${distMissCount>0?` <span style="color:var(--red);font-weight:700;">⚠距離未入力${distMissCount}件</span>`:''}</span></span>
@@ -5015,6 +5016,7 @@ function renderSummary(){
         <div class="analysis-title">分析</div>
         <div class="analysis-list">${analysisHTML}</div>
         </div>
+        ${actualCompareHTML(entries)}
         <div class="list-card" style="margin-top:8px;">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
             <span>記録一覧<span style="font-weight:400;color:var(--muted2);">${entries.length}件</span></span>
@@ -5137,6 +5139,33 @@ function sumFitTop(hid,iid){
   const need=h.offsetHeight+i.offsetHeight, avail=window.innerHeight-(h.getBoundingClientRect().top+window.scrollY)-8;
   const z=(need>0&&need>avail)?Math.max(0.6,avail/need):1;
   if(z<1){ h.style.zoom=z; i.style.zoom=z; }
+}
+/* 実車距離の比較表: 自動(GPS・入力)と紙の日報の2つを、1乗車ずつ並べる。紙の値が1件もない出番では出さない(app128) */
+function actualCompareHTML(entries){
+  const EX=['キャンセル','B空転','障割','定額負け'];
+  const all=[...entries].filter(e=>!EX.includes(e.pay)).sort((a,b)=>a.time-b.time);
+  const groups=[];
+  all.forEach(e=>{ const g=groups.length?groups[groups.length-1]:null; if(g && Math.abs(g[0].time-e.time)<1e-6) g.push(e); else groups.push([e]); });
+  if(!groups.some(g=>g.some(e=>e.paperDist!=null))) return '';
+  let n=0,sa=0,sp=0,big=0,onlyA=0,onlyP=0;
+  const rows=groups.map((g,i)=>{
+    const ea=g.find(e=>e.actualDist!=null), ep=g.find(e=>e.paperDist!=null);
+    const a=ea?ea.actualDist:null, p=ep?ep.paperDist:null;
+    let dcell='—', dcls='';
+    if(a!=null && p!=null){ const d=a-p; n++; sa+=a; sp+=p; if(Math.abs(d)>=0.5) big++; dcell=(d>=0?'+':'')+d.toFixed(1); dcls=Math.abs(d)>=0.5?'neg':'dim'; }
+    else if(a!=null) onlyA++; else if(p!=null) onlyP++;
+    const src=ea?(ea.actualGps?'GPS':'入力'):'';
+    return `<tr><td class="label" style="width:12%;">${i+1}</td><td style="text-align:left;">${fmtTime(g[0].time)}</td><td>${a!=null?a.toFixed(1):'—'}<span class="dim" style="font-size:8px;"> ${src}</span></td><td>${p!=null?p.toFixed(1):'—'}</td><td class="${dcls}">${dcell}</td></tr>`;
+  }).join('');
+  const dsum=sa-sp;
+  const sum = n>0
+    ? `<div style="font-size:10px;color:var(--text);line-height:1.5;margin:2px 0 6px;">両方ある${n}件: 自動 <b>${fmtKm(sa)}km</b> / 紙 <b>${fmtKm(sp)}km</b> / 差 <b class="${Math.abs(dsum)>=1?'neg':''}">${dsum>=0?'+':''}${dsum.toFixed(1)}km</b>(平均${(dsum/n)>=0?'+':''}${(dsum/n).toFixed(2)}km)・0.5km以上のずれ <b class="${big?'neg':''}">${big}件</b>${(onlyA||onlyP)?`<br><span class="dim">片方だけ: 自動のみ${onlyA}件・紙のみ${onlyP}件</span>`:''}</div>`
+    : '';
+  return `<div class="list-card" style="margin-top:8px;">
+    <div class="card-title"><span>実車距離の比較(自動と紙)</span><span style="font-weight:400;color:var(--muted2);">km</span></div>
+    ${sum}
+    <table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table>
+  </div>`;
 }
 const ANALYSIS_ICON = {good:'✅', warn:'⚠️', info:'🩺', trend:'📈'};
 function buildAnalysis(s, sectionRows, entries, distBinRows, arObj, cancelInfo, dateStr, weather){
