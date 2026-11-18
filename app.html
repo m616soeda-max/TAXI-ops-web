@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261118126">
+<meta name="taxiops-build" content="20261118127">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -822,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app126</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app127</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1696,7 +1696,7 @@ function anchorDownloadBlob(blob, filename){
 async function saveBlobSmart(blob, filename, msgBrowser, backupText){
   if(typeof NATIVE_BG!=='undefined' && NATIVE_BG){
     const r=await nativeShareFiles([{name:filename, blob}]);
-    if(r===true){ toast('保存先を選んでください'); if(backupText) markBackupDone(); return; }
+    if(r===true){ toast('選んだ保存先に渡しました'); if(backupText) markBackupDone(); return; }
     if(r==='cancel'){ toast('保存をキャンセルしました'); return; }
     // 保存できなかったときは、できたと偽らない。バックアップなら、コピーして貼り付ける方法を案内する
     const why=window.__lastSaveError||'不明';
@@ -1829,7 +1829,7 @@ async function captureAndShareAllSplits(parts, filenames){
     const files=[];
     for(let i=0;i<canvases.length;i++){ const b=await canvasToBlobP(canvases[i]); if(b) files.push({name:filenames[i], blob:b}); }
     const r=files.length ? await nativeShareFiles(files) : false;
-    if(r===true){ toast('共有先を選んでください(画像'+files.length+'枚)'); return; }
+    if(r===true){ toast('選んだ共有先に渡しました(画像'+files.length+'枚)'); return; }
     if(r==='cancel'){ toast('共有をキャンセルしました'); return; }
     toast('画像を保存できませんでした: '+(window.__lastSaveError||'不明')); return;   // アプリ版のWebViewでは、従来のダウンロードは動かないので、偽の成功表示をしない
   }
