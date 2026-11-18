@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261118129">
+<meta name="taxiops-build" content="20261118130">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -822,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app129</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app130</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2852,7 +2852,6 @@ function renderHistoryDetail(date){
     <div class="analysis-list">${analysisHTMLH}</div>
     </div>
     </div>
-    ${actualCompareHTML(entries)}
     <div class="list-card" style="margin-top:10px;">
       <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
         <span>記録一覧<span style="font-weight:400;color:var(--muted2);">${entries.length}件${distMissCount>0?` <span style="color:var(--red);font-weight:700;">⚠距離未入力${distMissCount}件</span>`:''}</span></span>
@@ -2860,6 +2859,7 @@ function renderHistoryDetail(date){
       </div>
       <div class="entry-scroll ${historyListExpanded?'expanded':''}">${entryHTML}</div>
     </div>
+    ${actualCompareHTML(entries)}
     <div class="summary-actions" style="margin-top:10px;">
       <button class="btn-ghost" id="historyTrackBtn">🗺 走行軌跡を見る${hasTrack(date)?'':'(なし)'}</button>
     </div>
@@ -5017,7 +5017,6 @@ function renderSummary(){
         <div class="analysis-title">分析</div>
         <div class="analysis-list">${analysisHTML}</div>
         </div>
-        ${actualCompareHTML(entries)}
         <div class="list-card" style="margin-top:8px;">
           <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
             <span>記録一覧<span style="font-weight:400;color:var(--muted2);">${entries.length}件</span></span>
@@ -5025,6 +5024,7 @@ function renderSummary(){
           </div>
           <div class="entry-scroll ${summaryListExpanded?'expanded':''}">${entryHTMLS}</div>
         </div>
+        ${actualCompareHTML(entries)}
         <div class="summary-actions">
           <button class="btn-ghost" id="summaryTrackBtn">🗺 走行軌跡を見る</button>
         </div>
@@ -5164,8 +5164,7 @@ function actualCompareHTML(entries){
     : '';
   return `<div class="list-card" style="margin-top:8px;">
     <div class="card-title"><span>実車距離の比較(自動と紙)<span style="font-weight:400;color:var(--muted2);"> km</span></span><span class="list-toggle" onclick="compareExpanded=!compareExpanded;render();">${compareExpanded?'縮小':'拡大'}</span></div>
-    ${sum}
-    <div class="entry-scroll ${compareExpanded?'expanded':''}"><table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table></div>
+    <div class="entry-scroll ${compareExpanded?'expanded':''}">${sum}<table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table></div>
   </div>`;
 }
 const ANALYSIS_ICON = {good:'✅', warn:'⚠️', info:'🩺', trend:'📈'};
