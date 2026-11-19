@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261119134">
+<meta name="taxiops-build" content="20261120136">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -672,6 +672,11 @@
   .sum-grid .gc small{font-size:8.5px;color:var(--muted2);margin-left:1px;}
   .sum-compact .go-info-line{margin:2px 0 4px !important;line-height:1.35;}
 
+  .cap-tall .fare-item{font-size:12.5px !important;padding:3px 0 !important;}
+  .cap-tall .fare-item .fi-thanks{font-size:10px !important;}
+  .cap-tall .fare-group-title{font-size:12.5px !important;}
+  .cap-tall .fare-empty{font-size:12px !important;}
+  .cap-tall .card-title{font-size:12px !important;}
   .analysis-title{font-size:11px;color:var(--muted);letter-spacing:.06em;margin:9px 0 4px;font-weight:500;}
   .fare-group{margin-bottom:6px;}
   .fare-group:last-child{margin-bottom:0;}
@@ -834,7 +839,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261119-app134</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261120-app136</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2835,6 +2840,7 @@ function renderHistoryDetail(date){
       <div class="gc">ミドル<b>${midCountH}件</b></div>
       <div class="gc">ロング<b>${longCountH}件</b></div>
     </div>
+    ${buildFareDetailHTML(entries)}
     </div>
     <div id="histTimeCaptureRoot" style="margin-top:8px;">
     <div class="card-title" style="margin:0 0 2px;">乗務別 時間単価推移</div>
@@ -3286,7 +3292,8 @@ function bandRides(entries){
   for(const e of entries){
     if(!isFareable(e)) continue;
     let r=by.get(e.time);
-    if(!r){ r={time:e.time, dist:0, type:e.type, thanks:false, net:0, _base:false}; by.set(e.time,r); }
+    if(!r){ r={time:e.time, dist:0, act:null, type:e.type, thanks:false, net:0, _base:false}; by.set(e.time,r); }
+    if(r.act==null && e.actualDist!=null) r.act=e.actualDist;
     r.net += netFare(e);
     if(e.thanks) r.thanks=true;
     if(e.pay!=='障割' && !r._base){ r._base=true; r.type=e.type; r.dist=e.dist||0; }
@@ -3309,7 +3316,7 @@ function buildFareDetailHTML(entries){
     return list.map(e=>`
       <div class="fare-item">
         <span class="fi-time">${fmtTime(e.time)}</span>
-        <span class="fi-dist">${fmtKm(e.dist||0)}km</span>
+        <span class="fi-dist">実車${e.act!=null?fmtKm(e.act)+'km':'—'}</span>
         <span class="fi-type">${e.type||'GO'}</span>
         ${e.thanks?'<span class="fi-thanks">🎫サンキュー</span>':''}
         <span class="fi-fare">¥${fmtYen(e.net)}</span>
@@ -5005,6 +5012,7 @@ function renderSummary(){
           <div class="gc">ミドル<b>${midCountS}件</b></div>
           <div class="gc">ロング<b>${longCountS}件</b></div>
         </div>
+    ${buildFareDetailHTML(entries)}
         </div>
         <div id="sumTimeCaptureRoot" style="margin-top:8px;">
         <div class="card-title" style="margin:0 0 2px;">乗務別 時間単価推移</div>
