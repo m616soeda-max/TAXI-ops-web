@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261118130">
+<meta name="taxiops-build" content="20261119131">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -822,7 +822,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261118-app130</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261119-app131</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -2870,6 +2870,9 @@ function renderHistoryDetail(date){
       <button class="btn-ghost" id="historyBulkActualBtn">🚕 紙の実車距離を貼り付け</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
+      <button class="btn-ghost" id="historyPostBtn" style="font-weight:700;">𝕏 投稿文をコピーしてXを開く</button>
+    </div>
+    <div class="summary-actions" style="margin-top:6px;">
       <button class="btn-ghost" id="historyShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
     </div>
     <div class="summary-actions" style="margin-top:6px;">
@@ -2946,6 +2949,7 @@ function renderHistoryDetail(date){
   }
   const editMonthTargetBtnH = document.getElementById('editMonthTargetBtnH');
   if(editMonthTargetBtnH) editMonthTargetBtnH.onclick = ()=>openEditMonthTargetModal(monthKeyOf(st.shiftDate));
+  document.getElementById('historyPostBtn').onclick = ()=>sharePostText(st);
   document.getElementById('historyShotAllBtn').onclick = ()=>{
     captureAndShareAllSplits([['histHeaderCaptureRoot','histInfoCaptureRoot'],'histTimeCaptureRoot','histDistCaptureRoot','histAnalysisCaptureRoot'],
       [`taxi-ops-1-info-${date}.png`,`taxi-ops-2-section-${date}.png`,`taxi-ops-3-dist-${date}.png`,`taxi-ops-4-analysis-${date}.png`]);
@@ -5041,6 +5045,9 @@ function renderSummary(){
           <button class="btn-ghost" id="summaryCheckBtn">🔍 記録の点検</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
+          <button class="btn-ghost" id="summaryPostBtn" style="font-weight:700;">𝕏 投稿文をコピーしてXを開く</button>
+        </div>
+        <div class="summary-actions" style="margin-top:6px;">
           <button class="btn-ghost" id="summaryShotAllBtn" style="font-weight:700;">📤 ①〜④を4枚まとめて共有(Xの1投稿用)</button>
         </div>
         <div class="summary-actions" style="margin-top:6px;">
@@ -5084,6 +5091,7 @@ function renderSummary(){
       render();
     });
   };
+  document.getElementById('summaryPostBtn').onclick = ()=>sharePostText(state);
   document.getElementById('summaryShotAllBtn').onclick = ()=>{
     const d = state.shiftDate||'今日';
     captureAndShareAllSplits([['sumHeaderCaptureRoot','sumInfoCaptureRoot'],'sumTimeCaptureRoot','sumDistCaptureRoot','sumAnalysisCaptureRoot'],
@@ -5510,6 +5518,47 @@ function localComment(entry, before, after){
   return `時間単価${afterH}円/h(この乗務¥${mr}/h・${tp}) ${qual}${trend?' '+trend:''}`;
 }
 
+/* ---------- Xの投稿文を自動生成(app131) ---------- */
+function postHM(dec){ const h=Math.floor(dec); let m=Math.round((dec-h)*60); let hh=h; if(m===60){m=0;hh++;} return hh+':'+String(m).padStart(2,'0'); }
+function buildPostText(st){
+  const s=summarizeShift(st), ar=shiftActualRate(st), E=st.entries||[];
+  const y=n=>fmtYen(n)+'円';
+  const d=new Date(st.shiftDate+'T00:00:00');
+  const L=[];
+  L.push((d.getMonth()+1)+'/'+d.getDate()+'（'+WEEKDAY_JP[d.getDay()]+'）');
+  if(st.monthIndex!=null) L.push('今月度'+st.monthIndex+'出番目');
+  L.push('出庫'+postHM(st.depTime));
+  if(st.returnTime!=null) L.push('帰庫'+postHM(st.returnTime));
+  L.push('営業回数'+s.count+'回');
+  L.push('営収','込'+y(s.pureTotal),'抜'+y(Math.round(s.pureTotal/TAX_RATE/10)*10));
+  L.push('走行距離'+Math.round(s.dist)+'km');
+  if(ar) L.push('実車率'+ar.rate.toFixed(1)+'%');
+  if(st.handleTime!=null) L.push('ﾊﾝﾄﾞﾙ時間'+postHM(st.handleTime));
+  const b=monthRevPriorFor(st.shiftDate);
+  L.push('月間累計','込'+y(b.incl+s.pureTotal),'抜'+y(b.excl+excl10(s.pureTotal)));
+  const go=dedupeByTime(E.filter(e=>['連配GO','GO','自社無線'].includes(e.type||'連配GO')&&isBillable(e))).length;
+  const cx=E.filter(e=>e.pay==='キャンセル'&&['連配GO','GO','自社無線'].includes(e.type||'連配GO')).length;
+  L.push('無線回数'+go+'回','他ｷｬﾝｾﾙ'+cx+'回');
+  const r=st.goRank;
+  if(r&&r.rank!=null){
+    let t='GOﾗﾝｸ'+fmtNum(r.rank)+'位';
+    const pv=findPreviousRank(st.shiftDate);
+    if(pv){ const df=pv.rank-r.rank; t+='（'+(df>0?'▲':df<0?'▼':'→')+fmtNum(Math.abs(df))+'位）'; }
+    L.push(t);
+    if(r.acceptCount!=null) L.push('了解数'+r.acceptCount+'回');
+    if(r.acceptRate!=null) L.push('了解率'+r.acceptRate+'%');
+  }
+  const bc=bandCounts(E);
+  L.push('ﾐﾄﾞﾙ'+bc.mid+'本','ﾛﾝｸﾞ'+bc.long+'本');
+  return L.join('\n');
+}
+async function sharePostText(st){
+  const text=buildPostText(st);
+  const ok=await copyTextSmart(text);
+  toast(ok?'投稿文をコピーしました。Xで貼り付けてください':'コピーできませんでした',2500);
+  if(!ok) openBackupModal(text,'投稿文','長押しでコピーしてください',false);
+  else setTimeout(()=>{ try{ window.open('https://x.com/intent/post','_blank'); }catch(e){} },600);
+}
 /* ---------- export ---------- */
 async function handleExportTypeDist(){
   const entries = state.entries;
