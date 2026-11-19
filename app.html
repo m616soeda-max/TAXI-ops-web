@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261119131">
+<meta name="taxiops-build" content="20261119132">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -815,6 +815,16 @@ body.light-base .confirm-actions button:active, body.light-base .kp-actions butt
 body.light-base .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 50%), #e2f4e7; border-color:#5fb27a; color:#0d5a2a; }
 body.light-base .chip.pay.cash-chip.active{ background:linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,0) 50%), #2f8f4b; border-color:#2f8f4b; color:#ffffff; }
 body.light-base .analysis-body b{ color:#c0392b; }
+  /* 過去の出番一覧(年・月・出番の行)の文字を大きく */
+  .hist-list .hist-year-header{font-size:19px !important;padding:12px 4px !important;}
+  .hist-list .hist-month-header{font-size:17px !important;padding:10px 4px 10px 14px !important;}
+  .hist-list .entry{padding:10px 0;}
+  .hist-list .entry-type{font-size:15px;padding:2px 8px;}
+  .hist-list .entry-pay{font-size:14px;}
+  .hist-list .entry-fare-sub{font-size:13.5px !important;margin-top:5px !important;}
+  .hist-list .entry-fare{font-size:20px;}
+  .hist-list .entry-fare span{font-size:14px !important;}
+  .hist-list .entry-del{font-size:20px;padding:6px 10px;}
 </style>
 </head>
 <body>
@@ -822,7 +832,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261119-app131</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261119-app132</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1983,10 +1993,10 @@ function renderHistory(){
 
   document.getElementById('historyView').innerHTML = `
     <div style="padding:4px 2px 10px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:13px;font-weight:700;">過去の出番</div>
+      <div style="font-size:19px;font-weight:700;">過去の出番</div>
       <button class="summary-close" id="historyCloseBtn">✕</button>
     </div>
-    <div class="list-card">
+    <div class="list-card hist-list">
       ${rows || '<div class="empty">まだ記録がありません</div>'}
     </div>
   `;
