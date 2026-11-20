@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261120140">
+<meta name="taxiops-build" content="20261120141">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -843,7 +843,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261120-app140</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261120-app141</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -1969,14 +1969,14 @@ function renderHistory(){
   };
 
   const groupTotal = (dArr) => {
-    let count = 0, total = 0;
+    let count = 0, total = 0, excl = 0;
     dArr.forEach(d=>{
       const st = loadShiftByDate(d);
       if(!st) return;
       const s = summarizeShift(st);
-      count += 1; total += s.pureTotal;
+      count += 1; total += s.pureTotal; excl += excl10(s.pureTotal);
     });
-    return {count, total};
+    return {count, total, excl};
   };
 
   let rows = '';
@@ -1986,7 +1986,7 @@ function renderHistory(){
     const yExpanded = historyExpandedYears.has(y);
     rows += `
       <div class="hist-year-header" data-year="${y}" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:8px 4px;font-size:12.5px;font-weight:700;color:var(--text);border-top:1px solid var(--border);">
-        <span>${yExpanded?'▾':'▸'} ${y}年（${yTotal.count}回・¥${fmtYen(yTotal.total)}）</span>
+        <span>${yExpanded?'▾':'▸'} ${y}年（${yTotal.count}回）<span style="display:block;font-size:.78em;font-weight:500;color:var(--muted);padding-left:1.2em;">税込¥${fmtYen(yTotal.total)} ・ 税抜¥${fmtYen10(yTotal.excl)}</span></span>
       </div>`;
     if(!yExpanded) continue;
     for(const [m, mDates] of monthMap){
@@ -1995,7 +1995,7 @@ function renderHistory(){
       const mExpanded = historyExpandedMonths.has(ymKey);
       rows += `
         <div class="hist-month-header" data-ym="${ymKey}" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:6px 4px 6px 14px;font-size:11px;font-weight:600;color:var(--muted);">
-          <span>${mExpanded?'▾':'▸'} ${parseInt(m,10)}月（${mTotal.count}回・¥${fmtYen(mTotal.total)}）</span>
+          <span>${mExpanded?'▾':'▸'} ${parseInt(m,10)}月（${mTotal.count}回）<span style="display:block;font-size:.8em;font-weight:500;color:var(--muted);padding-left:1.2em;">税込¥${fmtYen(mTotal.total)} ・ 税抜¥${fmtYen10(mTotal.excl)}</span></span>
         </div>`;
       if(!mExpanded) continue;
       rows += mDates.map(dateRowHTML).join('');
