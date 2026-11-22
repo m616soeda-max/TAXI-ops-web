@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261120141">
+<meta name="taxiops-build" content="20261122142">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -568,6 +568,8 @@
   #mainView>.add-card #typeChips .chip-row, #mainView>.add-card #payChips .chip-row{margin-bottom:5px !important;}
   .more-sheet{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.62);z-index:300;display:none;align-items:flex-end;justify-content:center;}
   .more-sheet.open{display:flex;}
+  .more-sheet.full{align-items:stretch;}
+  .more-sheet.full .more-sheet-inner{max-width:none;height:100%;max-height:100%;border-radius:0;background:var(--bg);padding-top:calc(12px + env(safe-area-inset-top,0px));}
   .more-sheet-inner{width:100%;max-width:460px;background:var(--card);border-radius:16px 16px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
   .more-sheet-title{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--text);padding:2px 2px 4px;}
   .footer-row .btn-ghost{flex:1;}
@@ -843,7 +845,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261120-app141</span>
+    <span style="font-size:8.5px;color:var(--muted2);margin-left:1px;white-space:nowrap;">v20261122-app142</span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -901,6 +903,7 @@ let autoTimeVal = null;   // 支払い種別チップで自動入力した降車
 let listExpanded = false;
 let compareExpanded = false; // 実車距離の比較表の拡大/縮小
 let moreMaintOpen = false; // 「🔧 メンテナンス・診断」の折りたたみ(開いているか)
+let graphSheetOpen = false, summarySheetOpen = false; // 「グラフ」「サマリー」の全画面シート(管理と同じ重ね表示)
 let moreMenuOpen = false; // 「⋯」メニュー(日報コピー・バックアップ・過去の出番・乗務終了など)の開閉
 let mainViewMode = 'form'; // 'form'(記録フォーム) | 'graphs'(グラフ・サマリー) | 'records'(記録一覧) を排他的に切り替える
 let summaryListExpanded = false;
@@ -4106,8 +4109,9 @@ function renderMain(){
         <div style="position:relative;">高速代<b>¥${fmtYen(tollTotal)}</b>${lastRateHTML}</div>
         <div>手数料<b>¥${fmtYen(feeTotal)}</b></div>
         <div>現金収入<b>¥${fmtYen(cashTotal)}</b></div>
-        <div style="display:flex;gap:4px;align-items:flex-end;margin-left:-16px;">
-          <button id="mainGraphsToggleBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📊${mainViewMode==='graphs'?'閉じる':'グラフ'}</button>
+        <div style="display:flex;gap:3px;align-items:flex-end;margin-left:-30px;">
+          <button id="mainGraphsToggleBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📊グラフ</button>
+          <button id="mainSummaryBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📑サマリー</button>
           <button id="mainRecordsToggleBtn" class="btn-ghost" style="padding:3px 4px;font-size:8.5px;flex:1 1 auto;white-space:nowrap;">📋${mainViewMode==='records'?'閉じる':'記録'}</button>
           <button id="moreMenuBtn" class="btn-ghost" style="padding:3px 5px;font-size:9px;flex:0 0 auto;white-space:nowrap;">管理${backupStale()?'<span style="color:#ff8a3d;">●</span>':''}</button>
         </div>
@@ -4159,48 +4163,53 @@ function renderMain(){
     </div>
     ` : ''}
 
-    ${mainViewMode==='graphs' ? `
-    <div class="section-card">
-      <div class="card-title">乗務別 時間単価推移</div>
-      <div>${buildEntryHourlyTimeSeriesChartHTML(entries, state.depTime, true)}</div>
-      <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:${fmtYen(CFG.rateLow)}円/h未満 黄:${fmtYen(CFG.rateGood)}円/h未満 緑:${fmtYen(CFG.rateGood)}円/h以上) 破線=累計組単価 棒=運賃</div>
-      ${buildFareDetailHTML(entries)}
-    </div>
-
-    <div class="section-card">
-      <div class="card-title">時間帯別サマリー</div>
-      <table class="summary-table has-target">
-        <tr><th>区間</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
-        ${sectionHTML}
-        ${sectionTotalHTML}
-      </table>
-    </div>
-
-    <div class="section-card">
-      <div class="card-title">距離別サマリー(約${DIST_BIN_KM}km毎)</div>
-      <table class="summary-table has-target">
-        <tr><th>距離帯</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
-        ${distBinHTML}
-        ${distBinTotalHTML}
-      </table>
-    </div>
-
-    <div class="section-card">
-      <div class="card-title">種別別サマリー</div>
-      <table>
-        <tr><th>種別</th><th>組数</th><th>運賃合計</th><th>平均単価</th></tr>
-        ${typeHTML}
-      </table>
-      ${excludedNoteHTML}
-    </div>
-    ` : ''}
-
     ${mainViewMode==='records' ? `
     <div class="list-card">
       <div class="card-title">記録一覧<span style="display:flex;align-items:center;gap:8px;"><span style="font-weight:400;color:var(--muted2);">${entries.length}件${(()=>{const c=entries.reduce((n,e,i)=>{const l=legDist(entries,i);return n+(l===null&&e.dist?1:0);},0);const m=entries.filter(e=>(e.dist===null||e.dist===undefined||e.dist===0)&&!DIST_EXEMPT_PAYS.includes(e.pay)&&!timesWithDist.has(e.time)).length;let s='';if(c>0)s+=` <span style="color:var(--red);font-weight:700;">⚠距離異常${c}件</span>`;if(m>0)s+=` <span style="color:var(--red);font-weight:700;">⚠距離未入力${m}件</span>`;return s;})()}</span><span class="list-toggle" id="listToggleBtn">${listExpanded?'縮小':'拡大'}</span></span></div>
       <div class="entry-scroll ${listExpanded?'expanded':''}">${entryHTML}</div>
     </div>
     ` : ''}
+
+    <div id="graphSheet" class="more-sheet full ${graphSheetOpen?'open':''}">
+      <div class="more-sheet-inner">
+        <div class="more-sheet-title"><span>グラフ</span><button class="btn-ghost" id="graphSheetClose" style="padding:4px 12px;">✕</button></div>
+        <div class="section-card">
+          <div class="card-title">乗務別 時間単価推移</div>
+          <div>${buildEntryHourlyTimeSeriesChartHTML(entries, state.depTime, true)}</div>
+          <div style="font-size:8.5px;color:var(--muted2);text-align:center;margin-top:1px;">横軸=時刻 折れ線=その時点までの累計時間単価(赤:${fmtYen(CFG.rateLow)}円/h未満 黄:${fmtYen(CFG.rateGood)}円/h未満 緑:${fmtYen(CFG.rateGood)}円/h以上) 破線=累計組単価 棒=運賃</div>
+          ${buildFareDetailHTML(entries)}
+        </div>
+        <div class="section-card">
+          <div class="card-title">種別</div>
+          <table>
+            <tr><th>種別</th><th>組数</th><th>運賃合計</th><th>平均単価</th></tr>
+            ${typeHTML}
+          </table>
+          ${excludedNoteHTML}
+        </div>
+      </div>
+    </div>
+    <div id="summarySheet" class="more-sheet full ${summarySheetOpen?'open':''}">
+      <div class="more-sheet-inner">
+        <div class="more-sheet-title"><span>サマリー</span><button class="btn-ghost" id="summarySheetClose" style="padding:4px 12px;">✕</button></div>
+        <div class="section-card">
+          <div class="card-title">時間帯別サマリー</div>
+          <table class="summary-table has-target">
+            <tr><th>区間</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
+            ${sectionHTML}
+            ${sectionTotalHTML}
+          </table>
+        </div>
+        <div class="section-card">
+          <div class="card-title">距離別サマリー(約${DIST_BIN_KM}km毎)</div>
+          <table class="summary-table has-target">
+            <tr><th>距離帯</th><th>組数</th><th>運賃</th><th>組単価</th><th>時間単価</th><th>達成率</th><th>実車率</th></tr>
+            ${distBinHTML}
+            ${distBinTotalHTML}
+          </table>
+        </div>
+      </div>
+    </div>
 
     <div id="moreMenu" class="more-sheet ${moreMenuOpen?'open':''}">
       <div class="more-sheet-inner">
@@ -4261,7 +4270,7 @@ function renderMain(){
   }
   const listToggleBtnEl = document.getElementById('listToggleBtn');
   if(listToggleBtnEl) listToggleBtnEl.onclick = ()=>{ listExpanded = !listExpanded; render(); };
-  document.getElementById('mainGraphsToggleBtn').onclick = ()=>{ pendingElsePayConfirm = false; mainViewMode = (mainViewMode==='graphs') ? 'form' : 'graphs'; render(); };
+  wireGraphSheets();
   document.getElementById('mainRecordsToggleBtn').onclick = ()=>{ pendingElsePayConfirm = false; mainViewMode = (mainViewMode==='records') ? 'form' : 'records'; render(); };
   if(mainViewMode==='form'){
     document.getElementById('timeInput').addEventListener('click', ()=>openTimeKeypad('timeInput', null));
@@ -4341,6 +4350,17 @@ function renderMain(){
   document.getElementById('openHistoryBtn2').onclick = ()=>{ historyMode = true; historyDetailDate = null; render(); };
 }
 
+// 「グラフ」「サマリー」の全画面シート(管理メニューと同じ重ね表示)
+function wireGraphSheets(){
+  const w=(sid,cid,bid,set)=>{
+    const sh=document.getElementById(sid), b=document.getElementById(bid), c=document.getElementById(cid);
+    if(!sh||!b||!c) return;
+    b.onclick=()=>{ pendingElsePayConfirm=false; set(true); sh.classList.add('open'); };
+    c.onclick=()=>{ set(false); sh.classList.remove('open'); };
+  };
+  w('graphSheet','graphSheetClose','mainGraphsToggleBtn',v=>{ graphSheetOpen=v; });
+  w('summarySheet','summarySheetClose','mainSummaryBtn',v=>{ summarySheetOpen=v; });
+}
 // 「⋯ その他のメニュー」の開閉(出動中画面と初期画面で共用)
 function wireMoreSheet(sfx){
   sfx = sfx || '';    // 初期画面のメニューは、出動中画面と同じIDにならないよう末尾に「S」を付ける(隠れた画面にもHTMLが残るため)
