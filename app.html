@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261125158">
+<meta name="taxiops-build" content="20261125159">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -457,70 +457,97 @@
   body.theme-terra .chip.pay.cash-chip.active{ background:#0d9488;border-color:#2dd4bf;color:#ffffff; }
   body.theme-terra #evBar button:not(#restBtn){ color:#d1fae5 !important;border-color:#365359 !important;background-color:var(--card2) !important; }
   body.theme-terra #evBar button.ev-on.ev-k-bd{ background-color:#9f1239 !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  /* シン・仮面ライダー */
   body.theme-shinkamen{
-    --bg:#0a0a0a;
-    --card:#161616;
-    --card2:#1f1f1f;
-    --border:#2a2a2a;
-    --amber:#b8bcc0;
-    --amber-dim:#6e7276;
-    --red:#31935c;
-    --text:#e8e8e6;
-    --muted:#a9acae;
-    --muted2:#787c80;
+    --bg:#090a09;
+    --card:#141715;
+    --card2:#1c211e;
+    --border:#36423b;
+    --amber:#22c55e;
+    --amber-dim:#15803d;
+    --red:#f43f5e;
+    --green:#4ade80;
+    --text:#f0fdf4;
+    --muted:#bbf7d0;
+    --muted2:#86efac;
   }
-  body.theme-shinkamen .meter{ background:linear-gradient(180deg,#161616,#1f1f1f); box-shadow:0 8px 20px -10px rgba(184,188,192,.20); }
-  body.theme-shinkamen .meter-digit{ text-shadow:0 0 10px rgba(184,188,192,.35); }
-  body.theme-shinkamen .summary-big{ text-shadow:0 0 10px rgba(184,188,192,.25); }
-  body.theme-shinkamen .entry-row-tap:active{ background:rgba(184,188,192,.10); }
-  body.theme-shinkamen .edit-banner{ background:rgba(31,92,58,.20); }
-  body.theme-shinkamen .chip.active{ color:#0a0a0a; }
-  body.theme-shinkamen .btn{ color:#0a0a0a; }
-  body.theme-shinkamen .kp-ok{ color:#0a0a0a; }
-  body.theme-shinkamen .confirm-ok{ color:#0a0a0a !important; }
+  body.theme-shinkamen .meter{ background:linear-gradient(180deg,#141715,#1c211e); box-shadow:0 8px 20px -10px rgba(34,197,94,.25); }
+  body.theme-shinkamen .meter-digit{ text-shadow:0 0 10px rgba(34,197,94,.4); }
+  body.theme-shinkamen .summary-big{ text-shadow:0 0 10px rgba(34,197,94,.3); }
+  body.theme-shinkamen .entry-row-tap:active{ background:rgba(34,197,94,.12); }
+  body.theme-shinkamen .edit-banner{ background:rgba(244,63,94,.15); }
+  body.theme-shinkamen .chip.active{ background:#16a34a;border-color:#4ade80;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(34,197,94,.55), 0 4px 0 rgba(0,0,0,.5); }
+  body.theme-shinkamen .btn{ background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #dc2626;color:#ffffff;text-shadow:none;box-shadow:0 0 14px rgba(220,38,38,.55), 0 5px 0 rgba(0,0,0,.5); }
+  body.theme-shinkamen .kp-ok{ background:#22c55e;color:#090a09; }
+  body.theme-shinkamen .confirm-ok{ color:#22c55e !important; }
+  body.theme-shinkamen .lamp{ background:#ef4444;box-shadow:0 0 10px 2px rgba(239,68,68,.65); }
+  body.theme-shinkamen #evBar button:not(#restBtn){ color:#ecfdf5 !important;border-color:#3f4f46 !important;background-color:var(--card2) !important; }
+  body.theme-shinkamen #evBar button.ev-on.ev-k-bd{ background-color:#9f1239 !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  body.theme-shinkamen .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-shinkamen .chip.pay.cash-chip.active{ background:#16a34a;border-color:#4ade80;color:#ffffff; }
+
+  /* ウルトラマン */
   body.theme-ultraman{
-    --bg:#e3e6e9;
+    --bg:#e5e8ec;
     --card:#ffffff;
-    --card2:#d8dce0;
-    --border:#c3c8cd;
+    --card2:#d8dde3;
+    --border:#b4bcc6;
     --amber:#d92b1c;
-    --amber-dim:#a83d33;
-    --red:#967103;
-    --text:#1b2024;
-    --muted:#3f4348;
-    --muted2:#6c737a;
+    --amber-dim:#991b1b;
+    --red:#d92b1c;
+    --green:#0284c7;
+    --text:#181c20;
+    --muted:#3c424a;
+    --muted2:#646d78;
   }
-  body.theme-ultraman .meter{ background:linear-gradient(180deg,#ffffff,#eceef0); box-shadow:0 8px 20px -10px rgba(20,24,28,.18); }
+  body.theme-ultraman .meter{ background:linear-gradient(180deg,#ffffff,#eceff2); box-shadow:0 8px 20px -10px rgba(217,43,28,.2); }
   body.theme-ultraman .meter-digit{ text-shadow:none; }
   body.theme-ultraman .summary-big{ text-shadow:none; }
   body.theme-ultraman .entry-row-tap:active{ background:rgba(217,43,28,.08); }
   body.theme-ultraman .entry-type{ color:var(--text); }
-  body.theme-ultraman .edit-banner{ background:rgba(242,183,5,.15); }
-  body.theme-ultraman .chip.active{ color:#ffffff; }
-  body.theme-ultraman .btn{ color:#ffffff; }
-  body.theme-ultraman .kp-ok{ color:#ffffff; }
-  body.theme-ultraman .confirm-ok{ color:#ffffff !important; }
+  body.theme-ultraman .edit-banner{ background:rgba(217,43,28,.12); }
+  body.theme-ultraman .chip.active{ background:#d92b1c;border-color:#b91c1c;color:#ffffff;text-shadow:none; }
+  body.theme-ultraman .btn{ background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 50%), #0284c7;color:#ffffff;text-shadow:none;box-shadow:0 0 14px rgba(2,132,199,.45), 0 5px 0 rgba(0,0,0,.25); }
+  body.theme-ultraman .kp-ok{ background:#d92b1c;color:#ffffff; }
+  body.theme-ultraman .confirm-ok{ color:#d92b1c !important; }
+  body.theme-ultraman .lamp{ background:#0ea5e9;box-shadow:0 0 10px 2px rgba(14,165,233,.65); }
+  body.theme-ultraman #evBar button:not(#restBtn){ color:#181c20 !important;border-color:#9ca5b0 !important;background-color:var(--card2) !important; }
+  body.theme-ultraman #evBar button.ev-on.ev-k-bd{ background-color:#d92b1c !important;border-color:#b91c1c !important;color:#ffffff !important; }
+  body.theme-ultraman .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-ultraman .chip.pay.cash-chip.active{ background:#d92b1c;border-color:#b91c1c;color:#ffffff; }
+  body.light-base.theme-ultraman{ --bg:#e5e8ec;--card:#ffffff;--card2:#d8dde3;--border:#b4bcc6;--amber:#d92b1c;--amber-dim:#991b1b;--red:#d92b1c;--green:#0284c7;--text:#181c20;--muted:#3c424a;--muted2:#646d78; }
+  body.light-base.theme-ultraman .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-ultraman .chip.pay.cash-chip.active{ background:#d92b1c;border-color:#b91c1c;color:#ffffff; }
+
+  /* ゴジラ */
   body.theme-godzilla{
-    --bg:#0e0e0e;
-    --card:#1a1616;
-    --card2:#221c1c;
-    --border:#33221f;
+    --bg:#0b0a0c;
+    --card:#161317;
+    --card2:#211c24;
+    --border:#423447;
     --amber:#ff4b1f;
-    --amber-dim:#5c1a12;
-    --red:#9662f1;
-    --text:#eae6e0;
-    --muted:#c0b0a9;
-    --muted2:#8d7a72;
+    --amber-dim:#9a2408;
+    --red:#ff5533;
+    --green:#c084fc;
+    --text:#f3eff5;
+    --muted:#cfc4d4;
+    --muted2:#96889c;
   }
-  body.theme-godzilla .meter{ background:linear-gradient(180deg,#1a1616,#221c1c); box-shadow:0 8px 20px -10px rgba(255,75,31,.20); }
-  body.theme-godzilla .meter-digit{ text-shadow:0 0 10px rgba(255,75,31,.35); }
-  body.theme-godzilla .summary-big{ text-shadow:0 0 10px rgba(255,75,31,.25); }
-  body.theme-godzilla .entry-row-tap:active{ background:rgba(255,75,31,.10); }
-  body.theme-godzilla .edit-banner{ background:rgba(124,58,237,.12); }
-  body.theme-godzilla .chip.active{ color:#0e0e0e; }
-  body.theme-godzilla .btn{ color:#0e0e0e; }
-  body.theme-godzilla .kp-ok{ color:#0e0e0e; }
-  body.theme-godzilla .confirm-ok{ color:#0e0e0e !important; }
+  body.theme-godzilla .meter{ background:linear-gradient(180deg,#161317,#211c24); box-shadow:0 8px 20px -10px rgba(255,75,31,.25); }
+  body.theme-godzilla .meter-digit{ text-shadow:0 0 10px rgba(255,75,31,.4); }
+  body.theme-godzilla .summary-big{ text-shadow:0 0 10px rgba(255,75,31,.3); }
+  body.theme-godzilla .entry-row-tap:active{ background:rgba(168,85,247,.14); }
+  body.theme-godzilla .edit-banner{ background:rgba(168,85,247,.15); }
+  body.theme-godzilla .chip.active{ background:#ff4b1f;border-color:#ff7854;color:#0b0a0c;text-shadow:none;box-shadow:0 0 12px rgba(255,75,31,.6), 0 4px 0 rgba(0,0,0,.55); }
+  body.theme-godzilla .btn{ background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #9333ea;color:#ffffff;text-shadow:none;box-shadow:0 0 16px rgba(147,51,234,.6), 0 5px 0 rgba(0,0,0,.55); }
+  body.theme-godzilla .kp-ok{ background:#ff4b1f;color:#0b0a0c; }
+  body.theme-godzilla .confirm-ok{ color:#ff4b1f !important; }
+  body.theme-godzilla .lamp{ background:#a855f7;box-shadow:0 0 10px 2px rgba(168,85,247,.65); }
+  body.theme-godzilla #evBar button:not(#restBtn){ color:#f3eff5 !important;border-color:#524159 !important;background-color:var(--card2) !important; }
+  body.theme-godzilla #evBar button.ev-on.ev-k-bd{ background-color:#9a2408 !important;border-color:#ff4b1f !important;color:#ffffff !important; }
+  body.theme-godzilla .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-godzilla .chip.pay.cash-chip.active{ background:#ff4b1f;border-color:#ff7854;color:#0b0a0c; }
+
   body.theme-patlabor{
     --bg:#eef1f2;
     --card:#ffffff;
@@ -1166,7 +1193,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app158</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
+    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app159</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -6074,9 +6101,9 @@ const THEME_LIST = [
   {id:'kircheis', cls:'theme-kircheis', icon:'❤️', label:'銀河英雄伝説(キルヒアイス)', bg:'#f4f6f9', light:true, swatch:'#d93829'},
   {id:'yang', cls:'theme-yang', icon:'☕', label:'銀河英雄伝説(ヤン・ウェンリー)', bg:'#161311', swatch:'#d99b52'},
   {id:'terra', cls:'theme-terra', icon:'🌍', label:'銀河英雄伝説(地球教)', bg:'#0c1112', swatch:'#2dd4bf'},
-  {id:'shinkamen', cls:'theme-shinkamen', icon:'🦗', label:'シン仮面ライダー', bg:'#0a0a0a', swatch:'#b8bcc0'},
-  {id:'ultraman', cls:'theme-ultraman', icon:'🥈', label:'シンウルトラマン', bg:'#ffffff', light:true, swatch:'#d92b1c'},
-  {id:'godzilla', cls:'theme-godzilla', icon:'🦖', label:'シン・ゴジラ', bg:'#0e0e0e', swatch:'#ff4b1f'},
+  {id:'shinkamen', cls:'theme-shinkamen', icon:'🦗', label:'シン仮面ライダー', bg:'#090a09', swatch:'#22c55e'},
+  {id:'ultraman', cls:'theme-ultraman', icon:'🥈', label:'シンウルトラマン', bg:'#e5e8ec', light:true, swatch:'#d92b1c'},
+  {id:'godzilla', cls:'theme-godzilla', icon:'🦖', label:'シン・ゴジラ', bg:'#0b0a0c', swatch:'#ff4b1f'},
   {id:'patlabor', cls:'theme-patlabor', icon:'🚔', label:'パトレイバー', bg:'#ffffff', light:true, swatch:'#d3222a'},
   {id:'unicorn', cls:'theme-unicorn', icon:'🦄', label:'ユニコーンガンダム', bg:'#ffffff', light:true, swatch:'#e8382a'},
   {id:'nugundam', cls:'theme-nugundam', icon:'🛡️', label:'νガンダム', bg:'#ffffff', swatch:'#f4c430'},
