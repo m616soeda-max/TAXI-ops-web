@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261125157">
+<meta name="taxiops-build" content="20261125158">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -31,88 +31,151 @@
     --muted:#bdc4ce;
     --muted2:#9198a4;
   }
-  body.theme-blue{
-    --bg:#f2f6fb;
-    --card:#ffffff;
-    --card2:#eaf1fa;
-    --border:#c7d6e8;
-    --amber:#1e5fc4;
-    --amber-dim:#4d7cb8;
-    --text:#132339;
-    --muted:#334257;
-    --muted2:#546c88;
+  /* ジャイアンツ(既定テーマ) */
+  body:not([class*="theme-"]){
+    --bg:#0c0c0e;
+    --card:#16161a;
+    --card2:#202026;
+    --border:#3a3a42;
+    --amber:#f97316;
+    --amber-dim:#9a3412;
+    --red:#fb7185;
+    --green:#4ade80;
+    --text:#fafafa;
+    --muted:#d4d4d8;
+    --muted2:#9ca3af;
   }
-  body.theme-blue .meter{ background:linear-gradient(180deg,#ffffff,#eef4fb); box-shadow:0 8px 20px -10px rgba(20,50,90,.18); }
+  body:not([class*="theme-"]) .meter{ background:linear-gradient(180deg,#16161a,#202026); box-shadow:0 8px 20px -10px rgba(249,115,22,.25); }
+  body:not([class*="theme-"]) .meter-digit{ text-shadow:0 0 10px rgba(249,115,22,.35); }
+  body:not([class*="theme-"]) .chip.active{ color:#0c0c0e; box-shadow:0 0 12px rgba(249,115,22,.5), 0 4px 0 rgba(0,0,0,.5); }
+  body:not([class*="theme-"]) .btn{ color:#0c0c0e; box-shadow:0 0 14px rgba(249,115,22,.5), 0 5px 0 rgba(0,0,0,.5); }
+  body:not([class*="theme-"]) .confirm-ok{ color:#0c0c0e !important; }
+  body:not([class*="theme-"]) #evBar button:not(#restBtn){ color:#f4f4f5 !important;border-color:#52525b !important;background-color:var(--card2) !important; }
+  body:not([class*="theme-"]) #evBar button.ev-on.ev-k-bd{ background-color:#991b1b !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  body:not([class*="theme-"]) .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body:not([class*="theme-"]) .chip.pay.cash-chip.active{ background:#f97316;border-color:#fb923c;color:#0c0c0e; }
+
+  /* ドジャース */
+  body.theme-blue{
+    --bg:#f0f5fc;
+    --card:#ffffff;
+    --card2:#e6eef8;
+    --border:#bfd0e6;
+    --amber:#005a9c;
+    --amber-dim:#003d6b;
+    --red:#ef3e42;
+    --green:#16a34a;
+    --text:#0f1e36;
+    --muted:#334866;
+    --muted2:#5c7394;
+  }
+  body.theme-blue .meter{ background:linear-gradient(180deg,#ffffff,#eaf1fa); box-shadow:0 8px 20px -10px rgba(0,90,156,.2); }
   body.theme-blue .meter-digit{ text-shadow:none; }
   body.theme-blue .summary-big{ text-shadow:none; }
-  body.theme-blue .entry-row-tap:active{ background:rgba(30,95,196,.08); }
-  body.theme-blue .edit-banner{ background:rgba(30,95,196,.08); }
-  body.theme-blue .chip.active{ color:#ffffff; }
-  body.theme-blue .btn{ color:#ffffff; }
-  body.theme-blue .kp-ok{ color:#ffffff; }
-  body.theme-blue .confirm-ok{ color:#ffffff !important; }
+  body.theme-blue .entry-row-tap:active{ background:rgba(0,90,156,.08); }
+  body.theme-blue .edit-banner{ background:rgba(0,90,156,.08); }
+  body.theme-blue .chip.active{ background:#005a9c;border-color:#00467a;color:#ffffff;text-shadow:none; }
+  body.theme-blue .btn{ background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #005a9c;color:#ffffff;text-shadow:none; }
+  body.theme-blue .kp-ok{ background:#005a9c;color:#ffffff; }
+  body.theme-blue .confirm-ok{ color:#005a9c !important; }
+  body.theme-blue .lamp{ background:#ef3e42;box-shadow:0 0 10px 2px rgba(239,62,66,.5); }
+  body.theme-blue #evBar button:not(#restBtn){ color:#0f1e36 !important;border-color:#9bb5d6 !important;background-color:var(--card2) !important; }
+  body.theme-blue #evBar button.ev-on.ev-k-bd{ background-color:#ef3e42 !important;border-color:#dc2626 !important;color:#ffffff !important; }
+  body.theme-blue .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-blue .chip.pay.cash-chip.active{ background:#005a9c;border-color:#00467a;color:#ffffff; }
+  body.light-base.theme-blue{ --bg:#f0f5fc;--card:#ffffff;--card2:#e6eef8;--border:#bfd0e6;--amber:#005a9c;--amber-dim:#003d6b;--red:#ef3e42;--green:#16a34a;--text:#0f1e36;--muted:#334866;--muted2:#5c7394; }
+  body.light-base.theme-blue .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-blue .chip.pay.cash-chip.active{ background:#005a9c;border-color:#00467a;color:#ffffff; }
+
+  /* 日本代表 */
   body.theme-japan{
-    --bg:#0a1730;
-    --card:#0f2040;
-    --card2:#132a4d;
-    --border:#1f3a63;
-    --amber:#4d8fe6;
-    --amber-dim:#1c5fc9;
-    --red:#e35770;
-    --text:#f2f5fa;
-    --muted:#d5dfef;
-    --muted2:#a7b7d2;
+    --bg:#08142c;
+    --card:#0e2044;
+    --card2:#152c59;
+    --border:#284985;
+    --amber:#2563eb;
+    --amber-dim:#1d4ed8;
+    --red:#fb7185;
+    --green:#34d399;
+    --text:#f8fafc;
+    --muted:#cbd5e1;
+    --muted2:#94a3b8;
   }
-  body.theme-japan .meter-digit{ text-shadow:0 0 12px rgba(77,143,230,.35); }
-  body.theme-japan .chip.active{ color:#ffffff; }
-  body.theme-japan .btn{ color:#ffffff; }
-  body.theme-japan .kp-ok{ color:#ffffff; }
-  body.theme-japan .confirm-ok{ color:#ffffff !important; }
+  body.theme-japan .meter{ background:linear-gradient(180deg,#0e2044,#152c59); box-shadow:0 8px 20px -10px rgba(37,99,235,.35); }
+  body.theme-japan .meter-digit{ text-shadow:0 0 12px rgba(96,165,250,.4); }
+  body.theme-japan .chip.active{ background:#1d63dc;border-color:#60a5fa;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(59,130,246,.55), 0 4px 0 rgba(0,0,0,.45); }
+  body.theme-japan .btn{ background:linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 50%), #facc15;color:#08142c;text-shadow:none;box-shadow:0 0 14px rgba(250,204,21,.5), 0 5px 0 rgba(0,0,0,.5); }
+  body.theme-japan .kp-ok{ background:#facc15;color:#08142c; }
+  body.theme-japan .confirm-ok{ color:#facc15 !important; }
+  body.theme-japan .lamp{ background:#e11d48;box-shadow:0 0 10px 2px rgba(225,29,72,.65); }
   body.theme-japan .entry-type{ color:var(--text); }
+  body.theme-japan #evBar button:not(#restBtn){ color:#f1f5f9 !important;border-color:#3b66b5 !important;background-color:var(--card2) !important; }
+  body.theme-japan #evBar button.ev-on.ev-k-bd{ background-color:#be123c !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  body.theme-japan .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-japan .chip.pay.cash-chip.active{ background:#1d63dc;border-color:#60a5fa;color:#ffffff; }
+
+  /* エヴァ初号機 */
   body.theme-eva{
-    --bg:#1a1025;
-    --card:#241534;
-    --card2:#2c1a3d;
-    --border:#4a2f66;
-    --amber:#7fdc00;
-    --amber-dim:#3f6e00;
+    --bg:#13091f;
+    --card:#1d102e;
+    --card2:#27163d;
+    --border:#4c2c75;
+    --amber:#84ff00;
+    --amber-dim:#448200;
     --red:#ff8c1a;
-    --text:#f0e8ff;
-    --muted:#dad2eb;
-    --muted2:#ab9fc0;
+    --green:#84ff00;
+    --text:#f3ebff;
+    --muted:#d8c8f0;
+    --muted2:#a38ec2;
   }
-  body.theme-eva .meter{ background:linear-gradient(180deg,#241534,#2c1a3d); box-shadow:0 8px 20px -10px rgba(127,220,0,.18); }
-  body.theme-eva .meter-digit{ text-shadow:0 0 10px rgba(127,220,0,.35); }
-  body.theme-eva .summary-big{ text-shadow:0 0 10px rgba(127,220,0,.25); }
-  body.theme-eva .entry-row-tap:active{ background:rgba(127,220,0,.10); }
-  body.theme-eva .edit-banner{ background:rgba(255,140,26,.10); }
-  body.theme-eva .chip.active{ color:#1a1025; }
-  body.theme-eva .btn{ color:#1a1025; }
-  body.theme-eva .kp-ok{ color:#1a1025; }
-  body.theme-eva .confirm-ok{ color:#1a1025 !important; }
+  body.theme-eva .meter{ background:linear-gradient(180deg,#1d102e,#27163d); box-shadow:0 8px 20px -10px rgba(132,255,0,.22); }
+  body.theme-eva .meter-digit{ text-shadow:0 0 10px rgba(132,255,0,.4); }
+  body.theme-eva .summary-big{ text-shadow:0 0 10px rgba(132,255,0,.3); }
+  body.theme-eva .entry-row-tap:active{ background:rgba(132,255,0,.12); }
+  body.theme-eva .edit-banner{ background:rgba(255,140,26,.14); }
+  body.theme-eva .chip.active{ background:#84ff00;border-color:#a3ff40;color:#13091f;text-shadow:none;box-shadow:0 0 12px rgba(132,255,0,.55), 0 4px 0 rgba(0,0,0,.5); }
+  body.theme-eva .btn{ background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 50%), #ff7b00;color:#13091f;text-shadow:none;box-shadow:0 0 14px rgba(255,123,0,.55), 0 5px 0 rgba(0,0,0,.5); }
+  body.theme-eva .kp-ok{ background:#84ff00;color:#13091f; }
+  body.theme-eva .confirm-ok{ color:#84ff00 !important; }
+  body.theme-eva .lamp{ background:#ff7b00;box-shadow:0 0 10px 2px rgba(255,123,0,.65); }
+  body.theme-eva #evBar button:not(#restBtn){ color:#f3ebff !important;border-color:#693fa1 !important;background-color:var(--card2) !important; }
+  body.theme-eva #evBar button.ev-on.ev-k-bd{ background-color:#9a3412 !important;border-color:#ff8c1a !important;color:#ffffff !important; }
+  body.theme-eva .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-eva .chip.pay.cash-chip.active{ background:#84ff00;border-color:#a3ff40;color:#13091f; }
+
+  /* ガンダム */
   body.theme-gundam{
-    --bg:#eef0f2;
+    --bg:#eef1f5;
     --card:#ffffff;
-    --card2:#e6e9ec;
-    --border:#c3c9d1;
+    --card2:#e4e8ee;
+    --border:#bcc4d0;
     --amber:#e0312a;
-    --amber-dim:#a8433d;
+    --amber-dim:#9e1f1a;
     --red:#e0312a;
-    --text:#1c2024;
-    --muted:#3e4247;
-    --muted2:#6c727a;
+    --green:#16a34a;
+    --text:#181d24;
+    --muted:#3b424d;
+    --muted2:#68717d;
   }
-  body.theme-gundam .meter{ background:linear-gradient(180deg,#ffffff,#e9edf1); box-shadow:0 8px 20px -10px rgba(30,80,162,.18); }
+  body.theme-gundam .meter{ background:linear-gradient(180deg,#ffffff,#e9edf2); box-shadow:0 8px 20px -10px rgba(30,80,162,.2); }
   body.theme-gundam .meter-digit{ text-shadow:none; }
   body.theme-gundam .summary-big{ text-shadow:none; }
   body.theme-gundam .entry-row-tap:active{ background:rgba(30,80,162,.08); }
   body.theme-gundam .entry-type{ color:var(--text); }
   body.theme-gundam .edit-banner{ background:rgba(224,49,42,.10); }
-  body.theme-gundam .chip.active{ background:#1e50a2;border-color:#1e50a2;color:#ffffff; }
-  body.theme-gundam .btn{ background:#ffd200;color:#1c2024; }
-  body.theme-gundam .kp-ok{ color:#1e50a2; }
+  body.theme-gundam .chip.active{ background:#1e50a2;border-color:#173e80;color:#ffffff;text-shadow:none; }
+  body.theme-gundam .btn{ background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 50%), #ffd200;color:#181d24;text-shadow:none;box-shadow:0 0 12px rgba(255,210,0,.45), 0 5px 0 rgba(0,0,0,.25); }
+  body.theme-gundam .kp-ok{ background:#1e50a2;color:#ffffff; }
   body.theme-gundam .confirm-ok{ color:#1e50a2 !important; }
-  body.theme-gundam .lamp{ background:#1e50a2;box-shadow:0 0 10px 2px #a9c8ee; }
+  body.theme-gundam .lamp{ background:#1e50a2;box-shadow:0 0 10px 2px rgba(30,80,162,.5); }
+  body.theme-gundam #evBar button:not(#restBtn){ color:#181d24 !important;border-color:#9ca6b5 !important;background-color:var(--card2) !important; }
+  body.theme-gundam #evBar button.ev-on.ev-k-bd{ background-color:#e0312a !important;border-color:#b91c1c !important;color:#ffffff !important; }
+  body.theme-gundam .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-gundam .chip.pay.cash-chip.active{ background:#1e50a2;border-color:#173e80;color:#ffffff; }
+  body.light-base.theme-gundam{ --bg:#eef1f5;--card:#ffffff;--card2:#e4e8ee;--border:#bcc4d0;--amber:#e0312a;--amber-dim:#9e1f1a;--red:#e0312a;--green:#16a34a;--text:#181d24;--muted:#3b424d;--muted2:#68717d; }
+  body.light-base.theme-gundam .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-gundam .chip.pay.cash-chip.active{ background:#1e50a2;border-color:#173e80;color:#ffffff; }
+
   body.theme-ginei{
     --bg:#0d0d0f;
     --card:#1a1a1d;
@@ -1065,7 +1128,6 @@
 }
 /* ---------- 白系テーマの共通の土台(app120): 生成りの紙+やわらかい暖色の影+濃い補助文字。差し色(--amberなど)は各テーマのまま ---------- */
 body.light-base{ --bg:#ffffff; --card:#ffffff; --card2:#ececec; --border:#9a9a9a; --text:#000000; --muted:#1f1f1f; --muted2:#444444; --green:#0a7a3a; }
-body.theme-blue{ --red:#d03a2a; }
 body.theme-valkyrie{ --amber:#a87800; --amber-dim:#8a6a00; }
 body.light-base .meter{ background:linear-gradient(180deg,#ffffff,#f3f3f3); box-shadow:0 6px 16px -8px rgba(0,0,0,.38); }
 body.light-base .meter-digit, body.light-base .summary-big{ text-shadow:none; }
@@ -1104,7 +1166,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app157</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
+    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app158</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5997,11 +6059,11 @@ async function handleExport(){
 }
 
 const THEME_LIST = [
-  {id:'amber', cls:null, icon:'🟠', label:'ジャイアンツ', bg:'#12151b', swatch:'#e8a33d'},
-  {id:'blue', cls:'theme-blue', icon:'🔵', label:'ドジャース', bg:'#ffffff', light:true, swatch:'#1e5fc4'},
-  {id:'japan', cls:'theme-japan', icon:'⚽', label:'日本代表', bg:'#0a1730', swatch:'#1c5fc9'},
-  {id:'eva', cls:'theme-eva', icon:'🟢', label:'エヴァ初号機', bg:'#1a1025', swatch:'#7fdc00'},
-  {id:'gundam', cls:'theme-gundam', icon:'🤖', label:'ガンダム', bg:'#ffffff', light:true, swatch:'#1e50a2'},
+  {id:'amber', cls:null, icon:'🟠', label:'ジャイアンツ', bg:'#0c0c0e', swatch:'#f97316'},
+  {id:'blue', cls:'theme-blue', icon:'🔵', label:'ドジャース', bg:'#f0f5fc', light:true, swatch:'#005a9c'},
+  {id:'japan', cls:'theme-japan', icon:'⚽', label:'日本代表', bg:'#08142c', swatch:'#2563eb'},
+  {id:'eva', cls:'theme-eva', icon:'🟢', label:'エヴァ初号機', bg:'#13091f', swatch:'#84ff00'},
+  {id:'gundam', cls:'theme-gundam', icon:'🤖', label:'ガンダム', bg:'#eef1f5', light:true, swatch:'#e0312a'},
   {id:'ginei', cls:'theme-ginei', icon:'🎖️', label:'銀河英雄伝説(帝国軍)', bg:'#0d0d0f', swatch:'#a8adb5'},
   {id:'alliance', cls:'theme-alliance', icon:'⭐', label:'銀河英雄伝説(自由惑星同盟)', bg:'#0a1530', swatch:'#38bdf8'},
   {id:'phezzan', cls:'theme-phezzan', icon:'💰', label:'銀河英雄伝説(フェザーン自治領)', bg:'#140d1f', swatch:'#eab308'},
