@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261125155">
+<meta name="taxiops-build" content="20261125157">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -251,6 +251,149 @@
   body.theme-iserlohn .chip.pay.cash-chip.active{ background:#0284c7;border-color:#38bdf8;color:#ffffff; }
   body.theme-iserlohn #evBar button:not(#restBtn){ color:#e5eef7 !important;border-color:#5a718a !important;background-color:var(--card2) !important; }
   body.theme-iserlohn #evBar button.ev-on.ev-k-bd{ background-color:#9f1239 !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  body.theme-schwarz{
+    --bg:#08080a;
+    --card:#121316;
+    --card2:#1a1c20;
+    --border:#52525b;
+    --amber:#facc15;
+    --amber-dim:#a16207;
+    --red:#f87171;
+    --green:#4ade80;
+    --text:#fafafa;
+    --muted:#d4d4d8;
+    --muted2:#a1a1aa;
+  }
+  body.theme-schwarz .meter{ background:linear-gradient(180deg,#121316,#1a1c20); box-shadow:0 8px 20px -10px rgba(250,204,21,.22); }
+  body.theme-schwarz .meter-digit{ text-shadow:0 0 10px rgba(250,204,21,.4); }
+  body.theme-schwarz .summary-big{ text-shadow:0 0 10px rgba(250,204,21,.3); }
+  body.theme-schwarz .entry-row-tap:active{ background:rgba(250,204,21,.12); }
+  body.theme-schwarz .edit-banner{ background:rgba(250,204,21,.12); }
+  body.theme-schwarz .chip.active{ background:#eab308;border-color:#facc15;color:#08080a;text-shadow:none;box-shadow:0 0 12px rgba(250,204,21,.6), 0 4px 0 rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.4); }
+  body.theme-schwarz .btn{ background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #dc2626;color:#ffffff;text-shadow:none; box-shadow:0 0 16px rgba(220,38,38,.6), 0 5px 0 rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 5px rgba(0,0,0,.25); }
+  body.theme-schwarz .kp-ok{ background:#facc15;color:#08080a; }
+  body.theme-schwarz .confirm-ok{ color:#facc15 !important; }
+  body.theme-schwarz .lamp{ background:#facc15;box-shadow:0 0 10px 2px rgba(250,204,21,.65); }
+  body.theme-schwarz .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-schwarz .chip.pay.cash-chip.active{ background:#eab308;border-color:#facc15;color:#08080a; }
+  body.theme-schwarz #evBar button:not(#restBtn){ color:#f4f4f5 !important;border-color:#52525b !important;background-color:var(--card2) !important; }
+  body.theme-schwarz #evBar button.ev-on.ev-k-bd{ background-color:#991b1b !important;border-color:#f87171 !important;color:#ffffff !important; }
+  body.theme-reinhard{
+    --bg:#eef2f7;
+    --card:#ffffff;
+    --card2:#e2e8f0;
+    --border:#94a3b8;
+    --amber:#d97706;
+    --amber-dim:#92400e;
+    --red:#e11d48;
+    --green:#0284c7;
+    --text:#0f172a;
+    --muted:#334155;
+    --muted2:#64748b;
+  }
+  body.theme-reinhard .meter{ background:linear-gradient(180deg,#ffffff,#e8eef5); box-shadow:0 8px 20px -10px rgba(217,119,6,.25); }
+  body.theme-reinhard .meter-digit{ text-shadow:none; }
+  body.theme-reinhard .summary-big{ text-shadow:none; }
+  body.theme-reinhard .entry-row-tap:active{ background:rgba(217,119,6,.10); }
+  body.theme-reinhard .edit-banner{ background:rgba(217,119,6,.12); }
+  body.theme-reinhard .chip.active{ background:#0284c7;border-color:#0369a1;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(2,132,199,.45), 0 4px 0 rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.35); }
+  body.theme-reinhard .btn{ background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 50%), #f59e0b;color:#0f172a;text-shadow:none; box-shadow:0 0 16px rgba(245,158,11,.5), 0 5px 0 rgba(0,0,0,.3), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 5px rgba(0,0,0,.15); }
+  body.theme-reinhard .kp-ok{ background:#f59e0b;color:#0f172a; }
+  body.theme-reinhard .confirm-ok{ color:#d97706 !important; }
+  body.theme-reinhard .lamp{ background:#f59e0b;box-shadow:0 0 10px 2px rgba(245,158,11,.55); }
+  body.theme-reinhard .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-reinhard .chip.pay.cash-chip.active{ background:#0284c7;border-color:#0369a1;color:#ffffff; }
+  body.theme-reinhard #evBar button:not(#restBtn){ color:#0f172a !important;border-color:#94a3b8 !important;background-color:var(--card2) !important; }
+  body.theme-reinhard #evBar button.ev-on.ev-k-bd{ background-color:#be123c !important;border-color:#e11d48 !important;color:#ffffff !important; }
+  body.theme-reinhard .entry-type{ color:var(--text); }
+  body.light-base.theme-reinhard{ --bg:#eef2f7;--card:#ffffff;--card2:#e2e8f0;--border:#94a3b8;--amber:#d97706;--amber-dim:#92400e;--red:#e11d48;--green:#0284c7;--text:#0f172a;--muted:#334155;--muted2:#64748b; }
+  body.light-base.theme-reinhard .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-reinhard .chip.pay.cash-chip.active{ background:#0284c7;border-color:#0369a1;color:#ffffff; }
+  body.theme-kircheis{
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --card2:#e9edf3;
+    --border:#cbd5e1;
+    --amber:#d93829;
+    --amber-dim:#991b1b;
+    --red:#dc2626;
+    --green:#16a34a;
+    --text:#1e293b;
+    --muted:#475569;
+    --muted2:#64748b;
+  }
+  body.theme-kircheis .meter{ background:linear-gradient(180deg,#ffffff,#eef2f7); box-shadow:0 8px 20px -10px rgba(217,56,41,.18); }
+  body.theme-kircheis .meter-digit{ text-shadow:none; }
+  body.theme-kircheis .summary-big{ text-shadow:none; }
+  body.theme-kircheis .entry-row-tap:active{ background:rgba(217,56,41,.08); }
+  body.theme-kircheis .edit-banner{ background:rgba(217,56,41,.10); }
+  body.theme-kircheis .chip.active{ background:#d93829;border-color:#b91c1c;color:#ffffff;text-shadow:none; }
+  body.theme-kircheis .btn{ background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0) 50%), #d93829;color:#ffffff;text-shadow:none; }
+  body.theme-kircheis .kp-ok{ background:#d93829;color:#ffffff; }
+  body.theme-kircheis .confirm-ok{ color:#d93829 !important; }
+  body.theme-kircheis .lamp{ background:#d93829;box-shadow:0 0 10px 2px rgba(217,56,41,.45); }
+  body.theme-kircheis .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-kircheis .chip.pay.cash-chip.active{ background:#d93829;border-color:#b91c1c;color:#ffffff; }
+  body.theme-kircheis #evBar button:not(#restBtn){ color:#1e293b !important;border-color:#94a3b8 !important;background-color:var(--card2) !important; }
+  body.theme-kircheis #evBar button.ev-on.ev-k-bd{ background-color:#b91c1c !important;border-color:#dc2626 !important;color:#ffffff !important; }
+  body.theme-kircheis .entry-type{ color:var(--text); }
+  body.light-base.theme-kircheis{ --bg:#f4f6f9;--card:#ffffff;--card2:#e9edf3;--border:#cbd5e1;--amber:#d93829;--amber-dim:#991b1b;--red:#dc2626;--green:#16a34a;--text:#1e293b;--muted:#475569;--muted2:#64748b; }
+  body.light-base.theme-kircheis .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-kircheis .chip.pay.cash-chip.active{ background:#d93829;border-color:#b91c1c;color:#ffffff; }
+  body.theme-yang{
+    --bg:#161311;
+    --card:#211c19;
+    --card2:#2b2420;
+    --border:#52453d;
+    --amber:#d99b52;
+    --amber-dim:#8c5d27;
+    --red:#f87171;
+    --green:#4ade80;
+    --text:#f5efe8;
+    --muted:#d6cabf;
+    --muted2:#9e8f82;
+  }
+  body.theme-yang .meter{ background:linear-gradient(180deg,#211c19,#2b2420); box-shadow:0 8px 20px -10px rgba(217,155,82,.22); }
+  body.theme-yang .meter-digit{ text-shadow:0 0 10px rgba(217,155,82,.4); }
+  body.theme-yang .summary-big{ text-shadow:0 0 10px rgba(217,155,82,.3); }
+  body.theme-yang .entry-row-tap:active{ background:rgba(56,189,248,.12); }
+  body.theme-yang .edit-banner{ background:rgba(56,189,248,.12); }
+  body.theme-yang .chip.active{ background:#1d4ed8;border-color:#60a5fa;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(96,165,250,.5), 0 4px 0 rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.3); }
+  body.theme-yang .btn{ background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 50%), #d99b52;color:#161311;text-shadow:none; box-shadow:0 0 14px rgba(217,155,82,.45), 0 5px 0 rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.4), inset 0 -3px 5px rgba(0,0,0,.18); }
+  body.theme-yang .kp-ok{ background:#d99b52;color:#161311; }
+  body.theme-yang .confirm-ok{ color:#d99b52 !important; }
+  body.theme-yang .lamp{ background:#60a5fa;box-shadow:0 0 10px 2px rgba(96,165,250,.55); }
+  body.theme-yang .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-yang .chip.pay.cash-chip.active{ background:#1d4ed8;border-color:#60a5fa;color:#ffffff; }
+  body.theme-yang #evBar button:not(#restBtn){ color:#ede5dc !important;border-color:#52453d !important;background-color:var(--card2) !important; }
+  body.theme-yang #evBar button.ev-on.ev-k-bd{ background-color:#991b1b !important;border-color:#f87171 !important;color:#ffffff !important; }
+  body.theme-terra{
+    --bg:#0c1112;
+    --card:#141d1f;
+    --card2:#1c282b;
+    --border:#365359;
+    --amber:#2dd4bf;
+    --amber-dim:#0f766e;
+    --red:#fb7185;
+    --green:#34d399;
+    --text:#ecfdf5;
+    --muted:#b8d4d1;
+    --muted2:#81a3a0;
+  }
+  body.theme-terra .meter{ background:linear-gradient(180deg,#141d1f,#1c282b); box-shadow:0 8px 20px -10px rgba(45,212,191,.22); }
+  body.theme-terra .meter-digit{ text-shadow:0 0 10px rgba(45,212,191,.4); }
+  body.theme-terra .summary-big{ text-shadow:0 0 10px rgba(45,212,191,.3); }
+  body.theme-terra .entry-row-tap:active{ background:rgba(45,212,191,.12); }
+  body.theme-terra .edit-banner{ background:rgba(45,212,191,.12); }
+  body.theme-terra .chip.active{ background:#0d9488;border-color:#2dd4bf;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(45,212,191,.55), 0 4px 0 rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.3); }
+  body.theme-terra .btn{ background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 50%), #d4af37;color:#0c1112;text-shadow:none; box-shadow:0 0 14px rgba(212,175,55,.5), 0 5px 0 rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.4), inset 0 -3px 5px rgba(0,0,0,.18); }
+  body.theme-terra .kp-ok{ background:#2dd4bf;color:#0c1112; }
+  body.theme-terra .confirm-ok{ color:#2dd4bf !important; }
+  body.theme-terra .lamp{ background:#2dd4bf;box-shadow:0 0 10px 2px rgba(45,212,191,.6); }
+  body.theme-terra .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-terra .chip.pay.cash-chip.active{ background:#0d9488;border-color:#2dd4bf;color:#ffffff; }
+  body.theme-terra #evBar button:not(#restBtn){ color:#d1fae5 !important;border-color:#365359 !important;background-color:var(--card2) !important; }
+  body.theme-terra #evBar button.ev-on.ev-k-bd{ background-color:#9f1239 !important;border-color:#fb7185 !important;color:#ffffff !important; }
   body.theme-shinkamen{
     --bg:#0a0a0a;
     --card:#161616;
@@ -961,7 +1104,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app155</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
+    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app157</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5864,6 +6007,11 @@ const THEME_LIST = [
   {id:'phezzan', cls:'theme-phezzan', icon:'💰', label:'銀河英雄伝説(フェザーン自治領)', bg:'#140d1f', swatch:'#eab308'},
   {id:'rosen', cls:'theme-rosen', icon:'🌹', label:'銀河英雄伝説(ローゼンリッター)', bg:'#0d0f0e', swatch:'#be123c'},
   {id:'iserlohn', cls:'theme-iserlohn', icon:'⚡', label:'銀河英雄伝説(イゼルローン要塞)', bg:'#131b24', swatch:'#bae6fd'},
+  {id:'schwarz', cls:'theme-schwarz', icon:'🐯', label:'銀河英雄伝説(黒色槍騎兵艦隊)', bg:'#08080a', swatch:'#facc15'},
+  {id:'reinhard', cls:'theme-reinhard', icon:'🦁', label:'銀河英雄伝説(ラインハルト)', bg:'#eef2f7', light:true, swatch:'#d97706'},
+  {id:'kircheis', cls:'theme-kircheis', icon:'❤️', label:'銀河英雄伝説(キルヒアイス)', bg:'#f4f6f9', light:true, swatch:'#d93829'},
+  {id:'yang', cls:'theme-yang', icon:'☕', label:'銀河英雄伝説(ヤン・ウェンリー)', bg:'#161311', swatch:'#d99b52'},
+  {id:'terra', cls:'theme-terra', icon:'🌍', label:'銀河英雄伝説(地球教)', bg:'#0c1112', swatch:'#2dd4bf'},
   {id:'shinkamen', cls:'theme-shinkamen', icon:'🦗', label:'シン仮面ライダー', bg:'#0a0a0a', swatch:'#b8bcc0'},
   {id:'ultraman', cls:'theme-ultraman', icon:'🥈', label:'シンウルトラマン', bg:'#ffffff', light:true, swatch:'#d92b1c'},
   {id:'godzilla', cls:'theme-godzilla', icon:'🦖', label:'シン・ゴジラ', bg:'#0e0e0e', swatch:'#ff4b1f'},
