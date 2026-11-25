@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261125160">
+<meta name="taxiops-build" content="20261125161">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -645,81 +645,104 @@
   body.theme-nugundam .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
   body.theme-nugundam .chip.pay.cash-chip.active{ background:#dc2626;border-color:#f87171;color:#ffffff; }
 
+  /* バルキリー */
   body.theme-valkyrie{
-    --bg:#eef0f1;
+    --bg:#eef0f2;
     --card:#ffffff;
-    --card2:#e6e8ea;
-    --border:#c9ccd0;
-    --amber:#f4c430;
-    --amber-dim:#a8860a;
-    --red:#6b7280;
-    --text:#1c1e20;
-    --muted:#5d6165;
-    --muted2:#878e96;
+    --card2:#e4e7ea;
+    --border:#bfc4ca;
+    --amber:#eab308;
+    --amber-dim:#a16207;
+    --red:#dc2626;
+    --green:#16a34a;
+    --text:#16181a;
+    --muted:#454a50;
+    --muted2:#6e757d;
   }
-  body.theme-valkyrie .meter{ background:linear-gradient(180deg,#ffffff,#e9ecee); box-shadow:0 8px 20px -10px rgba(28,30,32,.18); }
+  body.theme-valkyrie .meter{ background:linear-gradient(180deg,#ffffff,#eaedf0); box-shadow:0 8px 20px -10px rgba(22,24,26,.2); }
   body.theme-valkyrie .meter-digit{ text-shadow:none; }
   body.theme-valkyrie .summary-big{ text-shadow:none; }
-  body.theme-valkyrie .entry-row-tap:active{ background:rgba(244,196,48,.10); }
+  body.theme-valkyrie .entry-row-tap:active{ background:rgba(234,179,8,.12); }
   body.theme-valkyrie .entry-type{ color:var(--text); }
   body.theme-valkyrie .entry-live{ color:var(--text); }
   body.theme-valkyrie .entry-comment b{ color:var(--text); }
-  body.theme-valkyrie .edit-banner{ background:rgba(28,30,32,.10); }
-  body.theme-valkyrie .chip.active{ background:#1c1e20;border-color:#1c1e20;color:#f4c430; }
-  body.theme-valkyrie .btn{ color:#1c1e20; }
-  body.theme-valkyrie .kp-ok{ background:#1c1e20;color:#f4c430; }
-  body.theme-valkyrie .confirm-ok{ color:#1c1e20 !important; }
-  body.theme-valkyrie .lamp{ background:#6b7280;box-shadow:0 0 10px 2px rgba(244,196,48,.5); }
+  body.theme-valkyrie .edit-banner{ background:rgba(22,24,26,.10); }
+  body.theme-valkyrie .chip.active{ background:#16181a;border-color:#16181a;color:#facc15;text-shadow:none; }
+  body.theme-valkyrie .btn{ background:linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 50%), #facc15;color:#16181a;text-shadow:none;box-shadow:0 0 12px rgba(250,204,21,.45), 0 5px 0 rgba(0,0,0,.25); }
+  body.theme-valkyrie .kp-ok{ background:#16181a;color:#facc15; }
+  body.theme-valkyrie .confirm-ok{ color:#16181a !important; }
+  body.theme-valkyrie .lamp{ background:#facc15;box-shadow:0 0 10px 2px rgba(22,24,26,.45); }
+  body.theme-valkyrie #evBar button:not(#restBtn){ color:#16181a !important;border-color:#9aa1a8 !important;background-color:var(--card2) !important; }
+  body.theme-valkyrie #evBar button.ev-on.ev-k-bd{ background-color:#dc2626 !important;border-color:#991b1b !important;color:#ffffff !important; }
+  body.theme-valkyrie .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-valkyrie .chip.pay.cash-chip.active{ background:#16181a;border-color:#16181a;color:#facc15; }
+  body.light-base.theme-valkyrie{ --bg:#eef0f2;--card:#ffffff;--card2:#e4e7ea;--border:#bfc4ca;--amber:#eab308;--amber-dim:#a16207;--red:#dc2626;--green:#16a34a;--text:#16181a;--muted:#454a50;--muted2:#6e757d; }
+  body.light-base.theme-valkyrie .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.light-base.theme-valkyrie .chip.pay.cash-chip.active{ background:#16181a;border-color:#16181a;color:#facc15; }
+
+  /* 宇宙戦艦ヤマト */
   body.theme-yamato{
-    --bg:#0d1420;
-    --card:#16202e;
-    --card2:#1e2c3d;
-    --border:#2a3c52;
-    --amber:#c8102e;
-    --amber-dim:#7a0a1c;
-    --red:#8a97a3;
-    --text:#eef2f5;
-    --muted:#9ca6af;
-    --muted2:#647386;
+    --bg:#0b121e;
+    --card:#141f30;
+    --card2:#1c2b42;
+    --border:#344b6e;
+    --amber:#f59e0b;
+    --amber-dim:#92400e;
+    --red:#fb7185;
+    --green:#38bdf8;
+    --text:#f0f4f8;
+    --muted:#cbd5e1;
+    --muted2:#8da0b8;
   }
-  body.theme-yamato .meter{ background:linear-gradient(180deg,#16202e,#1e2c3d); box-shadow:0 8px 20px -10px rgba(200,16,46,.20); }
-  body.theme-yamato .meter-digit{ text-shadow:0 0 10px rgba(200,16,46,.35); }
-  body.theme-yamato .summary-big{ text-shadow:0 0 10px rgba(200,16,46,.25); }
-  body.theme-yamato .entry-row-tap:active{ background:rgba(200,16,46,.10); }
+  body.theme-yamato .meter{ background:linear-gradient(180deg,#141f30,#1c2b42); box-shadow:0 8px 20px -10px rgba(220,38,38,.25); }
+  body.theme-yamato .meter-digit{ text-shadow:0 0 10px rgba(245,158,11,.35); }
+  body.theme-yamato .summary-big{ text-shadow:0 0 10px rgba(245,158,11,.25); }
+  body.theme-yamato .entry-row-tap:active{ background:rgba(220,38,38,.12); }
   body.theme-yamato .entry-type{ color:var(--text); }
   body.theme-yamato .entry-live{ color:var(--text); }
   body.theme-yamato .entry-comment b{ color:var(--text); }
-  body.theme-yamato .edit-banner{ background:rgba(138,151,163,.15); }
-  body.theme-yamato .chip.active{ background:#8a97a3;border-color:#8a97a3;color:#0d1420; }
-  body.theme-yamato .btn{ color:#ffffff; }
-  body.theme-yamato .kp-ok{ background:#c8102e;color:#ffffff; }
-  body.theme-yamato .confirm-ok{ color:#c8102e !important; }
-  body.theme-yamato .lamp{ background:#8a97a3;box-shadow:0 0 10px 2px rgba(200,16,46,.5); }
+  body.theme-yamato .edit-banner{ background:rgba(245,158,11,.15); }
+  body.theme-yamato .chip.active{ background:#c8102e;border-color:#f43f5e;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(200,16,46,.55), 0 4px 0 rgba(0,0,0,.45); }
+  body.theme-yamato .btn{ background:linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 50%), #f59e0b;color:#0b121e;text-shadow:none;box-shadow:0 0 14px rgba(245,158,11,.5), 0 5px 0 rgba(0,0,0,.45); }
+  body.theme-yamato .kp-ok{ background:#f59e0b;color:#0b121e; }
+  body.theme-yamato .confirm-ok{ color:#f59e0b !important; }
+  body.theme-yamato .lamp{ background:#f59e0b;box-shadow:0 0 10px 2px rgba(245,158,11,.6); }
+  body.theme-yamato #evBar button:not(#restBtn){ color:#f0f4f8 !important;border-color:#44618c !important;background-color:var(--card2) !important; }
+  body.theme-yamato #evBar button.ev-on.ev-k-bd{ background-color:#9f1239 !important;border-color:#fb7185 !important;color:#ffffff !important; }
+  body.theme-yamato .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-yamato .chip.pay.cash-chip.active{ background:#c8102e;border-color:#f43f5e;color:#ffffff; }
+
+  /* マジンガーZ */
   body.theme-mazinger{
-    --bg:#0d0d0d;
-    --card:#1a1a1a;
-    --card2:#242424;
-    --border:#333333;
-    --amber:#c8102e;
-    --amber-dim:#7a1810;
-    --red:#e0a72e;
-    --text:#f0ece4;
-    --muted:#a7a4a0;
-    --muted2:#7c7771;
+    --bg:#0b0b0c;
+    --card:#17171a;
+    --card2:#222226;
+    --border:#3f3f46;
+    --amber:#eab308;
+    --amber-dim:#a16207;
+    --red:#f87171;
+    --green:#4ade80;
+    --text:#f4f4f5;
+    --muted:#d4d4d8;
+    --muted2:#9ca3af;
   }
-  body.theme-mazinger .meter{ background:linear-gradient(180deg,#1a1a1a,#242424); box-shadow:0 8px 20px -10px rgba(200,16,46,.20); }
-  body.theme-mazinger .meter-digit{ text-shadow:0 0 10px rgba(200,16,46,.35); }
-  body.theme-mazinger .summary-big{ text-shadow:0 0 10px rgba(200,16,46,.25); }
-  body.theme-mazinger .entry-row-tap:active{ background:rgba(200,16,46,.10); }
+  body.theme-mazinger .meter{ background:linear-gradient(180deg,#17171a,#222226); box-shadow:0 8px 20px -10px rgba(220,38,38,.25); }
+  body.theme-mazinger .meter-digit{ text-shadow:0 0 10px rgba(234,179,8,.35); }
+  body.theme-mazinger .summary-big{ text-shadow:0 0 10px rgba(234,179,8,.25); }
+  body.theme-mazinger .entry-row-tap:active{ background:rgba(220,38,38,.12); }
   body.theme-mazinger .entry-type{ color:var(--text); }
   body.theme-mazinger .entry-live{ color:var(--text); }
   body.theme-mazinger .entry-comment b{ color:var(--text); }
-  body.theme-mazinger .edit-banner{ background:rgba(224,167,46,.15); }
-  body.theme-mazinger .chip.active{ background:#c8102e;border-color:#c8102e;color:#ffffff; }
-  body.theme-mazinger .btn{ color:#ffffff; }
-  body.theme-mazinger .kp-ok{ background:#0d0d0d;color:#e0a72e; }
-  body.theme-mazinger .confirm-ok{ color:#c8102e !important; }
-  body.theme-mazinger .lamp{ background:#e0a72e;box-shadow:0 0 10px 2px rgba(200,16,46,.5); }
+  body.theme-mazinger .edit-banner{ background:rgba(234,179,8,.15); }
+  body.theme-mazinger .chip.active{ background:#dc2626;border-color:#f87171;color:#ffffff;text-shadow:none;box-shadow:0 0 12px rgba(220,38,38,.55), 0 4px 0 rgba(0,0,0,.5); }
+  body.theme-mazinger .btn{ background:linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 50%), #eab308;color:#0b0b0c;text-shadow:none;box-shadow:0 0 14px rgba(234,179,8,.5), 0 5px 0 rgba(0,0,0,.5); }
+  body.theme-mazinger .kp-ok{ background:#eab308;color:#0b0b0c; }
+  body.theme-mazinger .confirm-ok{ color:#eab308 !important; }
+  body.theme-mazinger .lamp{ background:#eab308;box-shadow:0 0 10px 2px rgba(220,38,38,.6); }
+  body.theme-mazinger #evBar button:not(#restBtn){ color:#f4f4f5 !important;border-color:#52525b !important;background-color:var(--card2) !important; }
+  body.theme-mazinger #evBar button.ev-on.ev-k-bd{ background-color:#991b1b !important;border-color:#f87171 !important;color:#ffffff !important; }
+  body.theme-mazinger .chip.pay.cash-chip{ background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--card2);border-color:var(--border);color:var(--text); }
+  body.theme-mazinger .chip.pay.cash-chip.active{ background:#dc2626;border-color:#f87171;color:#ffffff; }
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -1182,7 +1205,6 @@
 }
 /* ---------- 白系テーマの共通の土台(app120): 生成りの紙+やわらかい暖色の影+濃い補助文字。差し色(--amberなど)は各テーマのまま ---------- */
 body.light-base{ --bg:#ffffff; --card:#ffffff; --card2:#ececec; --border:#9a9a9a; --text:#000000; --muted:#1f1f1f; --muted2:#444444; --green:#0a7a3a; }
-body.theme-valkyrie{ --amber:#a87800; --amber-dim:#8a6a00; }
 body.light-base .meter{ background:linear-gradient(180deg,#ffffff,#f3f3f3); box-shadow:0 6px 16px -8px rgba(0,0,0,.38); }
 body.light-base .meter-digit, body.light-base .summary-big{ text-shadow:none; }
 body.light-base .add-card, body.light-base .section-card, body.light-base .list-card, body.light-base .setup-card{ box-shadow:0 1px 3px rgba(0,0,0,.14); }
@@ -1220,7 +1242,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app160</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
+    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261125-app161</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -6134,9 +6156,9 @@ const THEME_LIST = [
   {id:'patlabor', cls:'theme-patlabor', icon:'🚔', label:'パトレイバー', bg:'#eef1f4', light:true, swatch:'#d3222a'},
   {id:'unicorn', cls:'theme-unicorn', icon:'🦄', label:'ユニコーンガンダム', bg:'#f2f4f7', light:true, swatch:'#e11d48'},
   {id:'nugundam', cls:'theme-nugundam', icon:'🛡️', label:'νガンダム', bg:'#0b1529', swatch:'#facc15'},
-  {id:'valkyrie', cls:'theme-valkyrie', icon:'💀', label:'バルキリー', bg:'#ffffff', light:true, swatch:'#f4c430'},
-  {id:'yamato', cls:'theme-yamato', icon:'⚓', label:'宇宙戦艦ヤマト', bg:'#0d1420', swatch:'#c8102e'},
-  {id:'mazinger', cls:'theme-mazinger', icon:'🔥', label:'マジンガーZ', bg:'#0d0d0d', swatch:'#c8102e'},
+  {id:'valkyrie', cls:'theme-valkyrie', icon:'💀', label:'バルキリー', bg:'#eef0f2', light:true, swatch:'#eab308'},
+  {id:'yamato', cls:'theme-yamato', icon:'⚓', label:'宇宙戦艦ヤマト', bg:'#0b121e', swatch:'#f59e0b'},
+  {id:'mazinger', cls:'theme-mazinger', icon:'🔥', label:'マジンガーZ', bg:'#0b0b0c', swatch:'#dc2626'},
 ];
 const THEME_CLASSES = THEME_LIST.map(t=>t.cls).filter(Boolean);
 function applyTheme(theme){
