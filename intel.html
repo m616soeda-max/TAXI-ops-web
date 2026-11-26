@@ -1,115 +1,210 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="taxiintel-build" content="2026111006">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI INTEL</title>
 <style>
+  /* 配色: TAXI OPSと同じ24テーマ・同じ色(OPSの値をそのまま移植) */
   :root {
-    --bg: #12151b; --card-bg: #1b2029; --inner-bg: #20262f;
-    --grad-hbar-1: #e8a33d; --grad-hbar-2: #c9822a;
-    --shot-btn: #2a313c; --shot-btn-active: #3a4350;
-    --renpai: #e8a33d; --section-title: #9aa4b4; --footer: #707988;
-    --header-sub: #9aa4b4; --label-color: #9aa4b4; --val-color: #edeae3;
+    --bg: #0c0c0e; --card-bg: #16161a; --inner-bg: #202026; --border: #3a3a42;
+    --grad-hbar-1: #f97316; --grad-hbar-2: #9a3412;
+    --shot-btn: #202026; --shot-btn-active: #f97316; --btn-on: #0c0c0e;
+    --renpai: #f97316; --section-title: #d4d4d8; --footer: #9ca3af;
+    --header-sub: #d4d4d8; --label-color: #d4d4d8; --val-color: #fafafa;
+    --red: #fb7185; --green: #4ade80;
+  }
+  html[data-theme="amber"] {
+    --bg: #0c0c0e; --card-bg: #16161a; --inner-bg: #202026; --border: #3a3a42;
+    --grad-hbar-1: #f97316; --grad-hbar-2: #9a3412;
+    --shot-btn: #202026; --shot-btn-active: #f97316; --btn-on: #0c0c0e;
+    --renpai: #f97316; --section-title: #d4d4d8; --footer: #9ca3af;
+    --header-sub: #d4d4d8; --label-color: #d4d4d8; --val-color: #fafafa;
+    --red: #fb7185; --green: #4ade80;
   }
   html[data-theme="blue"] {
-    --bg: #f2f6fb; --card-bg: #ffffff; --inner-bg: #eaf1fa;
-    --grad-hbar-1: #a9c8ee; --grad-hbar-2: #1e5fc4;
-    --shot-btn: #c7d6e8; --shot-btn-active: #a9c8ee;
-    --renpai: #1e5fc4; --section-title: #4a5f7d; --footer: #718aa8;
-    --header-sub: #4a5f7d; --label-color: #4a5f7d; --val-color: #132339;
+    --bg: #f0f5fc; --card-bg: #ffffff; --inner-bg: #e6eef8; --border: #bfd0e6;
+    --grad-hbar-1: #005a9c; --grad-hbar-2: #003d6b;
+    --shot-btn: #e6eef8; --shot-btn-active: #005a9c; --btn-on: #ffffff;
+    --renpai: #005a9c; --section-title: #334866; --footer: #5c7394;
+    --header-sub: #334866; --label-color: #334866; --val-color: #0f1e36;
+    --red: #ef3e42; --green: #16a34a;
   }
   html[data-theme="japan"] {
-    --bg: #0a1730; --card-bg: #0f2040; --inner-bg: #132a4d;
-    --grad-hbar-1: #1c5fc9; --grad-hbar-2: #4d8fe6;
-    --shot-btn: #1f3a63; --shot-btn-active: #1c5fc9;
-    --renpai: #4d8fe6; --section-title: #a9bede; --footer: #7f96bd;
-    --header-sub: #a9bede; --label-color: #a9bede; --val-color: #f2f5fa;
+    --bg: #08142c; --card-bg: #0e2044; --inner-bg: #152c59; --border: #284985;
+    --grad-hbar-1: #2563eb; --grad-hbar-2: #1d4ed8;
+    --shot-btn: #152c59; --shot-btn-active: #1d63dc; --btn-on: #ffffff;
+    --renpai: #2563eb; --section-title: #cbd5e1; --footer: #94a3b8;
+    --header-sub: #cbd5e1; --label-color: #cbd5e1; --val-color: #f8fafc;
+    --red: #fb7185; --green: #34d399;
   }
   html[data-theme="eva"] {
-    --bg: #1a1025; --card-bg: #241534; --inner-bg: #2c1a3d;
-    --grad-hbar-1: #3f6e00; --grad-hbar-2: #7fdc00;
-    --shot-btn: #4a2f66; --shot-btn-active: #3f6e00;
-    --renpai: #7fdc00; --section-title: #b8a8d8; --footer: #8a7aa8;
-    --header-sub: #b8a8d8; --label-color: #b8a8d8; --val-color: #f0e8ff;
+    --bg: #13091f; --card-bg: #1d102e; --inner-bg: #27163d; --border: #4c2c75;
+    --grad-hbar-1: #84ff00; --grad-hbar-2: #448200;
+    --shot-btn: #27163d; --shot-btn-active: #84ff00; --btn-on: #13091f;
+    --renpai: #84ff00; --section-title: #d8c8f0; --footer: #a38ec2;
+    --header-sub: #d8c8f0; --label-color: #d8c8f0; --val-color: #f3ebff;
+    --red: #ff8c1a; --green: #84ff00;
   }
   html[data-theme="gundam"] {
-    --bg: #eef0f2; --card-bg: #ffffff; --inner-bg: #e6e9ec;
-    --grad-hbar-1: #f3aca8; --grad-hbar-2: #e0312a;
-    --shot-btn: #c3c9d1; --shot-btn-active: #ffd200;
-    --renpai: #1e50a2; --section-title: #5a6068; --footer: #8b9198;
-    --header-sub: #5a6068; --label-color: #5a6068; --val-color: #1c2024;
+    --bg: #eef1f5; --card-bg: #ffffff; --inner-bg: #e4e8ee; --border: #bcc4d0;
+    --grad-hbar-1: #e0312a; --grad-hbar-2: #9e1f1a;
+    --shot-btn: #e4e8ee; --shot-btn-active: #1e50a2; --btn-on: #ffffff;
+    --renpai: #e0312a; --section-title: #3b424d; --footer: #68717d;
+    --header-sub: #3b424d; --label-color: #3b424d; --val-color: #181d24;
+    --red: #e0312a; --green: #16a34a;
   }
   html[data-theme="ginei"] {
-    --bg: #0d0d0f; --card-bg: #1a1a1d; --inner-bg: #232326;
-    --grad-hbar-1: #5c5f66; --grad-hbar-2: #a8adb5;
-    --shot-btn: #333336; --shot-btn-active: #c8102e;
-    --renpai: #a8adb5; --section-title: #8a8d92; --footer: #55585d;
-    --header-sub: #8a8d92; --label-color: #8a8d92; --val-color: #eceef0;
+    --bg: #0d0d0f; --card-bg: #1a1a1d; --inner-bg: #232326; --border: #333336;
+    --grad-hbar-1: #a8adb5; --grad-hbar-2: #5c5f66;
+    --shot-btn: #232326; --shot-btn-active: #c8102e; --btn-on: #ffffff;
+    --renpai: #a8adb5; --section-title: #aaacb0; --footer: #72767d;
+    --header-sub: #aaacb0; --label-color: #aaacb0; --val-color: #eceef0;
+    --red: #ef3d5a; --green: #facc15;
+  }
+  html[data-theme="alliance"] {
+    --bg: #0a1530; --card-bg: #122244; --inner-bg: #1a2f58; --border: #2f4f86;
+    --grad-hbar-1: #38bdf8; --grad-hbar-2: #0284c7;
+    --shot-btn: #1a2f58; --shot-btn-active: #38bdf8; --btn-on: #06111f;
+    --renpai: #38bdf8; --section-title: #cbd5e1; --footer: #94a3b8;
+    --header-sub: #cbd5e1; --label-color: #cbd5e1; --val-color: #f8fafc;
+    --red: #ff6b6b; --green: #2dd4bf;
+  }
+  html[data-theme="phezzan"] {
+    --bg: #140d1f; --card-bg: #1f1530; --inner-bg: #281c3d; --border: #5b467a;
+    --grad-hbar-1: #eab308; --grad-hbar-2: #a16207;
+    --shot-btn: #281c3d; --shot-btn-active: #7e22ce; --btn-on: #ffffff;
+    --renpai: #eab308; --section-title: #d8cdea; --footer: #a595c2;
+    --header-sub: #d8cdea; --label-color: #d8cdea; --val-color: #f5f0ff;
+    --red: #fb7185; --green: #34d399;
+  }
+  html[data-theme="rosen"] {
+    --bg: #0d0f0e; --card-bg: #181c1a; --inner-bg: #222725; --border: #4b5550;
+    --grad-hbar-1: #f97316; --grad-hbar-2: #9a3412;
+    --shot-btn: #222725; --shot-btn-active: #be123c; --btn-on: #ffffff;
+    --renpai: #f97316; --section-title: #cdd3d0; --footer: #98a29d;
+    --header-sub: #cdd3d0; --label-color: #cdd3d0; --val-color: #f1f3f2;
+    --red: #fb7185; --green: #a3e635;
+  }
+  html[data-theme="iserlohn"] {
+    --bg: #131b24; --card-bg: #1e2936; --inner-bg: #283646; --border: #5a718a;
+    --grad-hbar-1: #38bdf8; --grad-hbar-2: #0369a1;
+    --shot-btn: #283646; --shot-btn-active: #0284c7; --btn-on: #ffffff;
+    --renpai: #38bdf8; --section-title: #cfdae6; --footer: #98a9bc;
+    --header-sub: #cfdae6; --label-color: #cfdae6; --val-color: #f1f6fb;
+    --red: #fb7185; --green: #34d399;
+  }
+  html[data-theme="schwarz"] {
+    --bg: #08080a; --card-bg: #121316; --inner-bg: #1a1c20; --border: #52525b;
+    --grad-hbar-1: #facc15; --grad-hbar-2: #a16207;
+    --shot-btn: #1a1c20; --shot-btn-active: #eab308; --btn-on: #08080a;
+    --renpai: #facc15; --section-title: #d4d4d8; --footer: #a1a1aa;
+    --header-sub: #d4d4d8; --label-color: #d4d4d8; --val-color: #fafafa;
+    --red: #f87171; --green: #4ade80;
+  }
+  html[data-theme="reinhard"] {
+    --bg: #eef2f7; --card-bg: #ffffff; --inner-bg: #e2e8f0; --border: #94a3b8;
+    --grad-hbar-1: #d97706; --grad-hbar-2: #92400e;
+    --shot-btn: #e2e8f0; --shot-btn-active: #0284c7; --btn-on: #ffffff;
+    --renpai: #d97706; --section-title: #334155; --footer: #64748b;
+    --header-sub: #334155; --label-color: #334155; --val-color: #0f172a;
+    --red: #e11d48; --green: #0284c7;
+  }
+  html[data-theme="kircheis"] {
+    --bg: #f4f6f9; --card-bg: #ffffff; --inner-bg: #e9edf3; --border: #cbd5e1;
+    --grad-hbar-1: #d93829; --grad-hbar-2: #991b1b;
+    --shot-btn: #e9edf3; --shot-btn-active: #d93829; --btn-on: #ffffff;
+    --renpai: #d93829; --section-title: #475569; --footer: #64748b;
+    --header-sub: #475569; --label-color: #475569; --val-color: #1e293b;
+    --red: #dc2626; --green: #16a34a;
+  }
+  html[data-theme="yang"] {
+    --bg: #161311; --card-bg: #211c19; --inner-bg: #2b2420; --border: #52453d;
+    --grad-hbar-1: #d99b52; --grad-hbar-2: #8c5d27;
+    --shot-btn: #2b2420; --shot-btn-active: #1d4ed8; --btn-on: #ffffff;
+    --renpai: #d99b52; --section-title: #d6cabf; --footer: #9e8f82;
+    --header-sub: #d6cabf; --label-color: #d6cabf; --val-color: #f5efe8;
+    --red: #f87171; --green: #4ade80;
+  }
+  html[data-theme="terra"] {
+    --bg: #0c1112; --card-bg: #141d1f; --inner-bg: #1c282b; --border: #365359;
+    --grad-hbar-1: #2dd4bf; --grad-hbar-2: #0f766e;
+    --shot-btn: #1c282b; --shot-btn-active: #0d9488; --btn-on: #ffffff;
+    --renpai: #2dd4bf; --section-title: #b8d4d1; --footer: #81a3a0;
+    --header-sub: #b8d4d1; --label-color: #b8d4d1; --val-color: #ecfdf5;
+    --red: #fb7185; --green: #34d399;
   }
   html[data-theme="shinkamen"] {
-    --bg: #0a0a0a; --card-bg: #161616; --inner-bg: #1f1f1f;
-    --grad-hbar-1: #1f5c3a; --grad-hbar-2: #b8bcc0;
-    --shot-btn: #2a2a2a; --shot-btn-active: #2f2f2f;
-    --renpai: #b8bcc0; --section-title: #8a8d90; --footer: #5a5d60;
-    --header-sub: #8a8d90; --label-color: #8a8d90; --val-color: #e8e8e6;
+    --bg: #090a09; --card-bg: #141715; --inner-bg: #1c211e; --border: #36423b;
+    --grad-hbar-1: #22c55e; --grad-hbar-2: #15803d;
+    --shot-btn: #1c211e; --shot-btn-active: #16a34a; --btn-on: #ffffff;
+    --renpai: #22c55e; --section-title: #bbf7d0; --footer: #86efac;
+    --header-sub: #bbf7d0; --label-color: #bbf7d0; --val-color: #f0fdf4;
+    --red: #f43f5e; --green: #4ade80;
   }
   html[data-theme="ultraman"] {
-    --bg: #e3e6e9; --card-bg: #ffffff; --inner-bg: #d8dce0;
-    --grad-hbar-1: #f2b705; --grad-hbar-2: #d92b1c;
-    --shot-btn: #c3c8cd; --shot-btn-active: #f0b3ae;
-    --renpai: #d92b1c; --section-title: #5c6268; --footer: #8b9298;
-    --header-sub: #5c6268; --label-color: #5c6268; --val-color: #1b2024;
+    --bg: #e5e8ec; --card-bg: #ffffff; --inner-bg: #d8dde3; --border: #b4bcc6;
+    --grad-hbar-1: #d92b1c; --grad-hbar-2: #991b1b;
+    --shot-btn: #d8dde3; --shot-btn-active: #d92b1c; --btn-on: #ffffff;
+    --renpai: #d92b1c; --section-title: #3c424a; --footer: #646d78;
+    --header-sub: #3c424a; --label-color: #3c424a; --val-color: #181c20;
+    --red: #d92b1c; --green: #0284c7;
   }
   html[data-theme="godzilla"] {
-    --bg: #0e0e0e; --card-bg: #1a1616; --inner-bg: #221c1c;
-    --grad-hbar-1: #5c1a12; --grad-hbar-2: #ff4b1f;
-    --shot-btn: #33221f; --shot-btn-active: #3d2620;
-    --renpai: #ff4b1f; --section-title: #a68f86; --footer: #6b5d57;
-    --header-sub: #a68f86; --label-color: #a68f86; --val-color: #eae6e0;
+    --bg: #0b0a0c; --card-bg: #161317; --inner-bg: #211c24; --border: #423447;
+    --grad-hbar-1: #ff4b1f; --grad-hbar-2: #9a2408;
+    --shot-btn: #211c24; --shot-btn-active: #ff4b1f; --btn-on: #0b0a0c;
+    --renpai: #ff4b1f; --section-title: #cfc4d4; --footer: #96889c;
+    --header-sub: #cfc4d4; --label-color: #cfc4d4; --val-color: #f3eff5;
+    --red: #ff5533; --green: #c084fc;
   }
   html[data-theme="patlabor"] {
-    --bg: #eef1f2; --card-bg: #ffffff; --inner-bg: #e4e7e9;
-    --grad-hbar-1: #8f1a1f; --grad-hbar-2: #d3222a;
-    --shot-btn: #c7ccd0; --shot-btn-active: #14151a;
-    --renpai: #c8a23c; --section-title: #5a6068; --footer: #8b9198;
-    --header-sub: #5a6068; --label-color: #5a6068; --val-color: #1c2024;
+    --bg: #eef1f4; --card-bg: #ffffff; --inner-bg: #e3e7ec; --border: #bcc3cc;
+    --grad-hbar-1: #d3222a; --grad-hbar-2: #8f1a1f;
+    --shot-btn: #e3e7ec; --shot-btn-active: #14171c; --btn-on: #ffffff;
+    --renpai: #d3222a; --section-title: #3b414a; --footer: #666e7a;
+    --header-sub: #3b414a; --label-color: #3b414a; --val-color: #14171c;
+    --red: #d3222a; --green: #16a34a;
   }
   html[data-theme="unicorn"] {
-    --bg: #eef0f2; --card-bg: #ffffff; --inner-bg: #e6e9ec;
-    --grad-hbar-1: #8f1a1f; --grad-hbar-2: #e8382a;
-    --shot-btn: #ccd1d6; --shot-btn-active: #d4af37;
-    --renpai: #16294f; --section-title: #5a6068; --footer: #8b9198;
-    --header-sub: #5a6068; --label-color: #5a6068; --val-color: #1c2024;
+    --bg: #f2f4f7; --card-bg: #ffffff; --inner-bg: #e6e9ef; --border: #c5cbd4;
+    --grad-hbar-1: #e11d48; --grad-hbar-2: #9f1239;
+    --shot-btn: #e6e9ef; --shot-btn-active: #16294f; --btn-on: #ffffff;
+    --renpai: #e11d48; --section-title: #3b4963; --footer: #64748b;
+    --header-sub: #3b4963; --label-color: #3b4963; --val-color: #162238;
+    --red: #e11d48; --green: #10b981;
   }
   html[data-theme="nugundam"] {
-    --bg: #0c1830; --card-bg: #16294f; --inner-bg: #1e3a63;
-    --grad-hbar-1: #a8860a; --grad-hbar-2: #f4c430;
-    --shot-btn: #3a5a8f; --shot-btn-active: #c0392b;
-    --renpai: #c0392b; --section-title: #b8c8e0; --footer: #7f96c0;
-    --header-sub: #b8c8e0; --label-color: #b8c8e0; --val-color: #ffffff;
+    --bg: #0b1529; --card-bg: #132342; --inner-bg: #1b3159; --border: #38568a;
+    --grad-hbar-1: #facc15; --grad-hbar-2: #a16207;
+    --shot-btn: #1b3159; --shot-btn-active: #dc2626; --btn-on: #ffffff;
+    --renpai: #facc15; --section-title: #dce4f2; --footer: #9fb0cf;
+    --header-sub: #dce4f2; --label-color: #dce4f2; --val-color: #ffffff;
+    --red: #fb7185; --green: #4ade80;
   }
   html[data-theme="valkyrie"] {
-    --bg: #eef0f1; --card-bg: #ffffff; --inner-bg: #e6e8ea;
-    --grad-hbar-1: #a8860a; --grad-hbar-2: #f4c430;
-    --shot-btn: #c9ccd0; --shot-btn-active: #1c1e20;
-    --renpai: #1c1e20; --section-title: #7a7f85; --footer: #a8adb3;
-    --header-sub: #7a7f85; --label-color: #7a7f85; --val-color: #1c1e20;
+    --bg: #eef0f2; --card-bg: #ffffff; --inner-bg: #e4e7ea; --border: #bfc4ca;
+    --grad-hbar-1: #eab308; --grad-hbar-2: #a16207;
+    --shot-btn: #e4e7ea; --shot-btn-active: #16181a; --btn-on: #facc15;
+    --renpai: #eab308; --section-title: #454a50; --footer: #6e757d;
+    --header-sub: #454a50; --label-color: #454a50; --val-color: #16181a;
+    --red: #dc2626; --green: #16a34a;
   }
   html[data-theme="yamato"] {
-    --bg: #0d1420; --card-bg: #16202e; --inner-bg: #1e2c3d;
-    --grad-hbar-1: #7a0a1c; --grad-hbar-2: #c8102e;
-    --shot-btn: #2a3c52; --shot-btn-active: #8a97a3;
-    --renpai: #c8102e; --section-title: #7a8794; --footer: #4a5563;
-    --header-sub: #7a8794; --label-color: #7a8794; --val-color: #eef2f5;
+    --bg: #0b121e; --card-bg: #141f30; --inner-bg: #1c2b42; --border: #344b6e;
+    --grad-hbar-1: #f59e0b; --grad-hbar-2: #92400e;
+    --shot-btn: #1c2b42; --shot-btn-active: #c8102e; --btn-on: #ffffff;
+    --renpai: #f59e0b; --section-title: #cbd5e1; --footer: #8da0b8;
+    --header-sub: #cbd5e1; --label-color: #cbd5e1; --val-color: #f0f4f8;
+    --red: #fb7185; --green: #38bdf8;
   }
   html[data-theme="mazinger"] {
-    --bg: #0d0d0d; --card-bg: #1a1a1a; --inner-bg: #242424;
-    --grad-hbar-1: #7a1810; --grad-hbar-2: #c8102e;
-    --shot-btn: #333333; --shot-btn-active: #e0a72e;
-    --renpai: #e0a72e; --section-title: #8a8580; --footer: #5c5854;
-    --header-sub: #8a8580; --label-color: #8a8580; --val-color: #f0ece4;
+    --bg: #0b0b0c; --card-bg: #17171a; --inner-bg: #222226; --border: #3f3f46;
+    --grad-hbar-1: #eab308; --grad-hbar-2: #a16207;
+    --shot-btn: #222226; --shot-btn-active: #dc2626; --btn-on: #ffffff;
+    --renpai: #eab308; --section-title: #d4d4d8; --footer: #9ca3af;
+    --header-sub: #d4d4d8; --label-color: #d4d4d8; --val-color: #f4f4f5;
+    --red: #f87171; --green: #4ade80;
   }
 
   .theme-toggle-wrap { position:relative; display:inline-block; }
@@ -137,7 +232,7 @@
   box-shadow:0 3px 0 rgba(0,0,0,.42), 0 5px 9px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16), inset 0 -2px 4px rgba(0,0,0,.14) !important;
   transition:transform .08s ease, box-shadow .08s ease;
 }
-.reload-btn, .theme-toggle-btn { background-color:var(--shot-btn) !important; border:none !important; border-radius:10px !important; color:#e2e8f0 !important; text-decoration:none !important; font-weight:800; padding:7px 12px !important; }
+.reload-btn, .theme-toggle-btn { background-color:var(--shot-btn) !important; border:1px solid var(--border) !important; border-radius:10px !important; color:var(--val-color) !important; text-decoration:none !important; font-weight:800; padding:7px 12px !important; }
 .theme-dot.active { box-shadow:0 0 0 2px var(--card-bg), 0 3px 0 rgba(0,0,0,.42), 0 5px 9px rgba(0,0,0,.30) !important; }
 .reload-btn:active, .theme-toggle-btn:active, .theme-dot:active {
   transform:translateY(3px);
@@ -157,6 +252,7 @@
     width: 320px;
     background: var(--card-bg);
     border-radius: 14px;
+    border: 1px solid var(--border);
     padding: 10px;
     color: var(--val-color);
   }
@@ -209,7 +305,7 @@
     font-size: 9px; font-weight: 700; color: #fbbf24; margin-bottom: 3px;
     display:flex; justify-content:space-between;
   }
-  .fare-group-title.long { color: #f87171; }
+  .fare-group-title.long { color: var(--red); }
   .fare-item-2row {
     font-size: 8.5px; padding: 4px 0;
     border-top: 1px solid var(--inner-bg);
@@ -229,18 +325,18 @@
 
   .shot-btns { display:flex; gap:8px; margin: 8px 0; }
   .shot-btn {
-    flex:1; background:linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0) 50%), var(--shot-btn); color:#e2e8f0; border:none; border-radius:10px;
+    flex:1; background:linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0) 50%), var(--shot-btn); color:var(--val-color); border:1px solid var(--border); border-radius:10px;
     padding:7px 4px; font-size:9.5px; font-weight:800; cursor:pointer;
     box-shadow:0 4px 0 rgba(0,0,0,.4), 0 7px 12px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 4px rgba(0,0,0,.15);
     text-shadow:0 1px 0 rgba(0,0,0,.2);
     transition:transform .08s ease, box-shadow .08s ease;
   }
-  .shot-btn:active { background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--shot-btn-active); transform:translateY(4px); box-shadow:0 0 0 rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05), inset 0 2px 3px rgba(0,0,0,.15); }
+  .shot-btn:active { color:var(--btn-on); background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 50%), var(--shot-btn-active); transform:translateY(4px); box-shadow:0 0 0 rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05), inset 0 2px 3px rgba(0,0,0,.15); }
 
   .comments { margin-top: 8px; display: flex; flex-direction: column; gap: 7px; }
   .comment { background: var(--inner-bg); border-radius: 9px; padding: 7px 8px; border-left: 3px solid #3b82f6; }
-  .comment.issue { border-left-color: #f87171; }
-  .comment.good { border-left-color: #4ade80; }
+  .comment.issue { border-left-color: var(--red); }
+  .comment.good { border-left-color: var(--green); }
   .comment.renpai { border-left-color: var(--renpai); }
   .comment.avg { border-left-color: #fbbf24; }
   .comment.diag { border-left-color: #38bdf8; }
@@ -294,7 +390,7 @@
 <div class="card" id="appCard">
 
   <div id="uploadScreen" class="upload-screen">
-    <h1>🚕 TAXI INTEL <span style="font-size:9px;color:#94a3b8;font-weight:400;">v20261110-6</span></h1>
+    <h1>🚕 TAXI INTEL <span style="font-size:9px;color:var(--header-sub);font-weight:400;">v20261126-1</span></h1>
     <p>「連配GO判定累積データ.xlsx」を読み込むと、<br>最新の乗務を同曜日の過去データ（祝日・祝日翌日の平日は別枠）と自動比較します。<br>ファイルはこの端末内だけで処理され、どこにも送信されません。</p>
     <div class="drop-zone" id="dropZone">
       <div class="icon">📊</div>
@@ -318,7 +414,7 @@
     </div>
 
     <div class="shift-select-row">
-      <label style="font-size:9.5px;color:#94a3b8;">表示する出番：</label>
+      <label style="font-size:9.5px;color:var(--header-sub);">表示する出番：</label>
       <select id="shiftSelect" onchange="onShiftChange()"></select>
     </div>
 
@@ -1559,7 +1655,7 @@ function generateOverallTrendHTML(dates, map, A, summarizeShiftFn) {
     const totalShifts = opsCounter.monthTotal || 0;
     const remainingShifts = Math.max(totalShifts - doneShifts, 0);
     const neededPerShift = remainingShifts > 0 ? Math.round(remaining / remainingShifts) : null;
-    const excelNote = fromExcel ? `<div style="color:var(--footer);font-size:8px;margin-top:3px;">※確定累計・終了出番数は、読み込んだExcel累積データの今月分（${exDays}日・${fmtYen2(exFare)}）で集計しています（Opsに保存されている今月の出番数より多いか、Opsのデータがこの画面から読めないため）。目標額と予定出番数はOpsの保存値です</div>` : '';
+    const excelNote = fromExcel ? `<div style="color:var(--footer);font-size:8px;margin-top:3px;">※確定累計・終了出番数は、読み込んだExcel累積データの今月分（${exDays}日・${fmtYen2(exFare)}）で集計しています（Opsアプリのデータはこの画面から読めないため）。目標額と予定出番数はこのブラウザ内のOps保存値です</div>` : '';
     const staleNote = (opsRevenue.monthKey !== nowMonthKey) ? `<div style="color:var(--footer);font-size:8px;margin-top:3px;">※Opsのデータが${opsRevenue.monthKey}時点のままの可能性があります(今月と異なる月キー)</div>` : '';
     const wdCompareRows = neededPerShift == null ? '' : wdItems.map(it => {
       const diff = it.value - neededPerShift;
@@ -1803,21 +1899,30 @@ function generateDashboardHTML(result, comments, A) {
 
 
 const THEME_LIST = [
-  {key:'amber', icon:'🟠', label:'アンバー', from:'#12151b', to:'#e8a33d'},
-  {key:'blue', icon:'🔵', label:'ブルー', from:'#f2f6fb', to:'#1e5fc4'},
-  {key:'japan', icon:'⚽', label:'ジャパン', from:'#0a1730', to:'#4d8fe6'},
-  {key:'eva', icon:'🟢', label:'エヴァ初号機', from:'#1a1025', to:'#7fdc00'},
-  {key:'gundam', icon:'🤖', label:'ガンダム', from:'#eef0f2', to:'#1e50a2'},
-  {key:'ginei', icon:'🎖️', label:'銀河英雄伝説(帝国軍)', from:'#0d0d0f', to:'#a8adb5'},
-  {key:'shinkamen', icon:'🦗', label:'シン仮面ライダー', from:'#0a0a0a', to:'#b8bcc0'},
-  {key:'ultraman', icon:'🥈', label:'シンウルトラマン', from:'#e3e6e9', to:'#d92b1c'},
-  {key:'godzilla', icon:'🦖', label:'シン・ゴジラ', from:'#0e0e0e', to:'#ff4b1f'},
-  {key:'patlabor', icon:'🚔', label:'パトレイバー', from:'#eef1f2', to:'#d3222a'},
-  {key:'unicorn', icon:'🦄', label:'ユニコーンガンダム', from:'#eef0f2', to:'#e8382a'},
-  {key:'nugundam', icon:'🛡️', label:'νガンダム', from:'#ffffff', to:'#f4c430'},
-  {key:'valkyrie', icon:'💀', label:'バルキリー', from:'#eef0f1', to:'#f4c430'},
-  {key:'yamato', icon:'⚓', label:'宇宙戦艦ヤマト', from:'#0d1420', to:'#c8102e'},
-  {key:'mazinger', icon:'🔥', label:'マジンガーZ', from:'#0d0d0d', to:'#c8102e'},
+  {key:'amber', icon:'🟠', label:'ジャイアンツ', from:'#0c0c0e', to:'#f97316'},
+  {key:'blue', icon:'🔵', label:'ドジャース', from:'#f0f5fc', to:'#005a9c'},
+  {key:'japan', icon:'⚽', label:'日本代表', from:'#08142c', to:'#1d63dc'},
+  {key:'eva', icon:'🟢', label:'エヴァ初号機', from:'#13091f', to:'#84ff00'},
+  {key:'gundam', icon:'🤖', label:'ガンダム', from:'#eef1f5', to:'#1e50a2'},
+  {key:'ginei', icon:'🎖️', label:'銀河英雄伝説(帝国軍)', from:'#0d0d0f', to:'#c8102e'},
+  {key:'alliance', icon:'⭐', label:'銀河英雄伝説(自由惑星同盟)', from:'#0a1530', to:'#38bdf8'},
+  {key:'phezzan', icon:'💰', label:'銀河英雄伝説(フェザーン自治領)', from:'#140d1f', to:'#7e22ce'},
+  {key:'rosen', icon:'🌹', label:'銀河英雄伝説(ローゼンリッター)', from:'#0d0f0e', to:'#be123c'},
+  {key:'iserlohn', icon:'⚡', label:'銀河英雄伝説(イゼルローン要塞)', from:'#131b24', to:'#0284c7'},
+  {key:'schwarz', icon:'🐯', label:'銀河英雄伝説(黒色槍騎兵艦隊)', from:'#08080a', to:'#eab308'},
+  {key:'reinhard', icon:'🦁', label:'銀河英雄伝説(ラインハルト)', from:'#eef2f7', to:'#0284c7'},
+  {key:'kircheis', icon:'❤️', label:'銀河英雄伝説(キルヒアイス)', from:'#f4f6f9', to:'#d93829'},
+  {key:'yang', icon:'☕', label:'銀河英雄伝説(ヤン・ウェンリー)', from:'#161311', to:'#1d4ed8'},
+  {key:'terra', icon:'🌍', label:'銀河英雄伝説(地球教)', from:'#0c1112', to:'#0d9488'},
+  {key:'shinkamen', icon:'🦗', label:'シン仮面ライダー', from:'#090a09', to:'#16a34a'},
+  {key:'ultraman', icon:'🥈', label:'シンウルトラマン', from:'#e5e8ec', to:'#d92b1c'},
+  {key:'godzilla', icon:'🦖', label:'シン・ゴジラ', from:'#0b0a0c', to:'#ff4b1f'},
+  {key:'patlabor', icon:'🚔', label:'パトレイバー', from:'#eef1f4', to:'#14171c'},
+  {key:'unicorn', icon:'🦄', label:'ユニコーンガンダム', from:'#f2f4f7', to:'#16294f'},
+  {key:'nugundam', icon:'🛡️', label:'νガンダム', from:'#0b1529', to:'#dc2626'},
+  {key:'valkyrie', icon:'💀', label:'バルキリー', from:'#eef0f2', to:'#16181a'},
+  {key:'yamato', icon:'⚓', label:'宇宙戦艦ヤマト', from:'#0b121e', to:'#c8102e'},
+  {key:'mazinger', icon:'🔥', label:'マジンガーZ', from:'#0b0b0c', to:'#dc2626'},
 ];
 
 let currentRows = null;
@@ -1986,11 +2091,6 @@ function buildShotCanvas(elementId) {
   return html2canvas(el, {backgroundColor: bg, scale: 2});
 }
 function downloadCanvas(canvas, filename) {
-  // TAXI OPSアプリの中(重ねて表示)で開いているときは、Opsの画像保存(ギャラリーのTAXI-OPS)に任せる
-  try {
-    const P = window.parent;
-    if (P && P !== window && typeof P.taxiopsSaveImageFromIntel === 'function') { P.taxiopsSaveImageFromIntel(canvas, filename); return; }
-  } catch (e) {}
   const link = document.createElement('a');
   link.download = filename + '.png';
   link.href = canvas.toDataURL('image/png');
@@ -2059,6 +2159,7 @@ function renderThemePicker() {
 function setTheme(name) {
   document.documentElement.setAttribute('data-theme', name);
   try { localStorage.setItem('taxiDashboardTheme', name); } catch(e) {}
+  try { localStorage.setItem('andon-meter:theme', name); } catch(e) {}   // OPSと同じ保存場所・同じ名前(OPSで選んだ配色にINTELも揃う)
   currentThemeKey = name;
   const t = THEME_LIST.find(x => x.key === name) || THEME_LIST[0];
   const btn = document.getElementById('themeToggleBtn');
@@ -2080,10 +2181,11 @@ document.addEventListener('click', (ev) => {
 
 (function initTheme() {
   let saved = 'amber';
-  try { saved = localStorage.getItem('taxiDashboardTheme') || 'amber'; } catch(e) {}
+  try { saved = localStorage.getItem('andon-meter:theme') || localStorage.getItem('taxiDashboardTheme') || 'amber'; } catch(e) {}
+  if (!THEME_LIST.some(x => x.key === saved)) saved = 'amber';
   setTheme(saved);
 })();
-
+window.addEventListener('storage', (e) => { if (e.key === 'andon-meter:theme' && e.newValue && e.newValue !== currentThemeKey && THEME_LIST.some(x => x.key === e.newValue)) setTheme(e.newValue); });
 
 
 /* ---------- 📘 使い方(TAXI OPSと同じ作りのマニュアル) ---------- */
@@ -2100,7 +2202,7 @@ function openHelp(){
     det('Excelの形式', p('・シート名は「データ貼り付け用」。1行目が見出しです。\n・必須の列: 年月日、No、時刻(例 12:30-12:45)、乗車地、降車地、実車距離、運賃、種別。\n・あれば使う列: サンキュー消費、出庫時刻、帰庫時刻、天気、気温。\n・出庫時刻と帰庫時刻があると、時間単価は実測になります(なければ概算)。\n・天気と気温の列があると、天候別・気温別の傾向も出ます。')),
     det('画面の見方', p('・運賃別明細: ミドルとロングに分けて、乗車→降車の時刻と乗降地、距離・種別・運賃を並べます。\n・フェーズ別内訳: 連続配車と、流し・付け待ちの、それぞれの時間単価を出します。\n・コメントは、種類ごとに色が付きます。⚠ 課題 / ✅ 高評価 / 🔗 連配関連 / 📈 比較対象平均比 / ☔ 天候・気温 / 🩺 診断。数字の根拠も一緒に出ます。\n・比べる相手は、同じ曜日の過去の全出番です。祝日と、祝日の翌日にあたる平日（連休明けなど）は曜日に含めず、それぞれ同じ区分同士で比べます（振替休日・国民の休日も祝日です）。過去がまだ無い曜日は、今回が基準の1回目になります。\n・過去が3回たまるまでは、祝日は日曜と、祝日翌日の平日は同じ曜日とまとめて比べ、「参考値」と表示します。')),
     det('全期間サマリー', p('「📈 全期間サマリーを見る」で、月間サマリー、曜日別（祝日・祝日翌日の平日は別枠）、時間帯別、距離帯別、天気別、気温別、曜日×時間帯のクロス集計、月別×曜日、直近の出番の推移が出ます。\n画像は計表ごとに1枚ずつ保存できます。各計表の下の「📷 〇〇を保存」ボタン（月間サマリー・Ops月間目標・時間帯別・曜日別・祝日・祝翌の出番・距離帯別・天気別・気温別・曜日×時間帯・月別×曜日・直近の推移）を押してください。全部まとめては「📷 〇枚まとめて保存」で、1枚ずつ順番に保存されます（端末が複数ダウンロードの許可を聞いてきたら許可してください）。')),
-    det('TAXI OPSとの連携', p('同じ端末・同じブラウザで TAXI OPS の月間目標を設定しているとき、「🎯 Opsの月間目標との突き合わせ」が出ます。今月の目標に対する確定累計と、残りの出番ごとの必要ペースが分かります。\n\nTAXI OPS アプリの最初の画面の「📊 INTEL」から開くと、Opsの目標額・予定出番数・確定累計をそのまま読みます。別のブラウザなどで単独で開いたときは、確定累計と終了出番数を、読み込んだExcel累積データの今月分で集計します。分析そのものは、連携なしで使えます。')),
+    det('TAXI OPSとの連携', p('同じ端末・同じブラウザで TAXI OPS の月間目標を設定しているとき、「🎯 Opsの月間目標との突き合わせ」が出ます。今月の目標に対する確定累計と、残りの出番ごとの必要ペースが分かります。\n\nアプリ版の TAXI OPS とは、データの置き場所が別です。その場合、確定累計と終了出番数は、読み込んだExcel累積データの今月分で集計します（目標額と予定出番数は、このブラウザ内のOps保存値が使われます）。分析そのものは、連携なしで使えます。')),
     det('配色', p('画面の上の丸いボタン(🟠など)で、配色を選べます。TAXI OPS と同じ15種類です。')),
     det('困ったとき', p('・「読み込みに失敗しました」: シート名が「データ貼り付け用」か、必須の列がそろっているかを確認してください。\n・天候別の傾向が出ない: 天気・気温の列が空か、まだデータが少ない状態です。\n・比較できないと出る: 同じ曜日（祝日なら祝日・日曜、祝日翌日なら同じ曜日）の過去がまだ無いためです。出番がたまると、だんだん比べられます。\n・画像が保存できない: ブラウザの共有・ダウンロードの許可を確認してください。')),
     det('権利・免責', p('・運賃や集計は参考値です。日報や会社の記録が正です。\n・「GO」「GOPay」などの名前は、各社の商標で、このアプリは各社とは関係がありません。')),
