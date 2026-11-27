@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="taxiops-build" content="20261127168">
+<meta name="taxiops-build" content="20261127169">
 <script src="capacitor.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAXI OPS</title>
@@ -1242,7 +1242,7 @@ body.light-base .analysis-body b{ color:#c0392b; }
   <div class="header">
     <div class="lamp"></div>
     <h1 style="font-family:'PT Mono',monospace;letter-spacing:.08em;">TAXI OPS</h1>
-    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261127-app168</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
+    <span style="display:inline-flex;flex-direction:column;font-size:8.5px;line-height:1.15;color:var(--muted2);margin-left:1px;white-space:nowrap;"><span>v20261127-app169</span><span id="themeNameLbl" style="max-width:96px;overflow:hidden;text-overflow:ellipsis;opacity:.8;"></span></span>
     <div style="position:relative;display:inline-flex;align-items:center;align-self:center;margin-left:2px;">
       <button id="themeToggleBtn" title="配色を選択" style="background:none;border:1px solid var(--border);border-radius:7px;padding:3px 7px;font-size:13px;line-height:1;vertical-align:middle;cursor:pointer;">🎨</button>
       <div id="themePickerPanel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);grid-template-columns:repeat(3,1fr);gap:10px;width:130px;"></div>
@@ -5203,8 +5203,9 @@ function shiftTotalDist(st){
 
 function paperNote(e){      // 紙の日報の実車距離(比較用)と、実車距離(自動入力など)との差
   if(e.paperDist==null) return '';
-  const d = (e.actualDist!=null) ? (e.actualDist - e.paperDist) : null;
-  return '紙'+e.paperDist+'km'+(d!==null ? '(差'+(d>=0?'+':'')+d.toFixed(1)+'km)' : '');
+  const a = ('autoActualDist' in e) ? e.autoActualDist : e.actualDist;
+  const d = (a!=null) ? (a - e.paperDist) : null;
+  return '紙'+e.paperDist+'km'+(d!==null ? '(自動'+a+'km・差'+(d>=0?'+':'')+d.toFixed(1)+'km)' : '(自動値なし)');
 }
 function openBulkActualDistModal(entriesRef, persistAndRerender){
   const EX = ['キャンセル','B空転','障割','定額負け'];
@@ -5215,11 +5216,11 @@ function openBulkActualDistModal(entriesRef, persistAndRerender){
   filteredAll.forEach(e=>{ const g=rideGroups.length?rideGroups[rideGroups.length-1]:null; if(g && Math.abs(g[0].time-e.time)<1e-6) g.push(e); else rideGroups.push([e]); });
   const N = rideGroups.length, LH = 22;
   const targetOf = g => g.find(e=>e.actualDist!=null) || g[0];
-  const autoOf = g => { const t=targetOf(g); return t.actualDist!=null ? t.actualDist : null; };
+  const autoOf = g => { const t=targetOf(g); const v=('autoActualDist' in t) ? t.autoActualDist : t.actualDist; return v!=null ? v : null; };
   const rowS = 'height:'+LH+'px;line-height:'+LH+'px;white-space:nowrap;overflow:hidden;font-size:11px;font-family:\'PT Mono\',monospace;';
   const leftHtml = rideGroups.map(g=>{
-    const t=targetOf(g), fare=g.reduce((a,e)=>a+netFare(e),0), av=t.actualDist;
-    return '<div style="'+rowS+'">'+fmtTime(g[0].time)+' ¥'+fmtYen(fare)+' <span style="color:var(--muted2);">'+(t.actualGps?'自動':'入力')+'</span> <b>'+(av!=null?av:'—')+'</b></div>';
+    const t=targetOf(g), fare=g.reduce((a,e)=>a+netFare(e),0), av=autoOf(g), gps=('autoActualDist' in t)?t.autoActualGps:t.actualGps;
+    return '<div style="'+rowS+'">'+fmtTime(g[0].time)+' ¥'+fmtYen(fare)+' <span style="color:var(--muted2);">'+(gps?'自動':'入力')+'</span> <b>'+(av!=null?av:'—')+'</b></div>';
   }).join('');
   const initPaper = rideGroups.map(g=>{ const p=g.find(e=>e.paperDist!=null); return p?String(p.paperDist):''; }).join('\n');
   const overlay = document.createElement('div');
@@ -5228,7 +5229,7 @@ function openBulkActualDistModal(entriesRef, persistAndRerender){
     <div class="confirm-box" style="max-width:360px;max-height:88vh;overflow-y:auto;">
       <div class="confirm-msg">紙の日報の実車距離を貼り付け</div>
       <div style="font-size:10.5px;color:var(--muted);text-align:left;margin-bottom:8px;line-height:1.5;">
-        右の列に、紙の日報の実車距離を古い順に1行1件で貼り付けます。左の自動入力の値と並べて、差を見られます(保存すると、紙の値が実車距離になります。自動入力との比較用にも残ります)。キャンセル・B空転・障割・定額負け(${excludedCount}件)は対象外、同時刻の分割払いは1件です。今の出番は${N}件。空行はそのままです。
+        右の列に、紙の日報の実車距離を古い順に1行1件で貼り付けます。左の自動入力の値と並べて、差を見られます(保存すると紙の値が実車距離になります。左の自動の値は、差分表示のために元のまま残ります)。キャンセル・B空転・障割・定額負け(${excludedCount}件)は対象外、同時刻の分割払いは1件です。今の出番は${N}件。空行はそのままです。
       </div>
       <div style="display:grid;grid-template-columns:1fr 64px 46px;gap:4px;align-items:start;">
         <div style="font-size:9.5px;color:var(--muted2);">降車・運賃・自動入力</div><div style="font-size:9.5px;color:var(--muted2);text-align:right;padding-right:4px;">紙</div><div style="font-size:9.5px;color:var(--muted2);text-align:right;">差</div>
@@ -5261,7 +5262,7 @@ function openBulkActualDistModal(entriesRef, persistAndRerender){
   overlay.querySelector('#bulkAdCancel').onclick = ()=> overlay.remove();
   const save = async (adopt)=>{
     const lines = ta.value.split(/\r?\n/);
-    let applied = 0, badLines = 0;
+    let applied = 0, badLines = 0, cmpN = 0, cmpSum = 0, bigN = 0;
     for(let i=0; i<N; i++){
       const line = (lines[i]||'').trim();
       if(line===''){ continue; }
@@ -5269,13 +5270,16 @@ function openBulkActualDistModal(entriesRef, persistAndRerender){
       if(isNaN(v) || v<0){ badLines++; continue; }
       const g = rideGroups[i], t = targetOf(g);
       g.forEach(x=>{ if(x!==t) delete x.paperDist; });
+      if(adopt && !('autoActualDist' in t)){ t.autoActualDist = (t.actualDist!=null ? t.actualDist : null); t.autoActualGps = !!t.actualGps; }   // 紙を採用する前の自動値を残す(差分表示用)
+      const a0 = autoOf(g);
+      if(a0!=null){ const d0=a0-v; cmpN++; cmpSum+=d0; if(Math.abs(d0)>=0.5) bigN++; }
       t.paperDist = v;
       if(adopt){ t.actualDist = v; delete t.actualGps; g.forEach(x=>{ if(x!==t) x.actualDist = null; }); }
       applied++;
     }
     overlay.remove();
     await persistAndRerender();
-    toast('紙の実車距離を'+applied+'件'+(adopt?'反映(実車距離に採用)':'保存')+'しました'+(badLines>0?'(読み取れなかった行'+badLines+'件)':''));
+    toast('紙の実車距離を'+applied+'件'+(adopt?'採用':'保存')+'しました。自動との差: '+(cmpN?('合計'+(cmpSum>=0?'+':'')+cmpSum.toFixed(1)+'km・0.5km以上のずれ'+bigN+'件'):'比較できる自動値なし')+(badLines>0?'(読み取れなかった行'+badLines+'件)':''),5500);
   };
   overlay.querySelector('#bulkAdOk').onclick = ()=>save(true);
   overlay.addEventListener('click', (e)=>{ if(e.target===overlay) overlay.remove(); });
@@ -5640,11 +5644,11 @@ function actualCompareHTML(entries){
   let n=0,sa=0,sp=0,big=0,onlyA=0,onlyP=0;
   const rows=groups.map((g,i)=>{
     const ea=g.find(e=>e.actualDist!=null), ep=g.find(e=>e.paperDist!=null);
-    const a=ea?ea.actualDist:null, p=ep?ep.paperDist:null;
+    const a=ea?(('autoActualDist' in ea)?ea.autoActualDist:ea.actualDist):null, p=ep?ep.paperDist:null;
     let dcell='—', dcls='';
     if(a!=null && p!=null){ const d=a-p; n++; sa+=a; sp+=p; if(Math.abs(d)>=0.5) big++; dcell=(d>=0?'+':'')+d.toFixed(1); dcls=Math.abs(d)>=0.5?'neg':'dim'; }
     else if(a!=null) onlyA++; else if(p!=null) onlyP++;
-    const src=ea?(ea.actualGps?'GPS':'入力'):'';
+    const src=(ea && a!=null)?((('autoActualDist' in ea)?ea.autoActualGps:ea.actualGps)?'GPS':'入力'):'';
     return `<tr><td class="label" style="width:12%;">${i+1}</td><td style="text-align:left;">${fmtTime(g[0].time)}</td><td>${a!=null?a.toFixed(1):'—'}<span class="dim" style="font-size:8px;"> ${src}</span></td><td>${p!=null?p.toFixed(1):'—'}</td><td class="${dcls}">${dcell}</td></tr>`;
   }).join('');
   const dsum=sa-sp;
@@ -5653,7 +5657,7 @@ function actualCompareHTML(entries){
     : '';
   return `<div class="list-card" style="margin-top:8px;">
     <div class="card-title"><span>実車距離の比較(自動と紙)<span style="font-weight:400;color:var(--muted2);"> km</span></span><span class="list-toggle" onclick="compareExpanded=!compareExpanded;render();">${compareExpanded?'縮小':'拡大'}</span></div>
-    <div class="entry-scroll ${compareExpanded?'expanded':''}">${sum}<table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動</th><th>紙</th><th>差</th></tr>${rows}</table></div>
+    <div class="entry-scroll ${compareExpanded?'expanded':''}">${sum}<table style="font-size:10px;"><tr><th style="width:12%;">#</th><th style="text-align:left;">降車</th><th>自動(元)</th><th>紙(採用)</th><th>差(自動−紙)</th></tr>${rows}</table></div>
   </div>`;
 }
 const ANALYSIS_ICON = {good:'✅', warn:'⚠️', info:'🩺', trend:'📈'};
