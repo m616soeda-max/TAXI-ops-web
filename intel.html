@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="taxiintel-build" content="2026112601">
+<meta name="taxiintel-build" content="2026112801">
 <title>TAXI INTEL</title>
 <style>
   /* 配色: TAXI OPSと同じ24テーマ・同じ色(OPSの値をそのまま移植) */
@@ -391,7 +391,7 @@
 <div class="card" id="appCard">
 
   <div id="uploadScreen" class="upload-screen">
-    <h1>🚕 TAXI INTEL <span style="font-size:9px;color:var(--header-sub);font-weight:400;">v20261126-1</span></h1>
+    <h1>🚕 TAXI INTEL <span style="font-size:9px;color:var(--header-sub);font-weight:400;">v20261128-1</span></h1>
     <p>「連配GO判定累積データ.xlsx」を読み込むと、<br>最新の乗務を同曜日の過去データ（祝日・祝日翌日の平日は別枠）と自動比較します。<br>ファイルはこの端末内だけで処理され、どこにも送信されません。</p>
     <div class="drop-zone" id="dropZone">
       <div class="icon">📊</div>
@@ -2092,6 +2092,13 @@ function buildShotCanvas(elementId) {
   return html2canvas(el, {backgroundColor: bg, scale: 2});
 }
 function downloadCanvas(canvas, filename) {
+  // Opsアプリの中で重ねて開いているとき(iframe)は、Opsの画像保存(ギャラリーのTAXI-OPS)に渡す
+  try {
+    if (window.parent && window.parent !== window && typeof window.parent.taxiopsSaveImageFromIntel === 'function') {
+      window.parent.taxiopsSaveImageFromIntel(canvas, filename);
+      return;
+    }
+  } catch (e) { /* 親に渡せないときは、下の通常のダウンロードにする */ }
   const link = document.createElement('a');
   link.download = filename + '.png';
   link.href = canvas.toDataURL('image/png');
